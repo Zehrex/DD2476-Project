@@ -1,0 +1,171 @@
+/* =================
+  Variables
+  ================= */
+$primary-color: #2A9D8F;
+$secondary-color: #FED892;
+$third-color: #264653;
+
+/* =================
+  General Styles
+  ================= */
+* {
+  font-family: 'Vollkorn', serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: $third-color;
+  font-family: 'Unica One', serif;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 20px 0;
+}
+
+h1 span, h3 span {
+  background-color: $third-color;
+  color: $secondary-color;
+  font-family: 'Unica One', serif;
+  padding: 3px 8px;
+}
+
+button.button {
+  border-radius: 20px;
+  bottom: 0px;
+  font-family: 'Unica One', serif;
+  font-size: 20px;
+  height: 40px;
+  margin: 3px 10px;
+  padding: 2px 20px;
+  position: relative;
+  text-transform: uppercase;
+  transition: all .2s;
+  -webkit-transition: all .2s;
+  background: #fff;
+
+  &.button-primary {
+    border: 3px solid $primary-color;
+    color: $third-color;
+
+    &:hover {
+      background: $primary-color;
+      color: $secondary-color;
+    }
+  }
+
+  &.button-secondary {
+    border: 3px solid $secondary-color;
+    color: $third-color;
+
+    &:hover {
+      background: $secondary-color;
+    }
+  }
+
+  &:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    bottom: 2px;
+  }
+}
+
+body, html, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  font-family: "Dosis", sans-serif;
+}
+
+h2 {
+  margin: 20px 0;
+}
+
+footer {
+  background-color: $third-color;
+  padding: 15px;
+  h3 {
+    color: $secondary-color;
+  }
+}
+
+#nav-search-icon {
+  cursor: pointer;
+}
+
+#loader {
+  $bg: #fff;
+  $fill: $primary-color;
+
+  .hourglass{
+      display:block;
+      background:$bg;
+      margin:3em auto;
+      width:2em;
+      height:4em;
+      animation:hourglass 1s linear infinite;
+  }
+
+  .outer{
+      fill:$fill;
+  }
+
+  .middle{
+      fill:$bg;
+  }
+
+  @keyframes hourglass{
+      0%{
+          transform:rotate(0deg);
+          box-shadow:
+              inset $fill 0 -0em 0 0,
+              inset $bg 0 -2em 0 0,
+              inset $fill 0 -4em 0 0;
+      }
+      80%{
+          transform:rotate(0deg);
+          box-shadow:
+              inset $fill 0 -2em 0 0,
+              inset $bg 0 -2em 0 0,
+              inset $fill 0 -2em 0 0;
+      }
+      100%{
+          transform:rotate(180deg);
+          box-shadow:
+              inset $fill 0 -2em 0 0,
+              inset $bg 0 -2em 0 0,
+              inset $fill 0 -2em 0 0;
+      }
+  }
+}
+
+/* =================
+  Home Styles
+  ================= */
+
+#home {
+  align-items: center;
+  display: flex;
+  height: calc(100vh - 171px);
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+
+  form {
+    display: inline-block;
+    font-size: 20px !important;
+
+    input {
+      border-radius: 20px;
+      -webkit-border-radius: 20px;
+      font-family: 'Unica One', serif;
+      font-size: 20px !important;
+      height: 40px;
+      max-width: 500px;
+      padding: 2px 20px;
+      text-transform: uppercase;
+    }
+  }
+}
