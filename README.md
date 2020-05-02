@@ -20,3 +20,61 @@ The assignment:
 
 i.e. search for quicksort, and filter by methods with returnType List. What would you
 want to search for?
+
+
+## Get app-search React app running
+
+Install elastic search https://www.elastic.co/downloads/elasticsearch (I used homebrew to install)
+
+Install app-search https://www.elastic.co/downloads/app-search
+The config file you need to edit (`elasticsearch.yml`) is located at `/usr/local/etc/elasticsearch` if you installed using homebrew
+
+Add these lines to the end of the file
+```
+action.auto_create_index: ".app-search-*-logs-*,-.app-search-*,+*"
+http.cors.enabled : true
+http.cors.allow-origin : "*"
+```
+
+Get elastic search running
+```
+elasticsearch
+```
+
+Check http://localhost:9200/ to see if it's running
+An example result would be something like
+```
+{
+  "name" : "MacBook-Pro.local",
+  "cluster_name" : "elasticsearch_leviv",
+  "cluster_uuid" : "hBs-dpB0S9iaHgrwFRMsxQ",
+  "version" : {
+    "number" : "7.6.2",
+    "build_flavor" : "default",
+    "build_type" : "tar",
+    "build_hash" : "ef48eb35cf30adf4db14086e8aabd07ef6fb113f",
+    "build_date" : "2020-03-26T06:34:37.794943Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.4.0",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+}
+```
+
+Now run app-search
+```
+cd app-search
+bin/app-search
+```
+
+Then open up http://localhost:3002/
+You should have access to the app-search console
+
+Install react dependencies
+```
+npm install @elastic/react-search-ui
+npm install @elastic/search-ui-app-search-connector
+npm install
+```
