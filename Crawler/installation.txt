@@ -1,0 +1,6 @@
+# Pygithub
+pip install PyGithub
+
+# javalang
+§ run the following command from inside the javalang folder:
+python setup.py install
