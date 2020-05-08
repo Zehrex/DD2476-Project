@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/main/java/com/iluwatar/balking/WashingMachineState.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -24,16 +24,10 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
 
 package com.iluwatar.balking;
 
-import org.junit.jupiter.api.Test;
-
 /**
- * Application test
+ * WashingMachineState enum describes in which state machine is, it can be enabled and ready to work
+ * as well as during washing.
  */
-class AppTest {
-
-  @Test
-  void main() {
-    App.main();
-  }
-
+public enum WashingMachineState {
+  ENABLED, WASHING
 }

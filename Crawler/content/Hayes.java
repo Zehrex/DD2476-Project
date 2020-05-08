@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/main/java/com/iluwatar/acyclicvisitor/Hayes.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,36 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.acyclicvisitor;
 
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Application test
+ * Hayes class implements its accept method.
  */
-class AppTest {
+public class Hayes extends Modem {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureForDosVisitor.class);
+
+  /**
+   * Accepts all visitors but honors only HayesVisitor.
+   */
+  @Override
+  public void accept(ModemVisitor modemVisitor) {
+    if (modemVisitor instanceof HayesVisitor) {
+      ((HayesVisitor) modemVisitor).visit(this);
+    } else {
+      LOGGER.info("Only HayesVisitor is allowed to visit Hayes modem");
+    }
+
   }
 
+  /**
+   * Hayes' modem's toString method.
+   */
+  @Override
+  public String toString() {
+    return "Hayes modem";
+  }
 }

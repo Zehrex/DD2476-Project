@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/ambassador/src/test/java/com/iluwatar/ambassador/RemoteServiceTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,42 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.ambassador;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.iluwatar.ambassador.util.RandomProvider;
 import org.junit.jupiter.api.Test;
 
 /**
- * Application test
+ * Test for {@link RemoteService}
  */
-class AppTest {
+class RemoteServiceTest {
 
   @Test
-  void main() {
-    App.main();
+  void testFailedCall() {
+    var remoteService = new RemoteService(new StaticRandomProvider(0.21));
+    var result = remoteService.doRemoteFunction(10);
+    assertEquals(RemoteServiceInterface.FAILURE, result);
   }
 
+  @Test
+  void testSuccessfulCall() {
+    var remoteService = new RemoteService(new StaticRandomProvider(0.2));
+    var result = remoteService.doRemoteFunction(10);
+    assertEquals(100, result);
+  }
+
+  private static class StaticRandomProvider implements RandomProvider {
+    private double value;
+
+    StaticRandomProvider(double value) {
+      this.value = value;
+    }
+
+    @Override
+    public double random() {
+      return value;
+    }
+  }
 }

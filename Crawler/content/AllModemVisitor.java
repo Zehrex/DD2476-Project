@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/main/java/com/iluwatar/acyclicvisitor/AllModemVisitor.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,12 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.acyclicvisitor;
 
 /**
- * Application test
+ * All ModemVisitor interface extends all visitor interfaces. This interface provides ease of use
+ * when a visitor needs to visit all modem types.
  */
-class AppTest {
-
-  @Test
-  void main() {
-    App.main();
-  }
+public interface AllModemVisitor extends ZoomVisitor, HayesVisitor {
 
 }

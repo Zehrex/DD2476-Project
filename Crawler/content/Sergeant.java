@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/extension-objects/src/main/java/concreteextensions/Sergeant.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,28 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package concreteextensions;
 
-import org.junit.jupiter.api.Test;
+import abstractextensions.SergeantExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import units.SergeantUnit;
 
 /**
- * Application test
+ * Class defining Sergeant.
  */
-class AppTest {
+public class Sergeant implements SergeantExtension {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = LoggerFactory.getLogger(Sergeant.class);
+
+  private SergeantUnit unit;
+
+  public Sergeant(SergeantUnit sergeantUnit) {
+    this.unit = sergeantUnit;
   }
 
+  @Override
+  public void sergeantReady() {
+    LOGGER.info("[Sergeant] " + unit.getName() + " is ready! ");
+  }
 }

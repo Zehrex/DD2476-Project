@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/extension-objects/src/main/java/units/SoldierUnit.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,28 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package units;
 
-import org.junit.jupiter.api.Test;
+import abstractextensions.UnitExtension;
+import concreteextensions.Soldier;
+import java.util.Optional;
 
 /**
- * Application test
+ * Class defining SoldierUnit.
  */
-class AppTest {
+public class SoldierUnit extends Unit {
 
-  @Test
-  void main() {
-    App.main();
+  public SoldierUnit(String name) {
+    super(name);
   }
 
+  @Override
+  public UnitExtension getUnitExtension(String extensionName) {
+
+    if (extensionName.equals("SoldierExtension")) {
+      return Optional.ofNullable(unitExtension).orElseGet(() -> new Soldier(this));
+    }
+
+    return super.getUnitExtension(extensionName);
+  }
 }

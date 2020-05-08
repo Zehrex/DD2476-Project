@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/ambassador/src/main/java/com/iluwatar/ambassador/RemoteServiceInterface.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,13 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.ambassador;
 
 /**
- * Application test
+ * Interface shared by ({@link RemoteService}) and ({@link ServiceAmbassador}).
  */
-class AppTest {
+interface RemoteServiceInterface {
+  int FAILURE = -1;
 
-  @Test
-  void main() {
-    App.main();
-  }
-
+  long doRemoteFunction(int value) throws Exception;
 }

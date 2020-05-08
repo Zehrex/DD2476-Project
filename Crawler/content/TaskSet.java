@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/leader-followers/src/main/java/com.iluwatar.leaderfollowers/TaskSet.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,27 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.leaderfollowers;
 
-import org.junit.jupiter.api.Test;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
- * Application test
+ * A TaskSet is a collection of the tasks, the leader receives task from here.
  */
-class AppTest {
+public class TaskSet {
 
-  @Test
-  void main() {
-    App.main();
+  private BlockingQueue<Task> queue = new ArrayBlockingQueue<>(100);
+
+  public void addTask(Task task) throws InterruptedException {
+    queue.put(task);
   }
 
+  public Task getTask() throws InterruptedException {
+    return queue.take();
+  }
+
+  public int getSize() {
+    return queue.size();
+  }
 }

@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/abstract-factory/src/main/java/com/iluwatar/abstractfactory/ElfKingdomFactory.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,26 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.abstractfactory;
 
 /**
- * Application test
+ * ElfKingdomFactory concrete factory.
  */
-class AppTest {
+public class ElfKingdomFactory implements KingdomFactory {
 
-  @Test
-  void main() {
-    App.main();
+  @Override
+  public Castle createCastle() {
+    return new ElfCastle();
+  }
+
+  @Override
+  public King createKing() {
+    return new ElfKing();
+  }
+
+  @Override
+  public Army createArmy() {
+    return new ElfArmy();
   }
 
 }

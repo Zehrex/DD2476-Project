@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/extension-objects/src/test/java/units/UnitTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,33 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package units;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
 /**
- * Application test
+ * Created by Srdjan on 03-May-17.
  */
-class AppTest {
+public class UnitTest {
 
   @Test
-  void main() {
-    App.main();
+  public void testConstGetSet() throws Exception {
+    final var name = "testName";
+    final var unit = new Unit(name);
+    assertEquals(name, unit.getName());
+
+    final var newName = "newName";
+    unit.setName(newName);
+    assertEquals(newName, unit.getName());
+
+
+    assertNull(unit.getUnitExtension(""));
+    assertNull(unit.getUnitExtension("SoldierExtension"));
+    assertNull(unit.getUnitExtension("SergeantExtension"));
+    assertNull(unit.getUnitExtension("CommanderExtension"));
   }
 
 }

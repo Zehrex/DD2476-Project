@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/main/java/com/iluwatar/acyclicvisitor/ConfigureForDosVisitor.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,26 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.acyclicvisitor;
 
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Application test
+ * ConfigureForDosVisitor class implements both zoom's and  hayes' visit method for Dos
+ * manufacturer.
  */
-class AppTest {
+public class ConfigureForDosVisitor implements AllModemVisitor {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureForDosVisitor.class);
+
+  @Override
+  public void visit(Hayes hayes) {
+    LOGGER.info(hayes + " used with Dos configurator.");
   }
 
+  @Override
+  public void visit(Zoom zoom) {
+    LOGGER.info(zoom + " used with Dos configurator.");
+  }
 }

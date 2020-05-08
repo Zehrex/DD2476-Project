@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/leader-followers/src/test/java/com.iluwatar.leaderfollowers/TaskSetTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,30 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.leaderfollowers;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Application test
+ * Tests for TaskSet
  */
-class AppTest {
+public class TaskSetTest {
 
-  @Test
-  void main() {
-    App.main();
-  }
+    @Test
+    public void testAddTask() throws InterruptedException {
+        var taskSet = new TaskSet();
+        taskSet.addTask(new Task(10));
+        Assert.assertTrue(taskSet.getSize() == 1);
+    }
+
+    @Test
+    public void testGetTask() throws InterruptedException {
+        var taskSet = new TaskSet();
+        taskSet.addTask(new Task(100));
+        Task task = taskSet.getTask();
+        Assert.assertTrue(task.getTime() == 100);
+        Assert.assertTrue(taskSet.getSize() == 0);
+    }
 
 }

@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/main/java/com/iluwatar/acyclicvisitor/module-info.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,6 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
-
-/**
- * Application test
- */
-class AppTest {
-
-  @Test
-  void main() {
-    App.main();
-  }
-
+module com.iluwatar.acyclicvisitor {
+	requires org.slf4j;
 }

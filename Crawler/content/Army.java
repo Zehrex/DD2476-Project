@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/abstract-factory/src/main/java/com/iluwatar/abstractfactory/Army.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,12 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.abstractfactory;
 
 /**
- * Application test
+ * Army interface.
  */
-class AppTest {
+public interface Army {
 
-  @Test
-  void main() {
-    App.main();
-  }
-
+  String getDescription();
 }

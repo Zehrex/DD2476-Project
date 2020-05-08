@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/leader-followers/src/test/java/com.iluwatar.leaderfollowers/TaskHandlerTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,22 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.leaderfollowers;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Application test
+ * Tests for TaskHandler
  */
-class AppTest {
+public class TaskHandlerTest {
 
-  @Test
-  void main() {
-    App.main();
-  }
+    @Test
+    public void testHandleTask() throws InterruptedException {
+        var taskHandler = new TaskHandler();
+        var handle = new Task(100);
+        taskHandler.handleTask(handle);
+        Assert.assertTrue(handle.isFinished());
+    }
 
 }
