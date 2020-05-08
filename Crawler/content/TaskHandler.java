@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/leader-followers/src/main/java/com.iluwatar.leaderfollowers/TaskHandler.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,26 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.leaderfollowers;
 
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Application test
+ * The TaskHandler is used by the {@link Worker} to process the newly arrived task.
  */
-class AppTest {
+public class TaskHandler {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = LoggerFactory.getLogger(TaskHandler.class);
+
+  /**
+   * This interface handles one task at a time.
+   */
+  public void handleTask(Task task) throws InterruptedException {
+    var time = task.getTime();
+    Thread.sleep(time);
+    LOGGER.info("It takes " + time + " milliseconds to finish the task");
+    task.setFinished();
   }
 
 }

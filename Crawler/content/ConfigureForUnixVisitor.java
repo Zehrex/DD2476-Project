@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/main/java/com/iluwatar/acyclicvisitor/ConfigureForUnixVisitor.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,21 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.acyclicvisitor;
 
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Application test
+ * ConfigureForUnixVisitor class implements zoom's visit method for Unix manufacturer, unlike
+ * traditional visitor pattern, this class may selectively implement visit for other modems.
  */
-class AppTest {
+public class ConfigureForUnixVisitor implements ZoomVisitor {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureForUnixVisitor.class);
+
+  @Override
+  public void visit(Zoom zoom) {
+    LOGGER.info(zoom + " used with Unix configurator.");
   }
-
 }

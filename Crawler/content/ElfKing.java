@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/abstract-factory/src/main/java/com/iluwatar/abstractfactory/ElfKing.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,17 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.abstractfactory;
 
 /**
- * Application test
+ * ElfKing.
  */
-class AppTest {
+public class ElfKing implements King {
 
-  @Test
-  void main() {
-    App.main();
+  static final String DESCRIPTION = "This is the Elven king!";
+
+  @Override
+  public String getDescription() {
+    return DESCRIPTION;
   }
-
 }

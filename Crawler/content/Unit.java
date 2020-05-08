@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/extension-objects/src/main/java/units/Unit.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,31 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package units;
 
-import org.junit.jupiter.api.Test;
+import abstractextensions.UnitExtension;
 
 /**
- * Application test
+ * Class defining Unit, other units will extend this class.
  */
-class AppTest {
+public class Unit {
 
-  @Test
-  void main() {
-    App.main();
+  private String name;
+  protected UnitExtension unitExtension = null;
+
+  public Unit(String name) {
+    this.name = name;
   }
 
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public UnitExtension getUnitExtension(String extensionName) {
+    return null;
+  }
 }

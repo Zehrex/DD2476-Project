@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/adapter/src/main/java/com/iluwatar/adapter/FishingBoat.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,22 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.adapter;
 
-import org.junit.jupiter.api.Test;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import org.slf4j.Logger;
 
 /**
- * Application test
+ * Device class (adaptee in the pattern). We want to reuse this class. Fishing boat moves by
+ * sailing.
  */
-class AppTest {
+final class FishingBoat {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = getLogger(FishingBoat.class);
+
+  void sail() {
+    LOGGER.info("The fishing boat is sailing");
   }
 
 }

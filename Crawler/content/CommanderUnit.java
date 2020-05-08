@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/extension-objects/src/main/java/units/CommanderUnit.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,28 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package units;
 
-import org.junit.jupiter.api.Test;
+import abstractextensions.UnitExtension;
+import concreteextensions.Commander;
+import java.util.Optional;
 
 /**
- * Application test
+ * Class defining CommanderUnit.
  */
-class AppTest {
+public class CommanderUnit extends Unit {
 
-  @Test
-  void main() {
-    App.main();
+  public CommanderUnit(String name) {
+    super(name);
   }
 
+  @Override
+  public UnitExtension getUnitExtension(String extensionName) {
+
+    if (extensionName.equals("CommanderExtension")) {
+      return Optional.ofNullable(unitExtension).orElseGet(() -> new Commander(this));
+    }
+
+    return super.getUnitExtension(extensionName);
+  }
 }

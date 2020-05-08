@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/adapter/src/main/java/com/iluwatar/adapter/FishingBoatAdapter.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,21 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.adapter;
 
 /**
- * Application test
+ * Adapter class. Adapts the interface of the device ({@link FishingBoat}) into {@link RowingBoat}
+ * interface expected by the client ({@link Captain}).
  */
-class AppTest {
+public class FishingBoatAdapter implements RowingBoat {
 
-  @Test
-  void main() {
-    App.main();
+  private FishingBoat boat;
+
+  public FishingBoatAdapter() {
+    boat = new FishingBoat();
   }
 
+  public final void row() {
+    boat.sail();
+  }
 }

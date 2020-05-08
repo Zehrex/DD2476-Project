@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/test/java/com/iluwatar/acyclicvisitor/ConfigureForUnixVisitorTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,39 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.acyclicvisitor;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
+import static uk.org.lidalia.slf4jext.Level.INFO;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import uk.org.lidalia.slf4jtest.TestLogger;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
+
 /**
- * Application test
+ * ConfigureForUnixVisitor test class
  */
-class AppTest {
-
-  @Test
-  void main() {
-    App.main();
+public class ConfigureForUnixVisitorTest {
+  
+  private static final TestLogger LOGGER = TestLoggerFactory.getTestLogger(ConfigureForUnixVisitor.class);
+  
+  @AfterEach
+  public void clearLoggers() {
+    TestLoggerFactory.clear();
   }
-
+  
+  @Test
+  public void testVisitForZoom() {
+    var conUnix = new ConfigureForUnixVisitor();
+    var zoom = new Zoom();
+    
+    conUnix.visit(zoom);
+    
+    assertThat(LOGGER.getLoggingEvents())
+        .extracting("level", "message")
+        .contains(tuple(INFO, zoom + " used with Unix configurator."));
+  }
 }

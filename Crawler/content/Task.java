@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/leader-followers/src/main/java/com.iluwatar.leaderfollowers/Task.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,31 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.leaderfollowers;
 
 /**
- * Application test
+ * A unit of work to be processed by the Workers.
  */
-class AppTest {
+public class Task {
 
-  @Test
-  void main() {
-    App.main();
+  private final int time;
+
+  private boolean finished;
+
+  public Task(int time) {
+    this.time = time;
+  }
+
+  public int getTime() {
+    return time;
+  }
+
+  public void setFinished() {
+    this.finished = true;
+  }
+
+  public boolean isFinished() {
+    return this.finished;
   }
 
 }

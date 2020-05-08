@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/main/java/com/iluwatar/balking/DelayProvider.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -24,16 +24,11 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
 
 package com.iluwatar.balking;
 
-import org.junit.jupiter.api.Test;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Application test
+ * An interface to simulate delay while executing some work.
  */
-class AppTest {
-
-  @Test
-  void main() {
-    App.main();
-  }
-
+public interface DelayProvider {
+  void executeAfterDelay(long interval, TimeUnit timeUnit, Runnable task);
 }

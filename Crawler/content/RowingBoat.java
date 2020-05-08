@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/adapter/src/main/java/com/iluwatar/adapter/RowingBoat.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,13 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
-
-import org.junit.jupiter.api.Test;
+package com.iluwatar.adapter;
 
 /**
- * Application test
+ * The interface expected by the client.<br> A rowing boat is rowed to move.
  */
-class AppTest {
+public interface RowingBoat {
 
-  @Test
-  void main() {
-    App.main();
-  }
+  void row();
 
 }

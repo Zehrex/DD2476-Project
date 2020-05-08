@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/extension-objects/src/test/java/concreteextensions/SergeantTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,19 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package concreteextensions;
 
 import org.junit.jupiter.api.Test;
+import units.SergeantUnit;
 
 /**
- * Application test
+ * Created by Srdjan on 03-May-17.
  */
-class AppTest {
-
+public class SergeantTest {
   @Test
-  void main() {
-    App.main();
+  public void sergeantReady() {
+    final var sergeant = new Sergeant(new SergeantUnit("SergeantUnitTest"));
+    sergeant.sergeantReady();
   }
 
 }

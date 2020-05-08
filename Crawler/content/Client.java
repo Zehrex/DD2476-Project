@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/ambassador/src/main/java/com/iluwatar/ambassador/Client.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,22 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.ambassador;
 
-import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Application test
+ * A simple Client.
  */
-class AppTest {
+public class Client {
 
-  @Test
-  void main() {
-    App.main();
+  private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
+  private final ServiceAmbassador serviceAmbassador = new ServiceAmbassador();
+
+  long useService(int value) {
+    var result = serviceAmbassador.doRemoteFunction(value);
+    LOGGER.info("Service result: " + result);
+    return result;
   }
-
 }

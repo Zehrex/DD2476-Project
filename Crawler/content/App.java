@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/marker/src/main/java/App.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/main/java/com/iluwatar/balking/App.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,47 +22,47 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/marker/sr
  * THE SOFTWARE.
  */
 
+package com.iluwatar.balking;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by Alexis on 28-Apr-17. With Marker interface idea is to make empty interface and extend
- * it. Basically it is just to identify the special objects from normal objects. Like in case of
- * serialization , objects that need to be serialized must implement serializable interface (it is
- * empty interface) and down the line writeObject() method must be checking if it is a instance of
- * serializable or not.
+ * In Balking Design Pattern if an object’s method is invoked when it is in an inappropriate state,
+ * then the method will return without doing anything. Objects that use this pattern are generally
+ * only in a state that is prone to balking temporarily but for an unknown amount of time
  *
- * <p>Marker interface vs annotation Marker interfaces and marker annotations both have their uses,
- * neither of them is obsolete or always better then the other one. If you want to define a type
- * that does not have any new methods associated with it, a marker interface is the way to go. If
- * you want to mark program elements other than classes and interfaces, to allow for the possibility
- * of adding more information to the marker in the future, or to fit the marker into a framework
- * that already makes heavy use of annotation types, then a marker annotation is the correct choice
+ * <p>In this example implementation WashingMachine is an object that has two states in which it
+ * can be: ENABLED and WASHING. If the machine is ENABLED the state is changed into WASHING that any
+ * other thread can't invoke this action on this and then do the job. On the other hand if it have
+ * been already washing and any other thread execute wash() it can't do that once again and returns
+ * doing nothing.
  */
+
 public class App {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
+
   /**
-   * Program entry point.
+   * Entry Point.
    *
-   * @param args command line args
+   * @param args the command line arguments - not used
    */
-  public static void main(String[] args) {
-
-    final Logger logger = LoggerFactory.getLogger(App.class);
-    Guard guard = new Guard();
-    Thief thief = new Thief();
-
-    if (guard instanceof Permission) {
-      guard.enter();
-    } else {
-      logger.info("You have no permission to enter, please leave this area");
+  public static void main(String... args) {
+    final var washingMachine = new WashingMachine();
+    var executorService = Executors.newFixedThreadPool(3);
+    for (int i = 0; i < 3; i++) {
+      executorService.execute(washingMachine::wash);
     }
-
-    if (thief instanceof Permission) {
-      thief.steal();
-    } else {
-      thief.doNothing();
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException ie) {
+      LOGGER.error("ERROR: Waiting on executor service shutdown!");
     }
   }
-}
 
+}

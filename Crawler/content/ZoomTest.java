@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/acyclic-visitor/src/test/java/com/iluwatar/acyclicvisitor/ZoomTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,35 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.acyclicvisitor;
+
+
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.Test;
 
 /**
- * Application test
+ * Zoom test class
  */
-class AppTest {
-
+public class ZoomTest {
+  
   @Test
-  void main() {
-    App.main();
+  public void testAcceptForDos() {  
+    var zoom = new Zoom();
+    var mockVisitor = mock(ConfigureForDosVisitor.class);
+    
+    zoom.accept(mockVisitor);
+    verify((ZoomVisitor)mockVisitor).visit(eq(zoom));
   }
-
+  
+  @Test
+  public void testAcceptForUnix() {
+    var zoom = new Zoom();
+    var mockVisitor = mock(ConfigureForUnixVisitor.class);
+    
+    zoom.accept(mockVisitor);
+    verify((ZoomVisitor)mockVisitor).visit(eq(zoom));
+  }
 }

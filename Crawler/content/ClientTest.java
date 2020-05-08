@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/ambassador/src/test/java/com/iluwatar/ambassador/ClientTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,18 +22,22 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/s
  * THE SOFTWARE.
  */
 
-package com.iluwatar.balking;
+package com.iluwatar.ambassador;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
- * Application test
+ * Test for {@link Client}
  */
-class AppTest {
+class ClientTest {
 
   @Test
-  void main() {
-    App.main();
-  }
+  void test() {
+    Client client = new Client();
+    var result = client.useService(10);
 
+    assertTrue(result == 100 || result == RemoteService.FAILURE);
+  }
 }
