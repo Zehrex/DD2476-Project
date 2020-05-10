@@ -1,4 +1,4 @@
-https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/marker/src/test/java/AppTest.java
+https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/balking/src/test/java/com/iluwatar/balking/AppTest.java
 /*
  * The MIT License
  * Copyright © 2014-2019 Ilkka Seppälä
@@ -22,16 +22,18 @@ https://raw.githubusercontent.com/iluwatar/java-design-patterns/master/marker/sr
  * THE SOFTWARE.
  */
 
+package com.iluwatar.balking;
+
 import org.junit.jupiter.api.Test;
 
 /**
  * Application test
  */
-public class AppTest {
+class AppTest {
 
   @Test
-  public void test() {
-    String[] args = {};
-    App.main(args);
+  void main() {
+    App.main();
   }
+
 }
