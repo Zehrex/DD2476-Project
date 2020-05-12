@@ -27,7 +27,7 @@ class Indexer:
                         res = res[:-1] + '>'
                 return res
             else:
-                return None
+                return "void"
 
         def get_params_type(params):
             res = []
@@ -48,6 +48,39 @@ class Indexer:
                         res.append(param_type)
             return res
 
+        def get_code_snippet (lines, index):
+            openingBrackets = 0;
+            closingBrackets = 0;
+            # Number of characters we show in a snippet
+            snippet_limit = 120;
+
+            # Resulting snippet
+            snippet = ""
+
+            # loop until we find the final closing bracket, or go over the limit
+            while index < len(lines):
+                line = lines[index]
+                for letter in line:
+                    if letter == '}':
+                        closingBrackets += 1
+                    elif letter == '{':
+                        openingBrackets += 1
+
+                    # Ignore tabs and newlines
+                    if letter != '\t' && letter != '\n':
+                        snippet += letter
+
+                    # Early break if we reach char limit
+                    if len(snippet) > snippet_limit:
+                        return snippet + "..."
+                    # Early end if we have reached last bracket
+                    elif closingBrackets == openingBrackets and openingBrackets != 0:
+                        return snippet
+
+                index += 1
+
+            return snippet
+
         idx = 1
         for filename in os.listdir(self.dir):
             print('file #' + str(idx) + '\n')
@@ -58,6 +91,7 @@ class Indexer:
                 url = file.readline()[:-1]  # .decode('utf-8')
                 metadata = {'url': url, 'stars': stars}
                 code = file.read()
+                lines = code.split("\n")
                 try:
                     tree = javalang.parse.parse(code)
                 except javalang.parser.JavaSyntaxError:
@@ -79,11 +113,12 @@ class Indexer:
                                 'throws': child.throws,
                                 'modifiers': list(child.modifiers),
                                 'return_type': get_return_type(child),
+                                'snippet': get_code_snippet (lines, child.position[0] - 1)
                             })
                             self.index[-1].update(metadata)
                             self.count += 1
 
-        with open('index', 'w') as json_file:
+        with open('index.json', 'w') as json_file:
             json.dump(self.index, json_file)
 
 

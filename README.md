@@ -69,6 +69,18 @@ cd app-search
 bin/app-search
 ```
 
+If you get the error:
+```
+Error: The application is in read-only mode, but it looks like we need to perform some installation/upgrade steps.
+
+If you want to perform the migration, please remove the read-only flag and start the application again.
+
+If you did not set the application to read-only mode, your Elasticsearch cluster may be unhealthy.
+```
+
+It was because I did not have enough free space on my computer, so Elasticsearch could not index properly
+
+
 Then open up http://localhost:3002/
 You should have access to the app-search console
 
