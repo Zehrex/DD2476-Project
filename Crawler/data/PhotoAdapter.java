@@ -1,103 +1,68 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/custom-ui/src/org/brickred/customadapter/PhotoAdapter.java
-/*
- ===========================================================================
- Copyright (c) 2012 Three Pillar Global Inc. http://threepillarglobal.com
+1
+https://raw.githubusercontent.com/niufuwei/block_chian/master/Stock/app/src/main/java/com/hjq/demo/ui/adapter/PhotoAdapter.java
+package com.hjq.demo.ui.adapter;
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sub-license, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+import android.content.Context;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ===========================================================================
- */
-
-package org.brickred.customadapter;
+import com.hjq.demo.R;
+import com.hjq.demo.common.MyAdapter;
+import com.hjq.demo.http.glide.GlideApp;
 
 import java.util.List;
 
-import org.brickred.customui.R;
-import org.brickred.socialauth.Photo;
-
-import android.content.Context;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
+import butterknife.BindView;
 
 /**
- * 
- * Adapter for loading Photos of particular Album
- * 
- * @author vineet.aggarwal@3pillarglobal.com
- * 
+ *    author : Android 轮子哥
+ *    github : https://github.com/getActivity/AndroidProject
+ *    time   : 2019/07/24
+ *    desc   : 图片选择适配器
  */
+public final class PhotoAdapter extends MyAdapter<String> {
 
-public class PhotoAdapter extends ArrayAdapter<Photo> {
+    private final List<String> mSelectPhoto;
 
-	// SocialAuth Components
-	List<Photo> photos;
+    public PhotoAdapter(Context context, List<String> data) {
+        super(context);
+        mSelectPhoto = data;
+    }
 
-	// Android Components
-	LayoutInflater mInflater;
-	Context context;
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ViewHolder();
+    }
 
-	// Other Components
-	PhotoHolder photoHolder;
-	ImageLoader imageLoader;
+    final class ViewHolder extends MyAdapter.ViewHolder {
 
-	public PhotoAdapter(Context context, int textViewResourceId, List<Photo> photos) {
-		super(context, textViewResourceId);
-		this.photos = photos;
-		this.context = context;
-		mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		imageLoader = new ImageLoader(context);
-	}
+        @BindView(R.id.iv_photo_image)
+        ImageView mImageView;
+        @BindView(R.id.iv_photo_check)
+        CheckBox mCheckBox;
 
-	@Override
-	public int getCount() {
-		return photos.size();
-	}
+        ViewHolder() {
+            super(R.layout.item_photo);
+        }
 
-	@Override
-	public View getView(int position, View row, ViewGroup parent) {
+        @Override
+        public void onBindView(int position) {
+            GlideApp.with(getContext())
+                    .load(getItem(position))
+                    .into(mImageView);
 
-		final Photo bean = photos.get(position);
+            mCheckBox.setChecked(mSelectPhoto.contains(getItem(position)));
+        }
+    }
 
-		if (row == null) {
-			row = mInflater.inflate(R.layout.photoitem, null);
-
-			photoHolder = new PhotoHolder();
-
-			photoHolder.photoThumbnail = (ImageView) row.findViewById(R.id.photoThumbnail);
-			row.setTag(photoHolder);
-		} else {
-			photoHolder = (PhotoHolder) row.getTag();
-		}
-
-		if (bean.getTitle() != null)
-			Log.d("LifeView", "Photo Title = " + bean.getTitle());
-
-		imageLoader.DisplayImage(bean.getSmallImage(), photoHolder.photoThumbnail);
-
-		return row;
-	}
-
-	static class PhotoHolder {
-		ImageView photoThumbnail;
-	}
+    @Override
+    protected RecyclerView.LayoutManager generateDefaultLayoutManager(Context context) {
+        return new GridLayoutManager(context, 3);
+    }
 }

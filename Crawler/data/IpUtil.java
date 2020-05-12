@@ -1,0 +1,33 @@
+1
+https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/util/IpUtil.java
+package cn.tsxygfy.beyond.util;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+/**
+ * <p>
+ * Description:
+ * </p>
+ *
+ * @author ruby woo
+ * @version v1.0.0
+ * @see cn.tsxygfy.beyond.util
+ * @since 2020-02-21 15:15:36
+ */
+public class IpUtil {
+
+    private IpUtil() {
+    }
+
+    public static String getMachineIp() {
+        InetAddress machineAddress;
+        try {
+            machineAddress = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            machineAddress = InetAddress.getLoopbackAddress();
+        }
+        return machineAddress.getHostAddress();
+    }
+
+}

@@ -1,53 +1,191 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/Android-Universal-Image-Loader-master/sample/src/com/imageloader/example/universalimageloader/BaseActivity.java
-/*******************************************************************************
- * Copyright 2011-2013 Sergey Tarasevich
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *******************************************************************************/
-package com.imageloader.example.universalimageloader;
+1
+https://raw.githubusercontent.com/niufuwei/block_chian/master/Stock/base/src/main/java/com/hjq/base/BaseActivity.java
+package com.hjq.base;
 
 import android.app.Activity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 
-import com.nostra13.example.universalimageloader.R;
-import com.nostra13.universalimageloader.core.ImageLoader;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.hjq.base.action.BundleAction;
+import com.hjq.base.action.ClickAction;
+import com.hjq.base.action.HandlerAction;
+
+import java.util.Random;
 
 /**
- * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
+ *    author : Android 轮子哥
+ *    github : https://github.com/getActivity/AndroidProject
+ *    time   : 2018/10/18
+ *    desc   : Activity 基类
  */
-public abstract class BaseActivity extends Activity {
+public abstract class BaseActivity extends AppCompatActivity
+        implements HandlerAction, ClickAction, BundleAction {
 
-	protected ImageLoader imageLoader = ImageLoader.getInstance();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initActivity();
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main_menu, menu);
-		return true;
-	}
+    protected void initActivity() {
+        initLayout();
+        initView();
+        initData();
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.item_clear_memory_cache:
-				imageLoader.clearMemoryCache();
-				return true;
-			case R.id.item_clear_disc_cache:
-				imageLoader.clearDiscCache();
-				return true;
-			default:
-				return false;
-		}
-	}
+    /**
+     * 获取布局 ID
+     */
+    protected abstract int getLayoutId();
+
+    /**
+     * 初始化控件
+     */
+    protected abstract void initView();
+
+    /**
+     * 初始化数据
+     */
+    protected abstract void initData();
+
+    /**
+     * 初始化布局
+     */
+    protected void initLayout() {
+        if (getLayoutId() > 0) {
+            setContentView(getLayoutId());
+            initSoftKeyboard();
+        }
+    }
+
+    /**
+     * 初始化软键盘
+     */
+    protected void initSoftKeyboard() {
+        // 点击外部隐藏软键盘，提升用户体验
+        getContentView().setOnClickListener(v -> hideSoftKeyboard());
+    }
+
+    @Override
+    protected void onDestroy() {
+        removeCallbacks();
+        super.onDestroy();
+    }
+
+    @Override
+    public void finish() {
+        hideSoftKeyboard();
+        super.finish();
+    }
+
+    /**
+     * 如果当前的 Activity（singleTop 启动模式） 被复用时会回调
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // 设置为当前的 Intent，避免 Activity 被杀死后重启 Intent 还是最原先的那个
+        setIntent(intent);
+    }
+
+    @Override
+    public Bundle getBundle() {
+        return getIntent().getExtras();
+    }
+
+    /**
+     * 获取当前 Activity 对象
+     */
+    protected BaseActivity getActivity() {
+        return this;
+    }
+
+    /**
+     * 和 setContentView 对应的方法
+     */
+    public ViewGroup getContentView() {
+        return findViewById(Window.ID_ANDROID_CONTENT);
+    }
+
+    /**
+     * startActivity 方法简化
+     */
+    public void startActivity(Class<? extends Activity> clazz) {
+        startActivity(new Intent(this, clazz));
+    }
+
+    /**
+     * startActivityForResult 方法优化
+     */
+
+    private OnActivityCallback mActivityCallback;
+    private int mActivityRequestCode;
+
+    public void startActivityForResult(Class<? extends Activity> clazz, OnActivityCallback callback) {
+        startActivityForResult(new Intent(this, clazz), null, callback);
+    }
+
+    public void startActivityForResult(Intent intent, OnActivityCallback callback) {
+        startActivityForResult(intent, null, callback);
+    }
+
+    public void startActivityForResult(Intent intent, @Nullable Bundle options, OnActivityCallback callback) {
+        // 回调还没有结束，所以不能再次调用此方法，这个方法只适合一对一回调，其他需求请使用原生的方法实现
+        if (mActivityCallback == null) {
+            mActivityCallback = callback;
+            // 随机生成请求码，这个请求码必须在 2 的 16 次幂以内，也就是 0 - 65535
+            mActivityRequestCode = new Random().nextInt((int) Math.pow(2, 16));
+            startActivityForResult(intent, mActivityRequestCode, options);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (mActivityCallback != null && mActivityRequestCode == requestCode) {
+            mActivityCallback.onActivityResult(resultCode, data);
+            mActivityCallback = null;
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode, @Nullable Bundle options) {
+        hideSoftKeyboard();
+        // 查看源码得知 startActivity 最终也会调用 startActivityForResult
+        super.startActivityForResult(intent, requestCode, options);
+    }
+
+    /**
+     * 隐藏软键盘
+     */
+    private void hideSoftKeyboard() {
+        // 隐藏软键盘，避免软键盘引发的内存泄露
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (manager != null) {
+                manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
+    }
+
+    public interface OnActivityCallback {
+
+        /**
+         * 结果回调
+         *
+         * @param resultCode        结果码
+         * @param data              数据
+         */
+        void onActivityResult(int resultCode, @Nullable Intent data);
+    }
 }

@@ -1,0 +1,36 @@
+23
+https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/executor/engine/datax/datax-mysqlreader/src/main/java/com/alibaba/datax/plugin/reader/mysqlreader/MysqlReaderErrorCode.java
+package com.alibaba.datax.plugin.reader.mysqlreader;
+
+import com.alibaba.datax.common.spi.ErrorCode;
+
+import java.sql.Driver;
+
+public enum MysqlReaderErrorCode implements ErrorCode {
+    ;
+
+    private final String code;
+    private final String description;
+
+    private MysqlReaderErrorCode(String code, String description) {
+        this.code = code;
+        this.description = description;
+    }
+
+    @Override
+    public String getCode() {
+        return this.code;
+    }
+
+    @Override
+    public String getDescription() {
+        return this.description;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Code:[%s], Description:[%s]. ", this.code,
+                this.description);
+    }
+
+}

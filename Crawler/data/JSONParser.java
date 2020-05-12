@@ -1,76 +1,179 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/jasonparsedemo/src/com/example/jasonparsedemo/JSONParser.java
-package com.example.jasonparsedemo;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
- 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONException;
-import org.json.JSONObject;
- 
-import android.util.Log;
- 
+2
+https://raw.githubusercontent.com/Virjid/Kartingjson/master/src/main/java/me/virjid/karting/json/parser/JSONParser.java
+package me.virjid.karting.json.parser;
+
+import me.virjid.karting.json.exception.JSONParseException;
+import me.virjid.karting.json.model.JSONArray;
+import me.virjid.karting.json.model.JSONObject;
+import org.jetbrains.annotations.NotNull;
+
+import static me.virjid.karting.json.parser.TokenType.*;
+
+/**
+ * @author Virjid
+ */
 public class JSONParser {
- 
-    static InputStream is = null;
-    static JSONObject jObj = null;
-    static String json = "";
- 
-    // constructor
-    public JSONParser() {
- 
-    }
- 
-    public JSONObject getJSONFromUrl(String url) {
- 
-        // Making HTTP request
-        try {
-            // defaultHttpClient
-            DefaultHttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(url);
- 
-            HttpResponse httpResponse = httpClient.execute(httpPost);
-            HttpEntity httpEntity = httpResponse.getEntity();
-            is = httpEntity.getContent();          
- 
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    @NotNull
+    public JSONObject parseJSONObject(@NotNull TokenList tokens) {
+        if (tokens.next().type() != BEGIN_OBJECT) {
+            throw new JSONParseException("Parse error, invalid Token.");
         }
-         
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    is, "iso-8859-1"), 8);
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
+
+        JSONObject JSONObject = new JSONObject();
+        int expectToken = TokenType.calcCode(STRING, END_OBJECT);
+        String key = null;
+        Object value;
+        while (tokens.hasMore()) {
+            Token token = tokens.next();
+            TokenType tokenType = token.type();
+            String tokenValue = token.value();
+            switch (tokenType) {
+                case BEGIN_OBJECT:
+                    checkExpectToken(tokenType, expectToken);
+                    tokens.back();
+                    JSONObject.put(key, parseJSONObject(tokens));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case END_OBJECT:
+                case END_DOCUMENT:
+                    checkExpectToken(tokenType, expectToken);
+                    return JSONObject;
+                case BEGIN_ARRAY:
+                    checkExpectToken(tokenType, expectToken);
+                    tokens.back();
+                    JSONObject.put(key, parseJSONArray(tokens));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case NULL:
+                    checkExpectToken(tokenType, expectToken);
+                    JSONObject.put(key, null);
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case NUMBER:
+                    checkExpectToken(tokenType, expectToken);
+                    if (tokenValue.contains(".") || tokenValue.contains("e") || tokenValue.contains("E")) {
+                        JSONObject.put(key, Double.valueOf(tokenValue));
+                    } else {
+                        long num = Long.parseLong(tokenValue);
+                        if (num > Integer.MAX_VALUE || num < Integer.MIN_VALUE) {
+                            JSONObject.put(key, num);
+                        } else {
+                            JSONObject.put(key, (int) num);
+                        }
+                    }
+                    expectToken =TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case BOOLEAN:
+                    checkExpectToken(tokenType, expectToken);
+                    JSONObject.put(key, Boolean.valueOf(token.value()));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    break;
+                case STRING:
+                    checkExpectToken(tokenType, expectToken);
+                    Token preToken = tokens.peekPrevious();
+
+                    if (preToken.type() == SEP_COLON) {
+                        value = token.value();
+                        JSONObject.put(key, value);
+                        expectToken = TokenType.calcCode(SEP_COMMA, END_OBJECT);
+                    } else {
+                        key = token.value();
+                        expectToken = TokenType.calcCode(SEP_COLON);
+                    }
+                    break;
+                case SEP_COLON:
+                    checkExpectToken(tokenType, expectToken);
+                    expectToken = TokenType.calcCode(NULL, NUMBER, BOOLEAN,
+                            STRING, BEGIN_OBJECT, BEGIN_ARRAY);
+                    break;
+                case SEP_COMMA:
+                    checkExpectToken(tokenType, expectToken);
+                    expectToken = TokenType.calcCode(STRING);
+                    break;
+                default:
+                    throw new JSONParseException("Unexpected Token.");
             }
-            is.close();
-            json = sb.toString();
-        } catch (Exception e) {
-            Log.e("Buffer Error", "Error converting result " + e.toString());
         }
- 
-        // try parse the string to a JSON object
-        try {
-            jObj = new JSONObject(json);
-        } catch (JSONException e) {
-            Log.e("JSON Parser", "Error parsing data " + e.toString());
+
+        throw new JSONParseException("Parse error, invalid Token.");
+    }
+
+    @NotNull
+    public JSONArray parseJSONArray(@NotNull TokenList tokens) {
+        if (tokens.next().type() != BEGIN_ARRAY) {
+            throw new JSONParseException("Parse error, invalid Token.");
         }
- 
-        // return JSON String
-        return jObj;
- 
+
+        int expectToken = TokenType.calcCode(BEGIN_ARRAY, END_ARRAY, BEGIN_OBJECT,
+                NULL, NUMBER, BOOLEAN, STRING);
+        JSONArray array = new JSONArray();
+        while (tokens.hasMore()) {
+            Token token = tokens.next();
+            TokenType tokenType = token.type();
+            String tokenValue   = token.value();
+            switch (tokenType) {
+                case BEGIN_OBJECT:
+                    checkExpectToken(tokenType, expectToken);
+                    tokens.back();
+                    array.add(parseJSONObject(tokens));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
+                    break;
+                case BEGIN_ARRAY:
+                    checkExpectToken(tokenType, expectToken);
+                    tokens.back();
+                    array.add(parseJSONArray(tokens));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
+                    break;
+                case END_ARRAY:
+                case END_DOCUMENT:
+                    checkExpectToken(tokenType, expectToken);
+                    return array;
+                case NULL:
+                    checkExpectToken(tokenType, expectToken);
+                    array.add(null);
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
+                    break;
+                case NUMBER:
+                    checkExpectToken(tokenType, expectToken);
+                    if (tokenValue.contains(".") || tokenValue.contains("e") || tokenValue.contains("E")) {
+                        array.add(Double.valueOf(tokenValue));
+                    } else {
+                        long num = Long.parseLong(tokenValue);
+                        if (num > Integer.MAX_VALUE || num < Integer.MIN_VALUE) {
+                            array.add(num);
+                        } else {
+                            array.add((int) num);
+                        }
+                    }
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
+                    break;
+                case BOOLEAN:
+                    checkExpectToken(tokenType, expectToken);
+                    array.add(Boolean.valueOf(tokenValue));
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
+                    break;
+                case STRING:
+                    checkExpectToken(tokenType, expectToken);
+                    array.add(tokenValue);
+                    expectToken = TokenType.calcCode(SEP_COMMA, END_ARRAY);
+                    break;
+                case SEP_COMMA:
+                    checkExpectToken(tokenType, expectToken);
+                    expectToken = TokenType.calcCode(STRING, NULL, NUMBER, BOOLEAN,
+                            BEGIN_ARRAY, BEGIN_OBJECT);
+                    break;
+                default:
+                    throw new JSONParseException("Unexpected Token.");
+            }
+        }
+
+        throw new JSONParseException("Parse error, invalid Token.");
+    }
+
+    private void checkExpectToken(@NotNull TokenType type, int expectToken) {
+        if ((type.code & expectToken) == 0) {
+            throw new JSONParseException("Parse error, invalid Token.");
+        }
     }
 }

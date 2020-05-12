@@ -1,83 +1,165 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/gsondemo/src/com/example/gsondemo/dbhelper.java
-package com.example.gsondemo;
-
+1
+https://raw.githubusercontent.com/zhackerx/upi_payment/master/app/src/main/java/com/millionq/upi_payment/DBHelper.java
+package com.millionq.upi_payment;
 import java.util.ArrayList;
-import java.util.List;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteDatabase;
 
-public class dbhelper extends SQLiteOpenHelper {
-	
-	 SQLiteDatabase db;
-	 
-    Context helperContext;
-	public dbhelper(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		 helperContext = context;
-		// TODO Auto-generated constructor stub
-	}
-	
-	// All Static variables
-    // Database Version
-    private static final int DATABASE_VERSION = 1;
- 
-    // Name
-    private static final String DATABASE_NAME = "dbname";
- 
-    // table name
-    private static final String TABLE_NAME = "groupdb";
-    
- // Table Columns names
-    private static final String KEY_GROUP = "grp";
-    
-	
+public class DBHelper extends SQLiteOpenHelper {
 
-	@Override
-	public void onCreate(SQLiteDatabase arg0) {
-		// TODO Auto-generated method stub
-		String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
-                + KEY_GROUP + " TEXT,"
-                 + ")";
-        arg0.execSQL(CREATE_TABLE);
-	}
+    public static final String DATABASE_NAME = "MyDatabase.db";
+    public static final String TRANS_TABLE_NAME = "transact";
+    public static final String TRANS_COLUMN_SENDER = "sender";
+    public static final String TRANS_COLUMN_RECEIVER = "receiver";
+    public static final String TRANS_COLUMN_AMOUNT = "amount";
 
-	@Override
-	public void onUpgrade(SQLiteDatabase arg0, int arg1, int arg2) {
-		// TODO Auto-generated method stub
-		 arg0.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-		 
-	        // Create tables again
-	        onCreate(arg0);
-	}
-	
-	
-	 // Getting All 
-	 public List<groupdb> getallgroup() 
-	 {
-	    List<groupdb> gList = new ArrayList<groupdb>();
-	    // Select All Query
-	    String selectQuery = "SELECT  * FROM " + TABLE_NAME;
-	 
-	    SQLiteDatabase db = this.getWritableDatabase();
-	    Cursor cursor = db.rawQuery(selectQuery, null);
-	 
-	    // looping through all rows and adding to list
-	    if (cursor.moveToFirst()) {
-	        do {
-	        	groupdb gc = new groupdb();
-	            gc.setgname(cursor.getString(0));
-	            // Adding contact to list
-	            gList.add(gc);
-	        } while (cursor.moveToNext());
-	    }
-	 
-	    // return contact list
-	    return gList;
-	}
+    public static final String WALLET_TABLE_NAME = "wallet";
+    public static final String WALLET_COLUMN_NUMBER = "number";
+    public static final String WALLET_COLUMN_CASH = "cash";
+
+    public DBHelper(Context context) {
+        super(context, DATABASE_NAME , null, 1);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        // TODO Auto-generated method stub
+        db.execSQL(
+                "create table transact " +
+                        "(id integer primary key, sender text,receiver text,amount text)"
+        );
+        db.execSQL(
+                "create table wallet " +
+                        "(id integer primary key, number text,cash text)"
+        );
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // TODO Auto-generated method stub
+        db.execSQL("DROP TABLE IF EXISTS transact");
+        db.execSQL("DROP TABLE IF EXISTS wallet");
+        onCreate(db);
+    }
+
+    public boolean insertContact (String sender, String receiver, String amount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("sender", sender);
+        contentValues.put("receiver", receiver);
+        contentValues.put("amount", amount);
+        db.insert("transact", null, contentValues);
+        return true;
+    }
+
+    public boolean insertWallet (String number, String cash) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("number", number);
+        contentValues.put("cash", cash);
+        db.insert("wallet", null, contentValues);
+        return true;
+    }
+
+    public Cursor getTransData(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from transact where id="+id+"", null );
+        return res;
+    }
+
+    public Cursor getWalletData(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from wallet where id="+id+"", null );
+        return res;
+    }
+
+    public int getWalletId(String  number) throws SQLException
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        long recc=0;
+        String rec=null;
+        Cursor mCursor = db.rawQuery(
+                "SELECT id  FROM  wallet WHERE number= '"+number+"'" , null);
+        if (mCursor != null)
+        {
+            mCursor.moveToFirst();
+            recc=mCursor.getLong(0);
+            rec=String.valueOf(recc);
+        }
+        return Integer.parseInt(rec);
+    }
+
+    public boolean isPhonePresent(String phone) {
+        ArrayList arrayList = getAllWallets();
+        for(int i=0;i<arrayList.size();i+=2)
+            if(arrayList.get(i).equals(phone))
+                return true;
+
+        return false;
+    }
+
+
+    public boolean updateWallet (Integer id, String number, String cash) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("number", number);
+        contentValues.put("cash", cash);
+        db.update("wallet", contentValues, "id = ? ", new String[] { Integer.toString(id) } );
+        return true;
+    }
+
+    public Integer deleteTrans (Integer id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("transact",
+                "id = ? ",
+                new String[] { Integer.toString(id) });
+    }
+
+    public Integer deleteWallet (Integer id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("wallet",
+                "id = ? ",
+                new String[] { Integer.toString(id) });
+    }
+
+    public ArrayList<String> getAllTransactions() {
+        ArrayList<String> array_list = new ArrayList<String>();
+
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from transact", null );
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            array_list.add(res.getString(res.getColumnIndex(TRANS_COLUMN_SENDER)));
+            array_list.add(res.getString(res.getColumnIndex(TRANS_COLUMN_RECEIVER)));
+            array_list.add(res.getString(res.getColumnIndex(TRANS_COLUMN_AMOUNT)));
+            res.moveToNext();
+        }
+        return array_list;
+    }
+
+    public ArrayList<String> getAllWallets() {
+        ArrayList<String> array_list = new ArrayList<String>();
+
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from wallet", null );
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            array_list.add(res.getString(res.getColumnIndex(WALLET_COLUMN_NUMBER)));
+            array_list.add(res.getString(res.getColumnIndex(WALLET_COLUMN_CASH)));
+            res.moveToNext();
+        }
+        return array_list;
+    }
+
+
+
 
 }

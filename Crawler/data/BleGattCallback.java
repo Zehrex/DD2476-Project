@@ -1,0 +1,26 @@
+2
+https://raw.githubusercontent.com/wxw6860/BLEAPP/master/FastBleLib/src/main/java/com/clj/fastble/callback/BleGattCallback.java
+
+package com.clj.fastble.callback;
+
+import android.annotation.TargetApi;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.os.Build;
+
+import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.exception.BleException;
+
+
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+public abstract class BleGattCallback extends BluetoothGattCallback {
+
+    public abstract void onStartConnect();
+
+    public abstract void onConnectFail(BleDevice bleDevice, BleException exception);
+
+    public abstract void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status);
+
+    public abstract void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status);
+
+}

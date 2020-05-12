@@ -1,15 +1,27 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/pulltorefresh%20and%20dragndrop%20to%20gridview/library/src/com/handmark/pulltorefresh/library/internal/Utils.java
-package com.handmark.pulltorefresh.library.internal;
+1
+https://raw.githubusercontent.com/TheKodeToad/DiffUI/master/src/main/java/me/thekodetoad/diffui/utils/Utils.java
+package me.thekodetoad.diffui.utils;
 
-import android.util.Log;
+import java.io.File;
 
 public class Utils {
-
-	static final String LOG_TAG = "PullToRefresh";
-
-	public static void warnDeprecation(String depreacted, String replacement) {
-		Log.w(LOG_TAG, "You're using the deprecated " + depreacted + " attr, please switch over to " + replacement);
+	
+	public static OperatingSystem getOS() {
+		String osName = System.getProperty("os.name").toLowerCase();
+		if(osName.contains("nix") || osName.contains("nux") || osName.contains("aix") || osName.contains("sunos")) {
+			return OperatingSystem.LINUXLIKE;
+		}
+		else if(osName.contains("win")) {
+			return OperatingSystem.WINDOWS;
+		}
+		else if(osName.contains("mac")) {
+			return OperatingSystem.MAC;
+		}
+		return OperatingSystem.OTHER;
 	}
-
+	
+	public static File getHomeDirectory() {
+		return new File(System.getProperty("user.home"));
+	}
+	
 }

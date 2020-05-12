@@ -1,0 +1,36 @@
+12
+https://raw.githubusercontent.com/Col-E/SimAnalyzer/master/src/main/java/me/coley/analysis/exception/SimFailedException.java
+package me.coley.analysis.exception;
+
+import me.coley.analysis.value.SimulatedVirtualValue;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+
+/**
+ * Exception for indicating a method could not be invoked by {@link SimulatedVirtualValue}.
+ *
+ * @author Matt
+ */
+public class SimFailedException extends AnalyzerException {
+	/**
+	 * @param insn
+	 * 		Instruction that could not be simulated.
+	 * @param message
+	 * 		Additional information.
+	 * @param cause
+	 * 		Root cause.
+	 */
+	public SimFailedException(MethodInsnNode insn, String message, Throwable cause) {
+		super(insn, message, cause);
+	}
+
+	/**
+	 * @param insn
+	 * 		Instruction that could not be simulated.
+	 * @param message
+	 * 		Additional information.
+	 */
+	public SimFailedException(MethodInsnNode insn, String message) {
+		super(insn, message);
+	}
+}

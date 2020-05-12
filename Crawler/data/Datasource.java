@@ -1,78 +1,78 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/Paginated%20ListView%20Demo/src/com/danielme/blog/android/paginatedlistview/Datasource.java
+23
+https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/service/src/main/java/com/webank/wedatasphere/exchangis/datasource/domain/DataSource.java
 /*
- * Copyright (C) 2012 Daniel Medina <http://danielme.com>
- * 
- * This file is part of "Android Paginated ListView Demo".
- * 
- * "Android Paginated ListView Demo" is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3.
  *
- * "Android Paginated ListView Demo" is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  Copyright 2020 WeBank
  *
- * You should have received a copy of the GNU General Public License version 3
- * along with this program.  If not, see <http://www.gnu.org/licenses/gpl-3.0.html/>
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package com.danielme.blog.android.paginatedlistview;
+package com.webank.wedatasphere.exchangis.datasource.domain;
+
+
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Test data.
- * @author danielme.com
- *
+ * Data source configuration
+ * @author Created by devendeng on 2018/8/23.
  */
-public class Datasource
-{
-	//Singleton pattern
-	private static Datasource datasource = null;
-	
-	private List<String> data = null;
-	
-	private static final int SIZE = 74;
-	
-	public static Datasource getInstance()
-	{
-		if (datasource == null)
-		{
-			datasource = new Datasource();
-		}
-		return datasource;
-	}
-	
-	private Datasource()
-	{
-		data = new ArrayList<String>(SIZE);
-		for (int i =1 ; i <= SIZE; i++)
-		{
-			data.add("row " + i);
-		}		
-	}
-	
-	public int getSize()
-	{
-		return SIZE;
-	}
-	
-	/**
-	 * Returns the elements in a <b>NEW</b> list.
-	 */
-	public List<String> getData(int offset, int limit)
-	{
-		List<String> newList = new ArrayList<String>(limit);
-		int end = offset + limit;
-		if (end > data.size())
-		{
-			end = data.size();
-		}
-		newList.addAll(data.subList(offset, end));
-		return newList;		
-	}
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class DataSource extends DataSourceBase{
 
+    /**
+     * Model structure
+     */
+    private DataSourceModel model;
+
+    private List<String> authScopes = new ArrayList<>();
+
+    public DataSourceModel getModel() {
+        return model;
+    }
+
+    public void setModel(DataSourceModel model) {
+        this.model = model;
+    }
+
+    public List<String> getAuthScopes() {
+        return authScopes;
+    }
+
+    public void setAuthScopes(List<String> authScopes) {
+        this.authScopes = authScopes;
+    }
+
+    @Override
+    public void setModifyUser(String modifyUser) {
+        super.setModifyUser(modifyUser);
+    }
+
+    @Override
+    public void setCreateUser(String createUser) {
+        super.setCreateUser(createUser);
+    }
+
+    @Override
+    public String getModifyUser() {
+        return super.getModifyUser();
+    }
+
+    @Override
+    public String getCreateUser() {
+        return super.getCreateUser();
+    }
 }

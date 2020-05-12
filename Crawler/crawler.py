@@ -77,7 +77,7 @@ class Crawler:
               + rate_limit.search.remaining)
 
     def execute(self):
-        """Interates over the retrieved methods, filters out java files and saves them in the data folder"""
+        """Iterates over the retrieved methods, filters out java files and saves them in the data folder"""
         g = self.client
         repo_count = 1
         language = self.args['language']

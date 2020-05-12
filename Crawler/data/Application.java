@@ -1,193 +1,70 @@
-https://raw.githubusercontent.com/mojombo/eventmachine/master/java/src/com/rubyeventmachine/Application.java
-/**
- * $Id$
- * 
- * Author:: Francis Cianfrocca (gmail: blackhedd)
- * Homepage::  http://rubyeventmachine.com
- * Date:: 15 Jul 2007
- * 
- * See EventMachine and EventMachine::Connection for documentation and
- * usage examples.
- * 
- *
- *----------------------------------------------------------------------------
- *
- * Copyright (C) 2006-07 by Francis Cianfrocca. All Rights Reserved.
- * Gmail: blackhedd
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of either: 1) the GNU General Public License
- * as published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version; or 2) Ruby's License.
- * 
- * See the file COPYING for complete licensing information.
- *
- *---------------------------------------------------------------------------
- *
- * 
- */
+1
+https://raw.githubusercontent.com/falvojr/stackoverflow-61560293/master/src/main/java/com/falvojr/Application.java
+package com.falvojr;
 
-/**
- * 
- */
-package com.rubyeventmachine;
+import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.util.*;
-import java.io.*;
-import java.net.*;
-import java.net.SocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * @author francis
- *
- */
-public class Application {
-	
-	
-	public class Reactor extends EmReactor {
+import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
-		private Application application;
-		private TreeMap<Long, Timer> timers;
-		private TreeMap<Long, Connection> connections;
-		private TreeMap<Long, ConnectionFactory> acceptors;
-		/**
-		 * 
-		 */
-		public Reactor (Application app) {
-			application = app;
-			timers = new TreeMap<Long, Timer>();
-			connections = new TreeMap<Long, Connection>();
-			acceptors = new TreeMap<Long, ConnectionFactory>();
-		}
+import com.falvojr.domain.Log;
+import com.falvojr.domain.LogRepository;
+import com.falvojr.domain.MyClass1;
+import com.falvojr.domain.MyClass2;
+import com.mongodb.MongoClientOptions;
 
+@SpringBootApplication
+public class Application implements CommandLineRunner {
 
-		public void eventCallback (long sig, int eventType, ByteBuffer data, long data2) {
-			if (eventType == EM_TIMER_FIRED) {
-				Timer r = timers.remove(data2);
-				if (r != null)
-					r._fire();
-				else
-					throw new RuntimeException ("unable to run unknown timer");
-			}
-			else if (eventType == EM_CONNECTION_COMPLETED) {
-				Connection c = connections.get(sig);
-				if (c != null) {
-					c.connectionCompleted();
-				}
-				else
-					throw new RuntimeException ("connection completed to unknown object");
+    @Autowired
+    private LogRepository logRepository;
 
-			}
-			else if (eventType == EM_CONNECTION_UNBOUND) {
-				Connection c = connections.get(sig);
-				if (c != null) {
-					c.unbind();
-				}
-				else
-					throw new RuntimeException ("unbind received on unknown object");
-			}
-			else if (eventType == EM_CONNECTION_ACCEPTED) {
-				ConnectionFactory f = acceptors.get(sig);
-				if (f != null) {
-					Connection c = f.connection();
-					c.signature = data2;
-					c.application = application;
-					connections.put(c.signature, c);
-					c.postInit();
-					//System.out.println (sig+"..."+new String(data.array()));
-				}
-				else
-					throw new RuntimeException ("received connection on unknown acceptor");
-			}
-			else if (eventType == EM_CONNECTION_READ) {
-				Connection c = connections.get(sig);
-				if (c != null) {
-					c.receiveData(data);
-				}
-				else throw new RuntimeException ("received data on unknown object");
-			}
-			else {
-				System.out.println ("unknown event type: " + eventType);
-			}
-		}
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
+    @Bean
+    public MongoClientOptions mongoClientOption() {
+        // I am using the PojoCodec to automatic parse my domain classes:
+        final CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
+        final CodecRegistry fullCodecRegistry = fromRegistries(getDefaultCodecRegistry(), pojoCodecRegistry);
+        return MongoClientOptions.builder().codecRegistry(fullCodecRegistry).build();
+    }
 
-	Reactor reactor;
-	
-	public Application() {
-		reactor = new Reactor (this);
-	}
-	public void addTimer (double seconds, Timer t) {
-		t.application = this;
-		t.interval = seconds;
-		long s = reactor.installOneshotTimer ((int)(seconds * 1000));
-		reactor.timers.put(s, t);
-		
-	}
+    @Override
+    public void run(String... args) throws Exception {
 
-	public void bindConnect (String bindAddr, int bindPort, String host, int port, Connection c) {
-		long s = reactor.connectTcpServer(bindAddr, bindPort, host, port);
-		c.application = this;
-		c.signature = s;
-		reactor.connections.put(s, c);
-		c.postInit();
-	}
+        final String key = "response";
 
-	public void connect (String host, int port, Connection c) {
-		bindConnect(null, 0, host, port, c);
-	}
-	
-	public void startServer (SocketAddress sa, ConnectionFactory f) throws EmReactorException {
-		long s = reactor.startTcpServer(sa);
-		reactor.acceptors.put(s, f);
-	}
-	
-	public void stop() {
-		reactor.stop();
-	}
-	public void run() {
-		reactor.run();
-	}
-	public void run (final Runnable r) {
-		addTimer(0, new Timer() {
-			public void fire() {
-				r.run();
-			}
-		});
-		run();
-	}
-	
-	public void sendData (long sig, ByteBuffer bb) {
-		try {
-			reactor.sendData(sig, bb);
-		} catch (IOException e) {}
-	}
-	
-	public void sendDatagram (long sig, ByteBuffer bb, InetSocketAddress target) {
-		reactor.sendDatagram(sig, bb, target.getHostName(), target.getPort());
-	}
-	
-	public void closeConnection (long sig, boolean afterWriting) {
-		reactor.closeConnection(sig, afterWriting);
-	}
-	
-	public void openDatagramSocket (Connection c) {
-		openDatagramSocket (new InetSocketAddress ("0.0.0.0", 0), c);
-	}
-	public void openDatagramSocket (InetSocketAddress addr, Connection c) {
-		try {
-			long s = reactor.openUdpSocket(addr);
-			c.application = this;
-			c.signature = s;
-			reactor.connections.put(s, c);
-			c.postInit();
-		} catch (ClosedChannelException e) {
-		} catch (IOException e) {
-			System.out.println ("Bad Datagram socket "+e+" "+addr);
-			/* TODO, can't catch this here, because it can happen on a bad address */
-		}
-	}
+        // Simulate my dynamic of entity insertion (with several domain classes into "outbound" field):
+        final Map<String, Object> map = new HashMap<>();
+        map.put(key, new MyClass1("attr1", new MyClass2(1L)));
+        final Log log = new Log();
+        log.setOutbound(new Document(map));
+        logRepository.save(log);
+
+        // Find saved entity to try specific class conversion (MyClass1):
+        final Log logSaved = logRepository.findById(log.getId()).orElseThrow(RuntimeException::new);
+
+        try {
+            // Error occurs here, but in Spring Boot 1.X this conversion/cast works...
+            // Note: In Spring Boot 1, the "_class" field is present inside my "outbound" field.
+            final MyClass1 test = logSaved.getOutbound().get(key, MyClass1.class);
+            System.out.println(test);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

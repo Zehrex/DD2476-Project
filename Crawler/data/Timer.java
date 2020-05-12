@@ -1,143 +1,51 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/Timer/src/com/google/android/glass/sample/timer/Timer.java
-/*
- * Copyright (C) 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+12
+https://raw.githubusercontent.com/Crystallinqq/Mercury-Client/master/src/main/java/fail/mercury/client/client/modules/player/Timer.java
+package fail.mercury.client.client.modules.player;
 
-package com.google.android.glass.sample.timer;
+import fail.mercury.client.api.module.Module;
+import fail.mercury.client.api.module.annotations.ModuleManifest;
+import fail.mercury.client.api.module.category.Category;
+import fail.mercury.client.api.util.EntityUtil;
+import fail.mercury.client.client.events.UpdateEvent;
+import fail.mercury.client.api.module.Module;
+import fail.mercury.client.api.module.annotations.ModuleManifest;
+import fail.mercury.client.api.module.category.Category;
+import fail.mercury.client.api.util.EntityUtil;
+import fail.mercury.client.client.events.UpdateEvent;
+import me.kix.lotus.property.annotations.Clamp;
+import me.kix.lotus.property.annotations.Mode;
+import me.kix.lotus.property.annotations.Property;
+import net.b0at.api.event.EventHandler;
 
-import android.os.SystemClock;
+@ModuleManifest(label = "Timer", aliases = {"GameSpeed"}, category = Category.PLAYER)
+public class Timer extends Module {
 
-/**
- * Model holding the Timer state.
- */
-public class Timer {
+    @Property("Speed")
+    @Clamp(minimum = "0.1", maximum = "10")
+    private float speed = 4.0f;
 
-    /**
-     * Interface to listen for changes on the {@link Timer}.
-     */
-    public interface TimerListener {
-        /** Timer has started. */
-        public void onStart();
-        /** Timer has been paused. */
-        public void onPause();
-        /** Timer has been reset */
-        public void onReset();
+    @Property("Mode")
+    @Mode({"Normal", "Test"})
+    private String mode = "Normal";
+
+    @Override
+    public void onDisable() {
+        EntityUtil.resetTimer();
     }
 
-    private long mDurationMillis;
-    private long mStartTimeMillis;
-    private long mPauseTimeMillis;
-
-    private TimerListener mListener;
-
-    public Timer() {
-        this(0);
-    }
-
-    public Timer(long durationMillis) {
-        setDurationMillis(durationMillis);
-    }
-
-    /**
-     * Sets the timer's duration in milliseconds.
-     */
-    public void setDurationMillis(long durationMillis) {
-        mDurationMillis = durationMillis;
-        if (mListener != null) {
-            mListener.onReset();
+    @EventHandler
+    public void onUpdate(UpdateEvent event) {
+        switch (mode.toLowerCase()) {
+            case "normal":
+                EntityUtil.setTimer(speed);
+                break;
+            case "test":
+                    EntityUtil.setTimer(10f);
+                if (mc.player.ticksExisted % 10 == 0) {
+                    EntityUtil.setTimer(1f);
+                }
+                break;
         }
     }
 
-    /**
-     * Gets the timer's duration in milliseconds.
-     */
-    public long getDurationMillis() {
-        return mDurationMillis;
-    }
-
-    /**
-     * Returns whether or not the timer is running.
-     */
-    public boolean isRunning() {
-        return mStartTimeMillis > 0 && mPauseTimeMillis == 0;
-    }
-
-    /**
-     * Returns whether or not the timer has been started.
-     */
-    public boolean isStarted() {
-        return mStartTimeMillis > 0;
-    }
-
-    /**
-     * Gets the remaining time in milliseconds.
-     */
-    public long getRemainingTimeMillis() {
-        long remainingTime = mDurationMillis;
-
-        if (mPauseTimeMillis != 0) {
-            remainingTime -= mPauseTimeMillis - mStartTimeMillis;
-        } else if (mStartTimeMillis != 0) {
-            remainingTime -= SystemClock.elapsedRealtime() - mStartTimeMillis;
-        }
-
-        return remainingTime;
-    }
-
-    /**
-     * Starts the timer.
-     */
-    public void start() {
-        long elapsedTime = mPauseTimeMillis - mStartTimeMillis;
-
-        mStartTimeMillis = SystemClock.elapsedRealtime() - elapsedTime;
-        mPauseTimeMillis = 0;
-        if (mListener != null) {
-            mListener.onStart();
-        }
-    }
-
-    /**
-     * Pauses the timer.
-     */
-    public void pause() {
-        if (isStarted()) {
-            mPauseTimeMillis = SystemClock.elapsedRealtime();
-            if (mListener != null) {
-                mListener.onPause();
-            }
-        }
-    }
-
-    /**
-     * Resets the timer.
-     */
-    public void reset() {
-        mStartTimeMillis = 0;
-        mPauseTimeMillis = 0;
-        if (mListener != null) {
-            mListener.onPause();
-            mListener.onReset();
-        }
-    }
-
-    /**
-     * Sets a {@link TimerListener}.
-     */
-    public void setListener(TimerListener listener) {
-        mListener = listener;
-    }
 }

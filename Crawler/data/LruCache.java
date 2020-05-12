@@ -1,43 +1,97 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/google%20image%20loader%20api%20complete/com/google/android/imageloader/LruCache.java
-/*-
- * Copyright (C) 2010 Google Inc.
+15
+https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/main/java/org/apache/ibatis/cache/decorators/LruCache.java
+/**
+ *    Copyright ${license.git.copyrightYears} the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-
-package com.google.android.imageloader;
+package org.apache.ibatis.cache.decorators;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.ibatis.cache.Cache;
 
 /**
- * A LRU cache for holding image data or meta-data.
+ * Lru (least recently used) cache decorator.
+ *
+ * @author Clinton Begin
  */
-class LruCache<K, V> extends LinkedHashMap<K, V> {
+public class LruCache implements Cache {
 
-    private static final int INITIAL_CAPACITY = 32;
+  private final Cache delegate;
+  private Map<Object, Object> keyMap;
+  private Object eldestKey;
 
-    // Hold information for at least a few pages full of thumbnails.
-    private static final int MAX_CAPACITY = 256;
+  public LruCache(Cache delegate) {
+    this.delegate = delegate;
+    setSize(1024);
+  }
 
-    private static final float LOAD_FACTOR = 0.75f;
+  @Override
+  public String getId() {
+    return delegate.getId();
+  }
 
-    public LruCache() {
-        super(INITIAL_CAPACITY, LOAD_FACTOR, true);
+  @Override
+  public int getSize() {
+    return delegate.getSize();
+  }
+
+  public void setSize(final int size) {
+    keyMap = new LinkedHashMap<Object, Object>(size, .75F, true) {
+      private static final long serialVersionUID = 4267176411845948333L;
+
+      @Override
+      protected boolean removeEldestEntry(Map.Entry<Object, Object> eldest) {
+        boolean tooBig = size() > size;
+        if (tooBig) {
+          eldestKey = eldest.getKey();
+        }
+        return tooBig;
+      }
+    };
+  }
+
+  @Override
+  public void putObject(Object key, Object value) {
+    delegate.putObject(key, value);
+    cycleKeyList(key);
+  }
+
+  @Override
+  public Object getObject(Object key) {
+    keyMap.get(key); //touch
+    return delegate.getObject(key);
+  }
+
+  @Override
+  public Object removeObject(Object key) {
+    return delegate.removeObject(key);
+  }
+
+  @Override
+  public void clear() {
+    delegate.clear();
+    keyMap.clear();
+  }
+
+  private void cycleKeyList(Object key) {
+    keyMap.put(key, key);
+    if (eldestKey != null) {
+      delegate.removeObject(eldestKey);
+      eldestKey = null;
     }
+  }
 
-    @Override
-    protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
-        return size() > MAX_CAPACITY;
-    }
 }

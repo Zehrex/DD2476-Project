@@ -1,0 +1,92 @@
+4
+https://raw.githubusercontent.com/justneon33/Sketchcode/master/app/src/main/java/com/sketch/code/two/fragment/ProjectsFragment.java
+package com.sketch.code.two.fragment;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.sketch.code.two.R;
+import com.sketch.code.two.activity.MainActivity;
+import com.sketch.code.two.adapter.recyclerview.ProjectsListsAdapter;
+import com.sketch.code.two.api.item.Projects;
+import com.sketch.code.two.api.manager.ProjectsManager;
+import com.sketch.code.two.util.ThreadLoader;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class ProjectsFragment extends Fragment {
+
+    private View view;
+
+    public RecyclerView recyclerView;
+
+    private ProjectsManager projectsManager;
+    private ArrayList<Projects> allProjects;
+
+    public ProjectsListsAdapter adapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        view = inflater.inflate(R.layout.fragment_project_market, null);
+        findViews();
+        initLogic();
+        return view;
+    }
+
+    public void findViews () {
+        recyclerView = view.findViewById(R.id.itemLists);
+    }
+
+    public void initLogic () {
+        MainActivity.progressBar.setVisibility(View.VISIBLE);
+        MainActivity.frameLayout.setVisibility(View.GONE);
+        projectsManager = ProjectsManager.getInstance();
+        initList();
+    }
+
+    public void initList() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        projectsManager.getApi()
+                .getProjects()
+                .enqueue(new Callback<ArrayList<Projects>>() {
+                    @Override
+                    public void onResponse(Call<ArrayList<Projects>> call, Response<ArrayList<Projects>> response) {
+                        if(response.code() == 200 && response.body() != null) {
+                            allProjects = response.body();
+                            setupRecyclerView();
+                        } else initList();
+                    }
+
+                    @Override
+                    public void onFailure(Call<ArrayList<Projects>> call, Throwable t) {
+                        System.out.println(t);
+                        t.printStackTrace();
+                    }
+                });
+    }
+
+    private void setupRecyclerView () {
+        new ThreadLoader(() -> {
+            adapter = new ProjectsListsAdapter(allProjects, getActivity());
+        }, () -> {
+            recyclerView.setAdapter(adapter);
+            MainActivity.progressBar.setVisibility(View.GONE);
+            MainActivity.frameLayout.setVisibility(View.VISIBLE);
+        });
+    }
+
+}
