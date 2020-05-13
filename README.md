@@ -84,7 +84,7 @@ It was because I did not have enough free space on my computer, so Elasticsearch
 Then open up http://localhost:3002/
 You should have access to the app-search console
 
-Install react dependencies
+Install React dependencies
 ```
 npm install @elastic/react-search-ui
 npm install @elastic/search-ui-app-search-connector

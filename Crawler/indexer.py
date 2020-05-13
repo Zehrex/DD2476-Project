@@ -52,7 +52,7 @@ class Indexer:
             openingBrackets = 0;
             closingBrackets = 0;
             # Number of characters we show in a snippet
-            snippet_limit = 120;
+            snippet_limit = 250;
 
             # Resulting snippet
             snippet = ""
@@ -67,7 +67,7 @@ class Indexer:
                         openingBrackets += 1
 
                     # Ignore tabs and newlines
-                    if letter != '\t' && letter != '\n':
+                    if letter != '\t' and letter != '\n':
                         snippet += letter
 
                     # Early break if we reach char limit
@@ -82,6 +82,7 @@ class Indexer:
             return snippet
 
         idx = 1
+        numDocuments = 0
         for filename in os.listdir(self.dir):
             print('file #' + str(idx) + '\n')
             print(filename)
@@ -96,6 +97,8 @@ class Indexer:
                     tree = javalang.parse.parse(code)
                 except javalang.parser.JavaSyntaxError:
                     continue
+                except javalang.tokenizer.LexerError:
+                    continue
                 for path, node in tree.filter(javalang.tree.ClassDeclaration):
                     metadata['class'] = {
                         'name': node.name,
@@ -106,8 +109,12 @@ class Indexer:
                     }
                     for child in node.body:
                         if isinstance(child, javalang.tree.MethodDeclaration):
+                            numDocuments += 1
+                            if numDocuments % 5000 == 0:
+                                with open('index' + str(numDocuments // 5000) + '.json', 'w') as json_file:
+                                    json.dump(self.index, json_file)
+                                self.index = []
                             self.index.append({
-                                'id': self.count,
                                 'method_name': child.name,
                                 'params': get_params_type(child.parameters),
                                 'throws': child.throws,
@@ -118,7 +125,7 @@ class Indexer:
                             self.index[-1].update(metadata)
                             self.count += 1
 
-        with open('index.json', 'w') as json_file:
+        with open('index' + str(numDocuments // 5000 + 1) + '.json', 'w') as json_file:
             json.dump(self.index, json_file)
 
 

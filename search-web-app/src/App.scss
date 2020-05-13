@@ -1,9 +1,9 @@
 /* =================
   Variables
   ================= */
-$primary-color: #2A9D8F;
-$secondary-color: #FED892;
-$third-color: #264653;
+$primary-color: #0366d6;
+$secondary-color: #F1F8FF;
+$third-color: #3F3D56;
 
 /* =================
   General Styles
@@ -70,7 +70,6 @@ button.button {
 
 body, html, #root {
   height: 100%;
-  width: 100%;
 }
 
 body {
@@ -142,30 +141,69 @@ footer {
 }
 
 /* =================
-  Home Styles
-  ================= */
+  Header
+   ================= */
 
-#home {
+nav form .form-control {
+  max-width: calc(100% - 50px);
+  margin-right: 15px;
+}
+
+/* =================
+  Splash Page styles
+   ================= */
+
+#splash .row {
   align-items: center;
+  background: linear-gradient(60deg, #eee 50%, #fff 50%);
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
   display: flex;
-  height: calc(100vh - 171px);
+  height: 100%;
   justify-content: center;
-  text-align: center;
+  padding: 50px;
   width: 100%;
 
-  form {
-    display: inline-block;
-    font-size: 20px !important;
+  .splash-image {
+    height: 100%;
 
-    input {
-      border-radius: 20px;
-      -webkit-border-radius: 20px;
-      font-family: 'Unica One', serif;
-      font-size: 20px !important;
-      height: 40px;
-      max-width: 500px;
-      padding: 2px 20px;
-      text-transform: uppercase;
+    img {
+      width: 100%;
     }
   }
+
+  .splash-title {
+    height: 100%;
+    margin: 30px;
+    padding: 15px;
+  }
+}
+
+#models-splash {
+  .model-splash {
+    margin: 0 0 20px 0;
+
+    img {
+      width: 100%;
+      margin: 10px 0;
+    }
+  }
+}
+
+#splash-call-to {
+  background: $secondary-color;
+  text-align: center;
+
+  .splash-call-to-content {
+    padding: 25px 0;
+  }
+}
+
+/* =================
+  Search Page styles
+   ================= */
+.sui-search-box__submit {
+  background: $primary-color !important
 }

@@ -1,3 +1,4 @@
+10
 https://raw.githubusercontent.com/mojombo/eventmachine/master/java/src/com/rubyeventmachine/tests/TestDatagrams.java
 package com.rubyeventmachine.tests;
 
@@ -39,7 +40,7 @@ public class TestDatagrams {
 		public void postInit() {
 			this.sendDatagram(ByteBuffer.wrap(new String("ABC").getBytes()), new InetSocketAddress ("127.0.0.1", 9550));
 		}
-		
+
 	}
 	@Test
 	public final void testA() {

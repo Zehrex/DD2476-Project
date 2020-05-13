@@ -11,12 +11,12 @@ import {
   SearchBox,
   Sorting
 } from "@elastic/react-search-ui";
-import { Layout } from "@elastic/react-search-ui-views";
+import { Layout, SingleLinksFacet } from "@elastic/react-search-ui-views";
 import "@elastic/react-search-ui-views/lib/styles/styles.css";
 
 // Step #2, The connector
 const connector = new AppSearchAPIConnector({
-  searchKey: "search-xz254suxq1p6pg3gqx2zsuyg",
+  searchKey: "search-akac6xdkk733fqhwpwpn8ioo",
   engineName: "github-search",
   endpointBase: "http://localhost:3002"
 });
@@ -29,7 +29,7 @@ const configurationOptions = {
       types: {
         documents: {
           // Which fields to search for suggestions.
-          fields: ["name"]
+          fields: ["method_name"]
         }
       },
       // How many suggestions appear.
@@ -38,83 +38,85 @@ const configurationOptions = {
   },
   searchQuery: {
     search_fields: {
-      // 1. Search by name of video game.
-      name: {}
+      // 1. Search by method name and snippet
+      method_name: {},
+      snippet: {}
     },
-    // 2. Results: name of the video game, its genre, publisher, scores, and platform.
     result_fields: {
-      name: {
+      method_name: {
         // A snippet means that matching search terms will be highlighted via <em> tags.
         snippet: {
-          size: 75, // Limit the snippet to 75 characters.
+          size: 100, // Limit the snippet to 75 characters.
           fallback: true // Fallback to a "raw" result.
         }
       },
-      genre: {
+      params: {
         snippet: {
-          size: 50,
+          size: 150,
           fallback: true
         }
       },
-      publisher: {
+      throws: {
         snippet: {
-          size: 50,
+          size: 150,
           fallback: true
         }
       },
-      critic_score: {
-        // Scores are numeric, so we won't attempt to snippet these, we'll just use the raw
-        // value.
-        raw: {}
-      },
-      user_score: {
-        raw: {}
-      },
-      platform: {
+      modifiers: {
         snippet: {
-          size: 50,
+          size: 150,
           fallback: true
         }
       },
-      image_url: {
+      return_type: {
+        snippet: {
+          size: 150,
+          fallback: true
+        }
+      },
+      stars: {
         raw: {}
+      },
+      class: {
+        snippet: {
+          size: 150,
+          fallback: true
+        }
+      },
+      url: {
+        raw: {}
+      },
+      snippet: {
+        snippet: {
+          fallback: true
+        }
       }
     },
-    // 3. Facet by scores, genre, publisher, and platform, which we'll use to build filters later.
+    // 3. Facets we'll use to build filters later.
     facets: {
-      user_score: {
+      return_type: { type: "value", size: 20 },
+      throws: { type: "value", size: 20 },
+      stars: {
         type: "range",
         ranges: [
-          { from: 0, to: 5, name: "Not good" },
-          { from: 5, to: 7, name: "Not bad" },
-          { from: 7, to: 9, name: "Pretty good" },
-          { from: 9, to: 10, name: "Must play!" }
+          { from: 0, to: 25, name: "Obscure" },
+          { from: 25, to: 50, name: "Reputable" },
+          { from: 50, to: 75, name: "Pretty Popular" },
+          { from: 100, name: "Popular" }
         ]
       },
-      critic_score: {
-        type: "range",
-        ranges: [
-          { from: 0, to: 50, name: "Not good" },
-          { from: 50, to: 70, name: "Not bad" },
-          { from: 70, to: 90, name: "Pretty good" },
-          { from: 90, to: 100, name: "Must play!" }
-        ]
-      },
-      genre: { type: "value", size: 100 },
-      publisher: { type: "value", size: 100 },
-      platform: { type: "value", size: 100 }
     }
   }
 };
 
 // Step #4, SearchProvider: The finishing touches
-export default function App() {
+export default function Search() {
   return (
     <SearchProvider config={configurationOptions}>
       <div className="App">
         <Layout
           header={<SearchBox autocompleteSuggestions={true} />}
-          bodyContent={<Results titleField="name" urlField="image_url" />}
+          bodyContent={<Results titleField="method_name" urlField="url" />}
           sideContent={
             <div>
               <Sorting
@@ -127,16 +129,19 @@ export default function App() {
                   },
                   {
                     name: "Name",
-                    value: "name",
+                    value: "method_name",
                     direction: "asc"
+                  },
+                  {
+                    name: "Repository Stars",
+                    value: "stars",
+                    direction: "desc"
                   }
                 ]}
               />
-              <Facet field="user_score" label="User Score" />
-              <Facet field="critic_score" label="Critic Score" />
-              <Facet field="genre" label="Genre" />
-              <Facet field="publisher" label="Publisher" isFilterable={true} />
-              <Facet field="platform" label="Platform" />
+              <Facet field="return_type" label="Return Type" filterType="any" isFilterable={true}/>
+              <Facet field="throws" label="Throws" filterType="any" isFilterable={true}/>
+              <Facet field="stars" label="Number of Repo Stars" view={SingleLinksFacet} />
             </div>
           }
           bodyHeader={
