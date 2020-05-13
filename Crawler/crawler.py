@@ -35,10 +35,10 @@ class Crawler:
 
         try:
             fp = open('max_date_retrieved.txt')
-            max_date = fp.readline()
+            max_date = fp.readline()[:-1]
             retrieved = fp.readline()
             if max_date != "" and retrieved != "":
-                max_date = datetime.datetime.strptime(max_date, "%Y-%m-%dT%H:%M:%S").date()
+                max_date = datetime.datetime.strptime(max_date, "%Y-%m-%d").date()
                 retrieved = int(retrieved)
         finally:
             fp.close()
