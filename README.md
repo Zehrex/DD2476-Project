@@ -80,13 +80,11 @@ If you did not set the application to read-only mode, your Elasticsearch cluster
 
 It was because I did not have enough free space on my computer, so Elasticsearch could not index properly
 
-
 Then open up http://localhost:3002/
 You should have access to the app-search console
 
-Install React dependencies
-```
-npm install @elastic/react-search-ui
-npm install @elastic/search-ui-app-search-connector
-npm install
-```
+You should now be prompted to create a new engine. Name the engine "github-search". Upload the first .json file if prompted to create your index. To upload the rest, click on engines -> github-search -> documents -> Index Documents to add the other json files one at a time.
+
+Then click on the left menu and then on the 'Credentials' tab. Copy the "search-key" key (should be in the format search-xxxxxx...). Replace the value of `searchKey`of the `connector` object in `search-web-app/src/Search.js line 19`.
+
+Another important thing to change is the schema for app-search. Go to the github-search engine -> schema and set the "stars" field to type "number", and then update types. You may have to resolve some errors that come up if files are in the wrong format.

@@ -16,7 +16,7 @@ import "@elastic/react-search-ui-views/lib/styles/styles.css";
 
 // Step #2, The connector
 const connector = new AppSearchAPIConnector({
-  searchKey: "search-akac6xdkk733fqhwpwpn8ioo",
+  searchKey: "search-4conaz61yap31er9nmza2f9z",
   engineName: "github-search",
   endpointBase: "http://localhost:3002"
 });

@@ -51,8 +51,6 @@ class Indexer:
         def get_code_snippet (lines, index):
             openingBrackets = 0;
             closingBrackets = 0;
-            # Number of characters we show in a snippet
-            snippet_limit = 250;
 
             # Resulting snippet
             snippet = ""
@@ -66,13 +64,6 @@ class Indexer:
                     elif letter == '{':
                         openingBrackets += 1
 
-                    # Ignore tabs and newlines
-                    if letter != '\t' and letter != '\n':
-                        snippet += letter
-
-                    # Early break if we reach char limit
-                    if len(snippet) > snippet_limit:
-                        return snippet + "..."
                     # Early end if we have reached last bracket
                     elif closingBrackets == openingBrackets and openingBrackets != 0:
                         return snippet
