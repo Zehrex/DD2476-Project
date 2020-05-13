@@ -1,0 +1,32 @@
+2
+https://raw.githubusercontent.com/gavin-yyj/vhr-/master/swagger/src/main/java/com/macro/mall/tiny/mbg/mapper/UmsRolePermissionRelationMapper.java
+package com.macro.mall.tiny.mbg.mapper;
+
+import com.macro.mall.tiny.mbg.model.UmsRolePermissionRelation;
+import com.macro.mall.tiny.mbg.model.UmsRolePermissionRelationExample;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+
+public interface UmsRolePermissionRelationMapper {
+    long countByExample(UmsRolePermissionRelationExample example);
+
+    int deleteByExample(UmsRolePermissionRelationExample example);
+
+    int deleteByPrimaryKey(Long id);
+
+    int insert(UmsRolePermissionRelation record);
+
+    int insertSelective(UmsRolePermissionRelation record);
+
+    List<UmsRolePermissionRelation> selectByExample(UmsRolePermissionRelationExample example);
+
+    UmsRolePermissionRelation selectByPrimaryKey(Long id);
+
+    int updateByExampleSelective(@Param("record") UmsRolePermissionRelation record, @Param("example") UmsRolePermissionRelationExample example);
+
+    int updateByExample(@Param("record") UmsRolePermissionRelation record, @Param("example") UmsRolePermissionRelationExample example);
+
+    int updateByPrimaryKeySelective(UmsRolePermissionRelation record);
+
+    int updateByPrimaryKey(UmsRolePermissionRelation record);
+}

@@ -1,0 +1,26 @@
+18
+https://raw.githubusercontent.com/WeBankFinTech/Schedulis/master/azkaban-common/src/main/java/azkaban/user/UserUtils.java
+package azkaban.user;
+
+public final class UserUtils {
+
+  private UserUtils() {
+
+  }
+
+  /**
+   * @return - Returns true if the given user is an ADMIN, or if user has the required permission
+   * for the action requested.
+   */
+  public static boolean hasPermissionforAction(final User user, final Permission.Type type) {
+    for (final String roleName : user.getRoles()) {
+      final Role role = user.getRoleMap().get(roleName);
+      final Permission perm = role.getPermission();
+      if (perm.isPermissionSet(Permission.Type.ADMIN) || perm.isPermissionSet(type)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+}

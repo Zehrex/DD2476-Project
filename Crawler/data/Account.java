@@ -1,118 +1,62 @@
-74
-https://raw.githubusercontent.com/harshalbenake/hbworkspace1-100/master/google%20image%20loader%20api%20complete/com/google/android/accounts/Account.java
-/*-
- * Copyright (C) 2009 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+1
+https://raw.githubusercontent.com/zakariaelattar/Cannon-Bank/master/src/main/java/org/cannonbank/core/Entities/Account.java
+package org.cannonbank.core.Entities;
 
-package com.google.android.accounts;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.text.TextUtils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Mirrors {@link android.accounts.Account}
- */
-public class Account implements Parcelable {
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-    public static final Creator<Account> CREATOR = new Creator<Account>() {
-        /**
-         * {@inheritDoc}
-         */
-        public Account createFromParcel(Parcel source) {
-            return new Account(source);
-        }
 
-        /**
-         * {@inheritDoc}
-         */
-        public Account[] newArray(int size) {
-            return new Account[size];
-        }
-    };
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
 
-    /**
-     * Mirrors {@link android.accounts.Account#name}
-     */
-    public String name;
+public class Account {
 
-    /**
-     * Mirrors {@link android.accounts.Account#type}
-     */
-    public String type;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    /**
-     * Mirrors {@link android.accounts.Account#Account(Parcel)}
-     */
-    public Account(Parcel in) {
-        this.name = in.readString();
-        this.type = in.readString();
-    }
+    private long id_Account;
+    private long account_number;
 
-    /**
-     * Mirrors {@link android.accounts.Account#Account(String, String)}
-     */
-    @SuppressWarnings("hiding")
-    public Account(String name, String type) {
-        if (TextUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("the name must not be empty: " + name);
-        }
-        if (TextUtils.isEmpty(type)) {
-            throw new IllegalArgumentException("the type must not be empty: " + type);
-        }
-        this.name = name;
-        this.type = type;
-    }
+    private Client client;
 
-    /**
-     * {@inheritDoc}
-     */
-    public int describeContents() {
-        return 0;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category_Account type;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (!(o instanceof Account)) {
-            return false;
-        }
-        final Account other = (Account) o;
-        return name.equals(other.name) && type.equals(other.type);
-    }
+    private String bic;
+    private String iban;
+    private double balance;
+    private Date creation_date;
+    private int is_suspended;
 
-    @Override
-    public int hashCode() {
-        int result = 17;
-        result = 31 * result + name.hashCode();
-        result = 31 * result + type.hashCode();
-        return result;
-    }
+    @OneToMany(
+            mappedBy = "accounts",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Credit_Card> credit_cardList = new ArrayList<>();
 
-    @Override
-    public String toString() {
-        return "Account {name=" + name + ", type=" + type + "}";
-    }
+    @OneToMany(
+            mappedBy = "accounts",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Transaction> transactionList = new ArrayList<>();
 
-    /**
-     * {@inheritDoc}
-     */
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
-        dest.writeString(type);
-    }
+    @OneToMany(
+            mappedBy = "accounts",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Checkbook> checkbookList = new ArrayList<>();
+
+
 }
