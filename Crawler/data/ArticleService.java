@@ -1,96 +1,35 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/service/ArticleService.java
-package cn.tsxygfy.beyond.service;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_search/src/main/java/com/tensquare/search/service/ArticleService.java
+package com.tensquare.search.service;
 
-import cn.tsxygfy.beyond.model.dto.PageParam;
-import cn.tsxygfy.beyond.model.dto.PageResult;
-import cn.tsxygfy.beyond.model.po.Article;
-import cn.tsxygfy.beyond.model.po.Tag;
-import cn.tsxygfy.beyond.model.vo.ArticleTagsVO;
-import cn.tsxygfy.beyond.model.vo.ArticleYearVO;
-import org.springframework.lang.NonNull;
-
-import java.util.List;
+import com.tensquare.search.dao.ArticleDao;
+import com.tensquare.search.pojo.Article;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import util.IdWorker;
 
 /**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.service
- * @since 2020-02-21 15:05:14
+ * @author 李聪
+ * @date 2020/2/17 21:44
  */
-public interface ArticleService {
+@Service
+public class ArticleService {
+    @Autowired
+    private ArticleDao articleDao;
 
-    /**
-     * 查询所有的文章包含对应标签   首页展示用   已弃用
-     *
-     * @return
-     */
-    @Deprecated
-    List<ArticleTagsVO> findAllWithTags();
+ /*   @Autowired
+    private IdWorker idWorker;*/
 
-    /**
-     * 分页查询全部的文章包含对应标签  首页展示用
-     *
-     * @param pageParam
-     * @return
-     */
-    PageResult fndAllWithTagsByPage(@NonNull PageParam pageParam);
+    public void save(Article article) {
+        //article.setId(idWorker.nextId() + "");
+        articleDao.save(article);
+    }
 
-    /**
-     * 根据文章标题查询对应的文章包含对应标签（精确）  单个文章详情用
-     *
-     * @param title
-     * @return
-     */
-    ArticleTagsVO findArticleWithTagsByTitle(@NonNull String title);
-
-    /**
-     * 对文章按照年份归档
-     *
-     * @return
-     */
-    List<ArticleYearVO> listYearArchives();
-
-    /**
-     * 根据文章的id查询文章的信息
-     *
-     * @param id
-     * @return
-     */
-    Article findArticleById(@NonNull Long id);
-
-    /**
-     * 获取文章对应的标签
-     *
-     * @param id
-     * @return
-     */
-    List<Tag> getTags(@NonNull Long id);
-
-    /**
-     * 发布文章
-     *
-     * @param articleTagsVO
-     * @return
-     */
-    ArticleTagsVO createOrUpdateArticle(@NonNull ArticleTagsVO articleTagsVO);
-
-    /**
-     * 删除文章
-     *
-     * @param id
-     * @return
-     */
-    void deleteArticle(Long id);
-
-    /**
-     * 文章总数
-     *
-     * @return
-     */
-    Long getCount();
+    public Page<Article> findByKey(String key, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1,size);
+        return articleDao.findByTitleOrContentLike(key,key,pageable);
+    }
 }

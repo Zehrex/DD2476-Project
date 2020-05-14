@@ -1,174 +1,71 @@
-4
-https://raw.githubusercontent.com/abdalmoniem/Movie-App/master/base/src/main/java/butter/droid/base/content/preferences/PrefItem.java
-/*
- * This file is part of Butter.
- *
- * Butter is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Butter is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Butter. If not, see <http://www.gnu.org/licenses/>.
- */
-
-package butter.droid.base.content.preferences;
+10
+https://raw.githubusercontent.com/NearbyShops/Nearby-Shops-Android-app/master/app/src/main/java/org/nearbyshops/enduserappnew/EditDataScreens/EditItem/PrefItem.java
+package org.nearbyshops.enduserappnew.EditDataScreens.EditItem;
 
 import android.content.Context;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.StringRes;
+import android.content.SharedPreferences;
 
-import butter.droid.base.utils.PrefUtils;
+import com.google.gson.Gson;
+
+
+import org.nearbyshops.enduserappnew.Model.Item;
+import org.nearbyshops.enduserappnew.R;
+
+import static android.content.Context.MODE_PRIVATE;
+
+/**
+ * Created by sumeet on 19/10/16.
+ */
+
+
 
 public class PrefItem {
 
-    private Context mContext;
-    private int mIconRes;
-    private int mTitleRes;
-    private String mPrefKey;
-    private Object mDefaultValue;
-    private OnClickListener mOnClickListener;
-    private SubtitleGenerator mSubtitleGenerator;
-    private Boolean mHasNext = false;
+    public static final String TAG_ITEM_PREF = "tag_item";
 
-    public static Builder newBuilder(Context context) {
-        return new Builder(context);
+
+    public static void saveItem(Item item, Context context)
+    {
+
+        //Creating a shared preference
+
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preference_file_name), MODE_PRIVATE);
+
+        SharedPreferences.Editor prefsEditor = sharedPref.edit();
+
+        if(item == null)
+        {
+            prefsEditor.putString(TAG_ITEM_PREF, "null");
+
+        }
+        else
+        {
+            Gson gson = new Gson();
+            String json = gson.toJson(item);
+            prefsEditor.putString(TAG_ITEM_PREF, json);
+        }
+
+        prefsEditor.apply();
     }
 
-    private PrefItem() {
 
-    }
+    public static Item getItem(Context context)
+    {
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preference_file_name), MODE_PRIVATE);
 
-    public Object getValue() {
-        if (mDefaultValue instanceof Integer) {
-            return PrefUtils.get(mContext, mPrefKey, (Integer) mDefaultValue);
-        } else if (mDefaultValue instanceof Long) {
-            return PrefUtils.get(mContext, mPrefKey, (Long) mDefaultValue);
-        } else if (mDefaultValue instanceof Boolean) {
-            return PrefUtils.get(mContext, mPrefKey, (Boolean) mDefaultValue);
-        } else {
-            return PrefUtils.get(mContext, mPrefKey, mDefaultValue.toString());
+        Gson gson = new Gson();
+        String json = sharedPref.getString(TAG_ITEM_PREF, "null");
+
+        if(json.equals("null"))
+        {
+
+            return null;
+
+        }else
+        {
+            return gson.fromJson(json, Item.class);
         }
     }
 
-    public void saveValue(Object value) {
-        if (mDefaultValue instanceof Integer) {
-            PrefUtils.save(mContext, mPrefKey, (Integer) value);
-        } else if (mDefaultValue instanceof Long) {
-            PrefUtils.save(mContext, mPrefKey, (Long) value);
-        } else if (mDefaultValue instanceof Boolean) {
-            PrefUtils.save(mContext, mPrefKey, (Boolean) value);
-        } else {
-            PrefUtils.save(mContext, mPrefKey, value.toString());
-        }
-    }
-
-    public void clearValue() {
-        PrefUtils.remove(mContext, mPrefKey);
-    }
-
-    public int getIconResource() {
-        return mIconRes;
-    }
-
-    public String getTitle() {
-        return mContext.getResources().getString(mTitleRes);
-    }
-
-    public String getPrefKey() {
-        return mPrefKey;
-    }
-
-    public Object getDefaultValue() {
-        return mDefaultValue;
-    }
-
-    public String getSubtitle() {
-        if (mSubtitleGenerator != null) {
-            return mSubtitleGenerator.get(this);
-        }
-        return "";
-    }
-
-    public boolean isClickable() {
-        return mOnClickListener != null;
-    }
-
-
-    public boolean hasNext() {
-        return mHasNext;
-    }
-
-    public boolean isTitle() {
-        return mPrefKey == null;
-    }
-
-    public void onClick() {
-        if (mOnClickListener != null)
-            mOnClickListener.onClick(this);
-    }
-
-    public interface OnClickListener {
-        void onClick(PrefItem item);
-    }
-
-    public interface SubtitleGenerator {
-        String get(PrefItem item);
-    }
-
-    public static class Builder {
-
-        private PrefItem mItem;
-
-        public Builder(Context context) {
-            mItem = new PrefItem();
-            mItem.mContext = context;
-        }
-
-        public Builder setIconResource(@DrawableRes int iconRes) {
-            mItem.mIconRes = iconRes;
-            return this;
-        }
-
-        public Builder setTitleResource(@StringRes int titleRes) {
-            mItem.mTitleRes = titleRes;
-            return this;
-        }
-
-        public Builder setPreferenceKey(String prefKey) {
-            mItem.mPrefKey = prefKey;
-            return this;
-        }
-
-        public Builder setDefaultValue(Object defaultValue) {
-            mItem.mDefaultValue = defaultValue;
-            return this;
-        }
-
-        public Builder setOnClickListener(OnClickListener onClickListener) {
-            mItem.mOnClickListener = onClickListener;
-            return this;
-        }
-
-        public Builder setSubtitleGenerator(SubtitleGenerator subtitleGenerator) {
-            mItem.mSubtitleGenerator = subtitleGenerator;
-            return this;
-        }
-
-        public Builder hasNext(Boolean hasNext) {
-            mItem.mHasNext = hasNext;
-            return this;
-        }
-
-        public PrefItem build() {
-            return mItem;
-        }
-
-    }
 
 }

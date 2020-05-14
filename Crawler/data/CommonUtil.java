@@ -1,16 +1,55 @@
-2
-https://raw.githubusercontent.com/jiangvin/webtank/master/websocket/src/main/java/com/integration/socket/util/CommonUtil.java
-package com.integration.socket.util;
+160
+https://raw.githubusercontent.com/c0ny1/java-object-searcher/master/src/main/java/me/gv7/tools/josearcher/utils/CommonUtil.java
+package me.gv7.tools.josearcher.utils;
 
-/**
- * @author 蒋文龙(Vin)
- * @description
- * @date 2020/5/9
- */
+import java.io.File;
+import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class CommonUtil {
-    private static long id = 0;
+    public static String getBanner(){
+        String banner = "#############################################################\n" +
+                        "   Java Object Searcher v0.01\n" +
+                        "   author: c0ny1<root@gv7.me>\n" +
+                        "   github: http://github.com/c0ny1/java-object-searcher\n" +
+                        "#############################################################\n\n\n";
+        return banner;
+    }
 
-    public static String getId() {
-        return "generatedServerId=" + id++;
+    public static void write2log(String filename,String content){
+        try {
+            File file = new File(filename);
+            String new_content;
+            if (!file.exists()) {
+                file.createNewFile();
+                new_content = getBanner() + content;
+            }else{
+                new_content = content;
+            }
+
+            //使用true，即进行append file
+            FileWriter fileWritter = new FileWriter(file, true);
+            fileWritter.write(new_content);
+            fileWritter.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public static String getBlank(int n){
+        String strTab = "";
+        for(int i=0;i<n;i++){
+            strTab += " ";
+        }
+        return strTab;
+    }
+
+    public static String getCurrentDate(){
+        Date date = new Date();
+        String str = "yyyMMddHHmmss";
+        SimpleDateFormat sdf = new SimpleDateFormat(str);
+        return sdf.format(date);
     }
 }

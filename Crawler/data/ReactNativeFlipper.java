@@ -1,12 +1,12 @@
-2
-https://raw.githubusercontent.com/VenkatSBitra/react-native-management-app/master/android/app/src/debug/java/com/management/ReactNativeFlipper.java
+13
+https://raw.githubusercontent.com/rodgomesc/jobsFinder/master/android/app/src/debug/java/com/jobsfinder/ReactNativeFlipper.java
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * <p>This source code is licensed under the MIT license found in the LICENSE file in the root
  * directory of this source tree.
  */
-package com.management;
+package com.jobsfinder;
 
 import android.content.Context;
 import com.facebook.flipper.android.AndroidFlipperClient;

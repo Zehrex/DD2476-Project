@@ -1,74 +1,117 @@
-10
-https://raw.githubusercontent.com/373675032/Molihub/master/src/service/LabelService.java
-package service;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_base/src/main/java/com/tensquare/base/service/LabelService.java
+package com.tensquare.base.service;
 
-import domain.Label;
+import com.tensquare.base.dao.LabelDao;
+import com.tensquare.base.pojo.Label;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import util.IdWorker;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 文章标签业务层接口
- * @User MOTI
- * @Time 2019/8/6 20:25
+ * @author 李聪
+ * @date 2020/2/16 17:49
  */
-public interface LabelService {
+@Service
+@Transactional
+public class LabelService {
+    @Autowired
+    private LabelDao labelDao;
+    @Autowired
+    private IdWorker idWorker;
 
-    /**
-     * 根据用户ID获得该用户的所有个性标签
-     * @param userId
-     * @return
-     */
-    List<String> getAllLabelsByUserId(int userId);
+    public List<Label> findAll() {
+        return labelDao.findAll();
+    }
 
-    /**
-     * 为用户添加标签
-     * @param label
-     * @param user_id
-     */
-    void addLabel(String label,int user_id);
+    public Label findById(String id) {
+        return labelDao.findById(id).get();
+    }
 
-    /**
-     * 为用户删除标签
-     * @param label
-     * @param user_id
-     */
-    void deleteLabel(String label,int user_id);
+    public void save(Label label) {
+        label.setId(idWorker.nextId() + "");
+        labelDao.save(label);
+    }
+    public void update(Label label) {
+        labelDao.save(label);
+    }
 
-    /**
-     * 为用户重命名标签
-     * @param oldLabel
-     * @param newLabel
-     * @param user_id
-     */
-    void updateLabel(String oldLabel,String newLabel,int user_id);
+    public void deleteById(String id) {
+        labelDao.deleteById(id);
+    }
 
-    /**
-     * 查找标签
-     * @param label
-     * @param user_id
-     */
-    Label getLabel(String label,int user_id);
 
-    /**
-     * 获得标签对应的文章数
-     * @param tag
-     * @param user_id
-     * @return
-     */
-    int getTagArticleCount(String tag,int user_id);
+    public List<Label> findSearch(Label label) {
+        return labelDao.findAll(new Specification<Label>() {
+            /**
+             *
+             * @param root  根对象，也就是基要把条件封装到哪个对象，where类名=label.getid
+             * @param query 封装的都是查询关键字，比如group by order by
+             * @param cb  用来封装条件对象的，如果直接返回null，表示不需要任何条件
+             * @return
+             */
+            @Override
+            public Predicate toPredicate(Root<Label> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                //new一个集合来存放所有的条件
+                List<Predicate> list = new ArrayList<>();
+                if(label.getLabelname() != null && !"".equals(label.getLabelname())) {
+                    Predicate predicate = cb.like(root.get("labelname").as(String.class),"%" + label.getLabelname()+"%"); //where labelname like "%小明%"
+                    list.add(predicate);
+                }
+                if(label.getState() != null && !"".equals(label.getState())) {
+                    Predicate predicate = cb.equal(root.get("state").as(String.class), label.getState());//state="1"
+                    list.add(predicate);
+                }
+                //new 一个数组作为最终返回值的条件
+                Predicate[] parr = new Predicate[list.size()];
+                //把list直接转成数组
+                parr = list.toArray(parr);
+                return cb.and(parr);
+            }
+        });
+    }
 
-    /**
-     * 获得标签对应的文章数
-     * @param tag
-     * @param user_id
-     * @return
-     */
-    int getOtherTagArticleCount(String tag,int user_id);
-
-    /**
-     * 获得文章的标签
-     * @param article_id
-     * @return
-     */
-    String getArticleLabel(int article_id);
+    public Page<Label> pageQuery(Label label, int page, int size) {
+        //封装一个分页对象
+        Pageable pageable = PageRequest.of(page - 1,size);
+        return labelDao.findAll(new Specification<Label>() {
+            /**
+             *
+             * @param root  根对象，也就是基要把条件封装到哪个对象，where类名=label.getid
+             * @param query 封装的都是查询关键字，比如group by order by
+             * @param cb  用来封装条件对象的，如果直接返回null，表示不需要任何条件
+             * @return
+             */
+            @Override
+            public Predicate toPredicate(Root<Label> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                //new一个集合来存放所有的条件
+                List<Predicate> list = new ArrayList<>();
+                if(label.getLabelname() != null && !"".equals(label.getLabelname())) {
+                    Predicate predicate = cb.like(root.get("labelname").as(String.class),"%" + label.getLabelname()+"%"); //where labelname like "%小明%"
+                    list.add(predicate);
+                }
+                if(label.getState() != null && !"".equals(label.getState())) {
+                    Predicate predicate = cb.equal(root.get("state").as(String.class), label.getState());//state="1"
+                    list.add(predicate);
+                }
+                //new 一个数组作为最终返回值的条件
+                Predicate[] parr = new Predicate[list.size()];
+                //把list直接转成数组
+                parr = list.toArray(parr);
+                return cb.and(parr);
+            }
+        },pageable);
+    }
 }

@@ -1,67 +1,72 @@
-2
-https://raw.githubusercontent.com/984964551/JavassmDemo/master/src/main/java/wac/controlleer/UsersController.java
-package wac.controlleer;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/api/src/main/java/engineering/everest/lhotse/api/rest/controllers/UsersController.java
+package engineering.everest.lhotse.api.rest.controllers;
 
+import engineering.everest.lhotse.axon.common.domain.User;
+import engineering.everest.lhotse.users.services.UsersReadService;
+import engineering.everest.lhotse.users.services.UsersService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import engineering.everest.lhotse.api.rest.annotations.AdminOnly;
+import engineering.everest.lhotse.api.rest.converters.DtoConverter;
+import engineering.everest.lhotse.api.rest.requests.UpdateUserRequest;
+import engineering.everest.lhotse.api.rest.responses.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import wac.domain.PageBean;
-import wac.domain.User;
-import wac.service.UserService;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-@RequestMapping("/user")
+import java.util.List;
+import java.util.UUID;
+import javax.validation.Valid;
+
+import static java.util.stream.Collectors.toList;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+@RestController
+@RequestMapping("/api/users")
+@Api(consumes = APPLICATION_JSON_VALUE, tags = "Users")
 public class UsersController {
+
+    private final DtoConverter dtoConverter;
+    private final UsersService usersService;
+    private final UsersReadService usersReadService;
+
     @Autowired
-    private UserService userService;
-    @RequestMapping("/findbypage")
-    public String findbypage(Model model,User user,String currentPage) throws ServletException, IOException {
-        if (currentPage==null){
-            currentPage="1";
-        }
-        PageBean pb = userService.findbypage(user,Integer.parseInt(currentPage));
-        model.addAttribute("pb",pb );
-        return "list";
+    public UsersController(DtoConverter dtoConverter,
+                           UsersService usersService,
+                           UsersReadService usersReadService) {
+        this.dtoConverter = dtoConverter;
+        this.usersService = usersService;
+        this.usersReadService = usersReadService;
     }
 
-    @RequestMapping("/deleteuser")
-    public String deleteuser(int id,HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
-        userService.deleteuser(id);
-       response.sendRedirect("/user/findbypage");
-        return "list";
+    @GetMapping
+    @ApiOperation(produces = APPLICATION_JSON_VALUE, value = "Retrieves entire user list for all organisations")
+    @AdminOnly
+    public List<UserResponse> getAllUsers() {
+        return usersReadService.getUsers().stream()
+                .map(dtoConverter::convert)
+                .collect(toList());
     }
 
-    @RequestMapping("/findusertoupdate")
-    public String findusertoupdate(int id,HttpServletRequest request,HttpServletResponse response,Model model) throws ServletException, IOException {
-        User user = userService.findbyid(id);
-        model.addAttribute("user",user );
-        return "update";
+    @GetMapping("/{userId}")
+    @ApiOperation(produces = APPLICATION_JSON_VALUE, value = "Retrieves user details")
+    @PostAuthorize("hasRole('ADMIN') or returnObject.organizationId == #requestingUser.organizationId")
+    public UserResponse getUser(User requestingUser, @PathVariable UUID userId) {
+        return dtoConverter.convert(usersReadService.getById(userId));
     }
 
-    @RequestMapping("/updateuser")
-    public String updateuser(User user,HttpServletRequest request,HttpServletResponse response,Model model) throws ServletException, IOException {
-        userService.updateuser(user);
-//        response.sendRedirect("/user/findbypage");
-        //请求转发返回修改的参数列表
-//        return "forward:/user/findbypage";
-        //重定向返回完整的参数列表
-        return "redirect:/user/findbypage" ;
-    }
-
-    @RequestMapping("/insertuser")
-    public String insertuser(User user,HttpServletRequest request,HttpServletResponse response,Model model) throws ServletException, IOException {
-        userService.insertuser(user);
-//        response.sendRedirect("/user/findbypage");
-        return "redirect:/user/findbypage" ;
-    }
-
-    @RequestMapping("/deleteselect")
-    public void deleteselect(HttpServletRequest request,HttpServletResponse response){
-
+    @PutMapping("/{userId}")
+    @ApiOperation("Update an organization user's details")
+    @PreAuthorize("#requestingUser.id == #userId or hasPermission(#userId, 'User', 'update')")
+    public void updateUser(User requestingUser, @PathVariable UUID userId, @RequestBody @Valid UpdateUserRequest request) {
+        usersService.updateUser(requestingUser.getId(), userId,
+                request.getEmail(), request.getDisplayName(), request.getPassword());
     }
 }

@@ -1,34 +1,82 @@
-1
-https://raw.githubusercontent.com/FabianCristancho/Grammatical-Tree-LF/master/src/model/SimpleNode.java
-package model;
+9
+https://raw.githubusercontent.com/ishugaliy/allgood-consistent-hash/master/src/main/java/org/ishugaliy/allgood/consistent/hash/node/SimpleNode.java
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2020 Iurii Shugalii
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-public class SimpleNode <T> {
-  protected T info;
-  protected SimpleNode <T> next;
+package org.ishugaliy.allgood.consistent.hash.node;
 
-  public SimpleNode(T info, SimpleNode<T> next) {
-    this.info = info;
-    this.next = next;
-  }
-  
-  public SimpleNode(T info) {
-    this.info = info;
-    this.next = null;
-  }
+import org.ishugaliy.allgood.consistent.hash.annotation.Generated;
 
-  public T getInfo() {
-    return info;
-  }
+import java.util.Objects;
 
-  public void setInfo(T info) {
-    this.info = info;
-  }
+/**
+ * Simple implementation of {@link Node}.
+ * Wrap String value and return it as a key.
+ *
+ * @author Iurii Shugalii
+ */
+public class SimpleNode implements Node {
 
-  public SimpleNode<T> getNext() {
-    return next;
-  }
+    private final String value;
 
-  public void setNext(SimpleNode<T> next) {
-    this.next = next;
-  }
+    private SimpleNode(String value) {
+        Objects.requireNonNull(value, "Value can not be null");
+        this.value = value;
+    }
+
+    /**
+     * Factory method to create instance of the class.
+     *
+     * @return the instance of the class
+     */
+    public static SimpleNode of(String value) {
+        return new SimpleNode(value);
+    }
+
+    @Override
+    public String getKey() {
+        return value;
+    }
+
+    @Override
+    @Generated
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SimpleNode)) return false;
+        SimpleNode that = (SimpleNode) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    @Generated
+    public int hashCode() {
+        return Objects.hash(value);
+    }
+
+    @Override
+    @Generated
+    public String toString() {
+        return value;
+    }
 }

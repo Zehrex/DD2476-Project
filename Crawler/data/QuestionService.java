@@ -1,92 +1,111 @@
-2
-https://raw.githubusercontent.com/tianhan1998/WechatMoocQuestion/master/src/main/java/cn/th/service/QuestionService.java
-package cn.th.service;
+12
+https://raw.githubusercontent.com/zhuchangwu/lawyer-lover-cloud-backend/master/lawyer-lover-main/src/main/java/com/changwu/service/QuestionService.java
+package com.changwu.service;
 
-import cn.th.Utils.HttpUtils;
-import cn.th.entity.Question;
-import cn.th.mapper.QuestionMapper;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import com.changwu.doc.Question;
+import com.changwu.exception.ExceptionEnum;
+import com.changwu.exception.MyException;
+import com.changwu.repository.QuestionRepository;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.suggest.Suggest;
+import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.elasticsearch.search.suggest.SuggestBuilders;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
- * @author tianh
+ * @Author: Changwu
+ * @Date: 2019/9/20 18:49
  */
-@Slf4j
 @Service
 public class QuestionService {
 
-    private static final String API="https://cx.icodef.com/v2/answer";
-    @Resource
-    QuestionMapper questionMapper;
+    @Autowired
+    QuestionRepository repository;
 
-    public List<Question> findQuestion(String question){
-        return questionMapper.findAnswer(question);
-    }
-    public int insertQuestion(Question question){
-        return questionMapper.insertQuestion(question);
-    }
-    public JSONObject getAnswer(String question) throws URISyntaxException, IOException {
-        List<Question> list = findQuestion(question);
-        if(list.size()==0) {
-            List<NameValuePair> form = new ArrayList<>();
-            form.add(new BasicNameValuePair("topic[0]", question));
-            HttpPost post = HttpUtils.getPost(new URIBuilder(API), form);
-            CloseableHttpResponse res = HttpUtils.getClient().execute(post);
-            JSONArray json = JSON.parseArray(EntityUtils.toString(res.getEntity(), "utf-8"));
-            JSONArray result = json.getJSONObject(0).getJSONArray("result");
-            JSONObject content;
-            JSONObject back=new JSONObject();
-            if (result != null) {
-                if (result.size() > 0) {
-                    for (int i = 0; i < result.size(); i++) {
-                        JSONObject temp = result.getJSONObject(i);
-                        JSONArray correct = temp.getJSONArray("correct");
-                        content = correct.getJSONObject(0);
-                        JSONObject finalContent = content;
-                        String answer=finalContent.getString("content");
-                        if(answer.contains("javascript:void(0);")){
-                            answer=answer.replaceAll("javascript:void\\(0\\);","");
-                        }
-                        String finalAnswer = answer;
-                        if(insertQuestion(new Question(){{
-                            this.setQuestion(temp.getString("topic"));
-                            this.setAnswer(finalAnswer);
-                        }})>0) {
-                            log.info("插入题目成功---->" + content.toString());
-                            back.put("question",temp.getString("topic"));
-                            back.put("content",finalAnswer);
-                        }else{
-                            log.error("插入题目失败");
+    @Autowired
+    ElasticsearchTemplate elasticsearchTemplate;
+
+   /**
+    * 根据问题name,返回和当前问题名相似的10个问题名
+    *
+    * @param preName
+    * @return
+    */
+    public List<String> findQuestionListLikeThis(String preName) {
+
+        CompletionSuggestionBuilder suggestionBuilder = SuggestBuilders.completionSuggestion("questionName.suggest")
+                .prefix(preName, Fuzziness.AUTO).size(10);
+
+        SuggestBuilder suggestBuilder = new SuggestBuilder();
+        suggestBuilder.addSuggestion("suggesttions", suggestionBuilder);
+
+        SearchResponse suggestResposne = elasticsearchTemplate.suggest(suggestBuilder, Question.class);
+        // 获取出建议封装对象
+        Suggest suggest = suggestResposne.getSuggest();
+        HashSet suggestSet = new HashSet();
+        int maxSuggest = 0;
+        if (suggest != null) {
+            Suggest.Suggestion result = suggest.getSuggestion("suggesttions");//获取suggest,name任意string
+            for (Object term : result.getEntries()) {
+                if (term instanceof CompletionSuggestion.Entry) {
+                    CompletionSuggestion.Entry item = (CompletionSuggestion.Entry) term;
+                    if (!item.getOptions().isEmpty()) {
+                        //若item的option不为空,循环遍历
+                        for (CompletionSuggestion.Entry.Option option : item.getOptions()) {
+                            String tip = option.getText().toString();
+                            if (!suggestSet.contains(tip)) {
+                                suggestSet.add(tip);
+                                ++maxSuggest;
+                            }
                         }
                     }
-                } else {
-                    return new JSONObject() {{
-                        this.put("question","查询失败");
-                        this.put("content", "无答案");
-                    }};
+                }
+                if (maxSuggest >= 5) {
+                    break;
                 }
             }
-            return back;
-        }else{
-            return new JSONObject(){{
-                this.put("content",list.get(0).getAnswer());
-                this.put("question",list.get(0).getQuestion());
-            }};
         }
+        return new ArrayList<>(suggestSet);
     }
+
+    /**
+     * 根据问题名称精确拼配, 若精确匹配没结果则全文检索
+     *
+     * @return
+     */
+    public List<Question> findOneByQuestionName(String questionName) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.should(QueryBuilders.matchPhraseQuery("questionName", questionName))
+                .must(QueryBuilders.matchQuery("questionName", questionName));
+        queryBuilder.withQuery(boolQueryBuilder);
+        queryBuilder.withPageable(PageRequest.of(0, 5));
+        Page<Question> search = repository.search(queryBuilder.build());
+        List<Question> content = search.getContent();
+        if (content.size() == 0)
+            throw new MyException(ExceptionEnum.CAN_NOT_FIND_ANY_ANSWER);
+        return content;
+    }
+
+
+    public List<Question> findOneByQuestionName1(String questionName) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        return null;
+    }
+
 }
+

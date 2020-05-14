@@ -1,132 +1,129 @@
-2
-https://raw.githubusercontent.com/Aivacom/JLYLiveChat-android/master/app/src/main/java/com/mediaroom/ui/LoginFragment.java
-package com.mediaroom.ui;
+14
+https://raw.githubusercontent.com/FanChael/MVVM/master/modules/module_login/src/main/java/com/hl/modules_login/view/fragment/LoginFragment.java
+package com.hl.modules_login.view.fragment;
 
-import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.text.Editable;
+import android.text.TextWatcher;
 
-import com.hummer.im.Error;
-import com.hummer.im.HMR;
-import com.hummer.im._internals.mq.Source;
-import com.hummer.im.service.MQService;
-import com.mediaroom.BuildConfig;
-import com.mediaroom.R;
-import com.mediaroom.utils.BaseFragment;
-import com.mediaroom.utils.Constant;
-import com.mediaroom.utils.EditTextUtil;
-import com.mediaroom.utils.Utils;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.alibaba.android.arouter.launcher.ARouter;
+import com.hl.base_module.appcomponent.UserManager;
+import com.hl.base_module.constant.ArouterPath;
+import com.hl.base_module.constant.HomePath;
+import com.hl.base_module.message.MessageEvent;
+import com.hl.base_module.page.BaseWithServiceFragment;
+import com.hl.base_module.util.edittext.TextInputEditTextWatcher;
+import com.hl.base_module.util.screen.ScreenUtil;
+import com.hl.base_module.viewmodel.SelfViewModelFactory;
+import com.hl.modules_login.R;
+import com.hl.modules_login.databinding.FragmentLoginBinding;
+import com.hl.modules_login.model.bean.UserBean;
+import com.hl.modules_login.view.event.LoginNavEventHandler;
+import com.hl.modules_login.viewmodel.UserViewModel;
 
-public class LoginFragment extends BaseFragment implements View.OnClickListener {
-    private EditText etLoginUid;
-    private TextView tvAppVersion;
-    private Button btnLogin;
+import org.greenrobot.eventbus.EventBus;
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        View rootView = inflater.inflate(R.layout.fragment_login, null);
-        etLoginUid = rootView.findViewById(R.id.et_login_uid);
-        tvAppVersion = rootView.findViewById(R.id.tv_app_version);
-        btnLogin = rootView.findViewById(R.id.btn_login);
-        etLoginUid.setOnClickListener(this);
-        btnLogin.setOnClickListener(this);
-        etLoginUid.setText(Constant.uid);
-        if (!TextUtils.isEmpty(Constant.uid)) {
-            btnLogin.setEnabled(true);
-        }
-        tvAppVersion.setText(getString(R.string.app_version, BuildConfig.VERSION_NAME));
-        EditTextUtil.checkUidEditTextChanged(etLoginUid, btnLogin);
-        return rootView;
+import static android.app.Activity.RESULT_OK;
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link LoginFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class LoginFragment extends BaseWithServiceFragment<FragmentLoginBinding> {
+    public UserViewModel userViewModel;
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment LoginFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static LoginFragment newInstance(String param1, String param2) {
+        LoginFragment fragment = new LoginFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_login:
-                Constant.uid = etLoginUid.getText().toString();
-                login(Constant.uid);
-                break;
-        }
+    public int setLayout() {
+        return R.layout.fragment_login;
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (!TextUtils.isEmpty(Constant.uid) && Utils.getIsLogin(getActivity())) {
-            login(Constant.uid);
-        }
+    public void initLayout(Context context) {
+        // 设置距离标题栏的高度(系统默认标题栏高度为56dp)
+        ScreenUtil.setMargin(getViewDataBinding().flTopCard,
+                -10000, ScreenUtil.STATUS_BAR_HEIGHT * 2,
+                -10000, -10000);
+
+        getViewDataBinding().flUserNameEt.setText("小坑神周杰伦");
+        getViewDataBinding().flUserPassEt.setText("988815xy");
     }
 
-    public void login(String uid) {
-        showDialogProgress();
-        new Thread() {
+    @Override
+    public void requestData(Context context) {
+        // 自定义ModelFactory创建ViewModel
+        userViewModel = new ViewModelProvider(this, new SelfViewModelFactory(baseControlPresenter)).get(UserViewModel.class);
+        // 监听Live数据变化
+        userViewModel.getUserLiveData().observe(this, new Observer<UserBean>() {
             @Override
-            public void run() {
-                super.run();
-                byte[] token = Utils.getToken(String.valueOf(uid), String.valueOf(Constant.mAppId), null);
-                if (token != null) {
-                    HMR.open(Long.parseLong(uid), "cn", null, new String(token), new HMR.Completion() {
-                        @Override
-                        public void onSuccess() {
-                            handler.sendEmptyMessage(0);
-                        }
+            public void onChanged(UserBean userBean) {
+                // 0.保存用户信息
+                UserManager.saveUser(userBean.getUsername());
 
-                        @Override
-                        public void onFailed(Error err) {
-                            handler.sendEmptyMessage(1);
-                        }
-                    });
-                } else {
-                    handler.sendEmptyMessage(1);
-                }
+                // 1. 直接返回结果到跳转页面
+                Intent intent = new Intent();
+                intent.putExtra("user", "登录成功了，我叫" + userBean.getUsername());
+                requireActivity().setResult(RESULT_OK, intent);
 
+                // 2. 用Eventbus通知其他页面
+                EventBus.getDefault().post(new MessageEvent(userBean.getUsername()));
+
+                // 3. 路由到主页面，然后切换到某个碎片，实现跨页面跳转
+                ARouter.getInstance()
+                        .build(ArouterPath.HOME_ACTIVITY)
+                        .withInt(HomePath.WHICH, HomePath.HOME_PAGE)
+                        .navigation();
+
+                requireActivity().finish();
             }
-        }.start();
-
-
+        });
     }
 
-    public static LoginFragment newInstance() {
-        return new LoginFragment();
-    }
+    @Override
+    public void eventHandler(Context context) {
+        getViewDataBinding().flUserNameEt.addTextChangedListener(new TextInputEditTextWatcher(getViewDataBinding().flUserNameTL));
+        getViewDataBinding().flUserPassEt.addTextChangedListener(new TextInputEditTextWatcher(getViewDataBinding().flUserPassTL));
 
-    @SuppressLint("HandlerLeak")
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case 0:
-                    dissMissDialogProgress();
-                    Utils.setUid(getActivity(), Constant.uid);
-                    HMR.getService(MQService.class)
-                            .addSource(new Source(new Source.Shared(Constant.CHAT_GROUPID, null)));
-                    Utils.setIsLogin(getActivity(), true);
-                    ((MainActivity) getActivity()).showFragment(MainActivity.SHOW_DEALROOMFRAGMENT);
-                    break;
-                case 1:
-                    dissMissDialogProgress();
-//                    if (err.code == Error.Code.NetworkNotFound) {
-//                        Toast.makeText(getActivity(), "网络无法连接", Toast.LENGTH_SHORT).show();
-//                    } else {
-                    Toast.makeText(getActivity(), "登录失败", Toast.LENGTH_SHORT).show();
-//                    }
-                    break;
-            }
+        // 注册事件对象
+        if (null == getViewDataBinding().getLoginHandler()) {
+            getViewDataBinding().setLoginHandler(new LoginNavEventHandler(this));
         }
-    };
+    }
+
+    @Override
+    public void onSucess(String _functionName, Object t) {
+        if (t instanceof UserBean) {
+            UserBean result = (UserBean) t;
+            userViewModel.getUserLiveData().setValue(result);
+        }
+    }
+
+    @Override
+    public void onFailed(String _functionName, String _message) {
+
+    }
 }

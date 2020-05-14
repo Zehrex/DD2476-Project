@@ -1,86 +1,208 @@
-2
-https://raw.githubusercontent.com/Aivacom/JLYAudio-android/master/app/src/main/java/com/mediaroom/data/DataRepository.java
-package com.mediaroom.data;
+13
+https://raw.githubusercontent.com/CoboVault/cobo-vault-cold/master/app/src/main/java/com/cobo/cold/DataRepository.java
+/*
+ * Copyright (c) 2020 Cobo
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * in the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.cobo.cold;
 
 import android.content.Context;
 
-import com.alibaba.fastjson.JSON;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import com.cobo.coinlib.utils.Coins;
+import com.cobo.cold.db.AppDatabase;
+import com.cobo.cold.db.entity.AccountEntity;
+import com.cobo.cold.db.entity.AddressEntity;
+import com.cobo.cold.db.entity.CoinEntity;
+import com.cobo.cold.db.entity.TxEntity;
+import com.cobo.cold.db.entity.WhiteListEntity;
+import com.cobo.cold.model.Coin;
 
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- *
- * Data Repository
- *
- * ZH:
- * 数据仓库
- *
- * @author Aslan chenhengfei@yy.com
- * @since 2019/12/18
- */
-public class DataRepository implements IDataSource {
+public class DataRepository {
+    private static DataRepository sInstance;
 
-    private static volatile DataRepository instance;
-    private Context context;
+    private final AppDatabase mDb;
+    private final MediatorLiveData<List<CoinEntity>> mObservableCoins;
+    private final Context context;
 
-    private DataRepository(Context context) {
+    private DataRepository(Context context, final AppDatabase database) {
+        mDb = database;
         this.context = context;
+        mObservableCoins = new MediatorLiveData<>();
+        mObservableCoins.addSource(mDb.coinDao().loadAllCoins(), coins -> {
+            if (mDb.getDatabaseCreated().getValue() != null) {
+                mObservableCoins.postValue(filterByBelongTo(coins));
+            }
+        });
     }
 
-    public synchronized static DataRepository getInstance(Context context) {
-        if (instance == null) {
+    public String getBelongTo() {
+        return Utilities.getCurrentBelongTo(context);
+    }
+
+    public static DataRepository getInstance(Context context, final AppDatabase database) {
+        if (sInstance == null) {
             synchronized (DataRepository.class) {
-                if (instance == null) {
-                    instance = new DataRepository(context.getApplicationContext());
+                if (sInstance == null) {
+                    sInstance = new DataRepository(context, database);
                 }
             }
         }
-        return instance;
+        return sInstance;
     }
 
-    @Override
-    public void refreshToken(String appid, String uid, HttpItemCallback<String> callback) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("uid", uid);
-        data.put("channelName", "test");
-        data.put("validTime", 30);
-        data.put("appId", appid);
-
-        RequestBody body =
-                RequestBody.create(MediaType.get("application/json;charset=utf-8"),
-                        JSON.toJSONString(data));
-        Request request = new Request.Builder()
-                .url("https://webapi.sunclouds.com/webservice/app/v2/auth/genToken")
-                .post(body)
-                .build();
-
-        OkHttpClient client = new OkHttpClient();
-        client.newCall(request).enqueue(callback);
+    public LiveData<List<CoinEntity>> loadCoins() {
+        return mObservableCoins;
     }
 
-    @Override
-    public void feedback(String json, File file, Callback callback) {
-        RequestBody body = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("nyy", json)
-                .addFormDataPart("file", file.getName(),
-                        RequestBody.create(MediaType.parse("multipart/form-data"), file))
-                .build();
-        Request request = new Request.Builder()
-                .url("https://isoda-inforeceiver.yy.com/userFeedback")
-                .post(body)
-                .build();
+    public LiveData<List<CoinEntity>> reloadCoins() {
+        MediatorLiveData<List<CoinEntity>> coins = new MediatorLiveData<>();
+        coins.addSource(mDb.coinDao().loadAllCoins(), coinEntities -> {
+            if (mDb.getDatabaseCreated().getValue() != null) {
+                coins.postValue(filterByBelongTo(coinEntities));
+            }
+        });
+        return coins;
+    }
 
-        OkHttpClient client = new OkHttpClient();
-        client.newCall(request).enqueue(callback);
+    public List<CoinEntity> loadCoinsSync() {
+        return filterByBelongTo(mDb.coinDao().loadAllCoinsSync());
+    }
+
+    public void updateCoin(Coin coin) {
+        mDb.coinDao().update(new CoinEntity(coin));
+    }
+
+    public void insertAddress(List<AddressEntity> addrs) {
+        mDb.addressDao().insertAll(addrs);
+    }
+
+    public void insertAddress(AddressEntity addrs) {
+        mDb.addressDao().insertAddress(addrs);
+    }
+
+    public LiveData<CoinEntity> loadCoin(final long id) {
+        return mDb.coinDao().loadCoin(id);
+    }
+
+    public CoinEntity loadCoinSync(final String coinId) {
+        return mDb.coinDao().loadCoinSync(coinId, getBelongTo());
+    }
+
+    public LiveData<List<AddressEntity>> loadAddress(String coinId) {
+        return mDb.addressDao().loadAddressForCoin(coinId, getBelongTo());
+    }
+
+    public List<AddressEntity> loadAddressSync(String coinId) {
+        return mDb.addressDao().loadAddressSync(coinId, getBelongTo());
+    }
+
+    public AddressEntity loadAddressBypath(String path) {
+        return mDb.addressDao().loadAddress(path.toUpperCase(), getBelongTo());
+    }
+
+    public void updateAddress(AddressEntity addressEntity) {
+        mDb.addressDao().update(addressEntity);
+    }
+
+    public LiveData<List<TxEntity>> loadTxs(String coinId) {
+        return mDb.txDao().loadTxs(coinId);
+    }
+
+    public List<TxEntity> loadElectrumTxsSync(String coinId) {
+        return mDb.txDao().loadElectrumTxsSync(coinId);
+    }
+
+    public LiveData<TxEntity> loadTx(String txId) {
+        return mDb.txDao().load(txId);
+    }
+
+    public TxEntity loadTxSync(String txId) {
+        return mDb.txDao().loadSync(txId);
+    }
+
+    public void insertTx(TxEntity tx) {
+        mDb.txDao().insert(tx);
+    }
+
+    public void insertCoins(List<CoinEntity> coins) {
+        mDb.runInTransaction(() -> mDb.coinDao().insertAll(coins));
+    }
+
+    public long insertCoin(CoinEntity coin) {
+        return mDb.coinDao().insert(coin);
+    }
+
+    public void clearDb() {
+        mDb.clearAllTables();
+    }
+
+    private List<CoinEntity> filterByBelongTo(List<CoinEntity> coins) {
+        String belongTo = Utilities.getCurrentBelongTo(context);
+        return coins.isEmpty() ? Collections.emptyList()
+                :
+                coins.stream()
+                        .filter(coin -> belongTo.equals(coin.getBelongTo()))
+                        .collect(Collectors.toList());
+    }
+
+
+    public LiveData<List<WhiteListEntity>> loadWhiteList() {
+        return mDb.whiteListDao().load();
+    }
+
+    public void insertWhiteList(WhiteListEntity entity) {
+        mDb.whiteListDao().insert(entity);
+    }
+
+    public void deleteWhiteList(WhiteListEntity entity) {
+        mDb.whiteListDao().delete(entity);
+    }
+
+    public WhiteListEntity queryWhiteList(String address) {
+        return mDb.whiteListDao().queryAddress(address, Utilities.getCurrentBelongTo(context));
+    }
+
+    public void insertAccount(AccountEntity account) {
+        mDb.accountDao().add(account);
+    }
+
+    public void updateAccount(AccountEntity account) {
+        mDb.accountDao().update(account);
+    }
+
+    public List<AccountEntity> loadAccountsForCoin(CoinEntity coin) {
+        return mDb.accountDao().loadForCoin(coin.getId());
+    }
+
+    public CoinEntity loadCoinEntityByCoinCode(String coinCode) {
+        String coinId = Coins.coinIdFromCoinCode(coinCode);
+        return loadCoinSync(coinId);
+    }
+
+    public void deleteHiddenVaultData() {
+        mDb.coinDao().deleteHidden();
+        mDb.txDao().deleteHidden();
+        mDb.addressDao().deleteHidden();
+        mDb.whiteListDao().deleteHidden();
     }
 }

@@ -1,93 +1,28 @@
-4
-https://raw.githubusercontent.com/kemusiro/jr100-emulator-v2/master/src/jp/asamomiji/assembler/Instruction.java
-/**
- * JR-100 Emulator Version 2
- *
- * Copyright (c) 2006-2020 Kenichi Miyata
- *
- * This software is released under the the MIT license
- * http://opensource.org/licenses/mit-license.php
- */
-package jp.asamomiji.assembler;
+14
+https://raw.githubusercontent.com/mjtb49/LattiCG/master/src/randomreverser/reversal/instruction/Instruction.java
+package randomreverser.reversal.instruction;
+
+import randomreverser.reversal.ProgramInstance;
+import randomreverser.reversal.asm.StringParser;
+import randomreverser.reversal.constraint.Constraint;
+import randomreverser.util.LCG;
+
+import java.util.function.Function;
+import java.util.stream.LongStream;
 
 public abstract class Instruction {
-    public static final int MODE_IMMEDIATE = 0;
-    public static final int MODE_DIRECT = 1;
-    public static final int MODE_INDEXED = 2;
-    public static final int MODE_EXTENDED = 3;
-    public static final int MODE_IMPLIED = 4;
-    public static final int MODE_RELATIVE = 5;
 
-    protected int address = 0;
-    protected int mode = 0;
-    protected int operand = 0;
-    protected String mnemonic = null;
-    protected Label label = null;
-    protected boolean isBranchTarget = false;
+    public abstract LongStream filter(ProgramInstance program, LongStream seeds);
 
-    protected Instruction(int address) {
-        this.address = address;
-        this.mode = MODE_IMPLIED;
-        this.operand = 0;
-    }
-    protected Instruction(int address, int mode, int operand) {
-        this.address = address;
-        this.mode = mode;
-        this.operand = operand;
-    }
+    public abstract void writeOperands(StringBuilder output, boolean verbose,
+                                       Function<Constraint<?>, String> constraintNames);
 
-    public int getAddress() {
-        return address;
-    }
+    public abstract void readOperands(StringParser parser, LCG lcg, Function<String, Constraint<?>> constraintRetriever);
 
-    public int getMode() {
-        return mode;
-    }
-
-    public int getOperand() {
-        return operand;
-    }
-
-    public String getMnemonic() {
-        return mnemonic;
-    }
-
-    abstract public String getOperandString();
-
-    abstract public boolean isBranch();
-
-    public boolean isBranchTarget() {
-        return isBranchTarget;
-    }
-
-    public void setBranchTarget() {
-        isBranchTarget = true;
-    }
-
-    public Label getLabel() {
-        return label;
-    }
-
-    public void setLabel(Label label) {
-        this.label = label;
-    }
-
-    public int getLength() {
-        switch (mode) {
-        case MODE_IMMEDIATE:
-            return 2;
-        case MODE_DIRECT:
-            return 2;
-        case MODE_INDEXED:
-            return 2;
-        case MODE_EXTENDED:
-            return 3;
-        case MODE_IMPLIED:
-            return 1;
-        case MODE_RELATIVE:
-            return 2;
-        default:
-            return 1;
-        }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(Instructions.mnemonics.getOrDefault(getClass(), "~~UNREGISTERED~~")).append(" ");
+        writeOperands(sb, true, Constraint::toString);
+        return sb.toString();
     }
 }

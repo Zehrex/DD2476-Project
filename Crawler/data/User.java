@@ -1,18 +1,59 @@
-1
-https://raw.githubusercontent.com/wanzicong/mybatis-study/master/src/main/java/com/mybatis/model/lotlot/User.java
-package com.mybatis.model.lotlot;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/common/src/main/java/engineering/everest/lhotse/axon/common/domain/User.java
+package engineering.everest.lhotse.axon.common.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.Date;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.UUID;
+
+import static engineering.everest.lhotse.axon.common.domain.Role.ADMIN;
+import static engineering.everest.lhotse.axon.common.domain.Role.ORG_ADMIN;
+import static engineering.everest.lhotse.axon.common.domain.Role.ORG_USER;
+import static java.util.UUID.fromString;
 
 @Data
-public class User {
-    private String userId;
-    private String userName;
-    private String userAddress;
-    private String userSex;
-    private Date userBirthday;
-    private List<Role> roles;
+@NoArgsConstructor
+@AllArgsConstructor
+@SuppressWarnings("PMD.ShortClassName")
+public class User implements Identifiable {
+
+    public static final UUID ADMIN_ID = fromString("00000000-0000-0000-0000-000000000000");
+
+    private UUID id;
+    private UUID organizationId;
+    private String username;
+    private String displayName;
+    private String email;
+    private boolean disabled;
+    private Set<Role> roles;
+
+    public User(UUID id, UUID organizationId, String username, String displayName) {
+        this(id, organizationId, username, displayName, false);
+    }
+
+    public User(UUID id, UUID organizationId, String username, String displayName, boolean disabled) {
+        this(id, organizationId, username, displayName, username, disabled, Set.of(ORG_USER));
+    }
+
+    public boolean hasRole(Role role) {
+        return roles.contains(role);
+    }
+
+    public boolean hasAnyRole(Role... roles) {
+        return Arrays.stream(roles).anyMatch(this::hasRole);
+    }
+
+    @Override
+    public boolean canUpdate(User user) {
+        return isAdminOrAdminOfOrganization(user);
+    }
+
+    private boolean isAdminOrAdminOfOrganization(User user) {
+        return user.hasRole(ADMIN)
+                || user.hasRole(ORG_ADMIN) && user.getOrganizationId().equals(organizationId);
+    }
 }

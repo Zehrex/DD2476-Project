@@ -1,0 +1,25 @@
+16
+https://raw.githubusercontent.com/Chitturiarunkrishna/Hackerrank30DaysOfCode/master/Day%2016%20-%20Exceptions%20-%20String%20to%20Integer.java
+import java.io.*;
+import java.util.*;
+import java.text.*;
+import java.math.*;
+import java.util.regex.*;
+
+public class Solution {
+
+    public static void main(String[] args) 
+    {
+        Scanner in = new Scanner(System.in);
+        String S = in.next();
+        try
+        {
+             Integer integer = Integer.parseInt(S);
+            System.out.println(integer);
+        }
+        catch (Exception e)
+        {
+             System.out.println("Bad String");
+        }
+    }
+}

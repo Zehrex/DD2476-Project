@@ -1,28 +1,56 @@
-3
-https://raw.githubusercontent.com/SimonHGR/safari-threads/master/src/main/java/runnables/Counter.java
-package runnables;
-
-class GoodValue implements Runnable {
-  long value = 0;
-  @Override
-  public void run() {
-    for (int i = 0; i < 2_000_000; i++) {
-      synchronized(this) {
-        value++;
-      }
-    }
-  }
-}
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/model/Counter.java
+package ru.bgcrm.model;
 
 public class Counter {
-  public static void main(String[] args) throws Throwable {
-    GoodValue v = new GoodValue();
-    Thread t1 = new Thread(v);
-    t1.start();
-    Thread t2 = new Thread(v);
-    t2.start();
-    t1.join();
-    t2.join();
-    System.out.println("Value of v.value is " + v.value);
-  }
+    public Counter() {
+        id = -1;
+        value = -1;
+    }
+
+    private int id;
+    private String title;
+    private int value;
+    private String prefix;
+    private String postfix;
+
+    public String getPostfix() {
+        return postfix;
+    }
+
+    public void setPostfix(String postfix) {
+        this.postfix = postfix;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
 }

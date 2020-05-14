@@ -1,189 +1,72 @@
-13
-https://raw.githubusercontent.com/javamxd/ssssssss/master/src/main/java/org/ssssssss/session/Configuration.java
-package org.ssssssss.session;
+23
+https://raw.githubusercontent.com/datastax/metric-collector-for-apache-cassandra/master/src/main/java/com/datastax/mcac/Configuration.java
+package com.datastax.mcac;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-import org.ssssssss.utils.Assert;
-import org.ssssssss.utils.XmlFileLoader;
+import org.apache.cassandra.config.DatabaseDescriptor;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * S8配置类
- */
-public class Configuration implements InitializingBean {
 
-    private RequestMappingHandlerMapping requestMappingHandlerMapping;
+public class Configuration
+{
+    public static final long MAX_METRIC_UPDATE_GAP_IN_SECONDS = TimeUnit.MINUTES.toSeconds(5);
+    public static final long MAX_EVENT_INTERVAL = (int) TimeUnit.MINUTES.toSeconds(5);
 
-    /**
-     * Http请求处理器
-     */
-    private Object requestHandler;
+    public String log_dir = System.getProperty("cassandra.logdir", System.getProperty("mcac.collectd.logdir", "/tmp"));
 
-    /**
-     * Http请求处理方法
-     */
-    private Method requestHandleMethod;
+    public String data_dir = DatabaseDescriptor.isDaemonInitialized()
+            ? new File(DatabaseDescriptor.getCommitLogLocation()).toPath().getParent().resolve("mcac_data").normalize().toFile().getAbsolutePath()
+            : System.getProperty("cassandra.storagedir") + "/mcsc_data";
 
-    /**
-     * Http请求(带RequestBody)处理方法
-     */
-    private Method requestWithRequestBodyHandleMethod;
+    public String token_dir = "/tmp/";
 
-    /**
-     * xml位置
-     */
-    private String[] xmlLocations;
+    public Long data_dir_max_size_in_mb = 5000L;
 
-    /**
-     * 是否自动刷新
-     */
-    private boolean enableRefresh;
+    public Integer metric_sampling_interval_in_seconds = 30;
 
-    /**
-     * 是否打印banner
-     */
-    private boolean banner;
+    public Integer upload_interval_in_seconds = (int)MAX_METRIC_UPDATE_GAP_IN_SECONDS;
+
+    public Integer event_interval_in_seconds = (int)MAX_EVENT_INTERVAL;
+
+    public String upload_url;
+
+    String insights_token;
+
+    public List<FilteringRule> filtering_rules = new ArrayList<>();
+
+    public boolean insights_upload_enabled = false;
+
+    public boolean write_to_disk_enabled = true;
+
+    public boolean insights_streaming_enabled = false;
 
     /**
-     * 执行出错时是否抛异常
+     * This serves the opposite purpose of metric_sampling_interval_in_seconds
+     * which is intended for real-time reporting of metrics on a
+     * high frequency.
+     *
+     * In the case of insights if we ship data every hour we want at *least* one
+     * set of metrics every 5 minutes (to fill out the UI)
+     *
+     * Reporting more often would be wasteful (unless the customer lowers the upload
+     * interval or starts streaming)
      */
-    private boolean throwException = false;
-
-    /**
-     * 缓存已加载的statement(request-mapping映射)
-     */
-    private Map<String, Statement> statementMappingMap = new ConcurrentHashMap<>();
-
-    /**
-     * 缓存已加载的statement（ID映射）
-     */
-    private Map<String, Statement> statementIdMap = new ConcurrentHashMap<>();
-
-    private static Logger logger = LoggerFactory.getLogger(Configuration.class);
-
-    /**
-     * 根据RequestMapping获取statement对象
-     */
-    public Statement getStatement(String requestMapping) {
-        return statementMappingMap.get(requestMapping);
+    public long eventUpdateGapInSeconds()
+    {
+        if (upload_interval_in_seconds > MAX_METRIC_UPDATE_GAP_IN_SECONDS)
+            return MAX_METRIC_UPDATE_GAP_IN_SECONDS;
+        else
+            return upload_interval_in_seconds;
     }
 
-    /**
-     * 根据RequestMapping获取statement对象
-     */
-    public Statement getStatementById(String id) {
-        return statementIdMap.get(id);
-    }
-
-    /**
-     * 注册Statement成接口，当已存在时，刷新其配置
-     */
-    public void addStatement(Statement statement) {
-        RequestMappingInfo requestMappingInfo = getRequestMappingInfo(statement);
-        if (StringUtils.isNotBlank(statement.getId())) {
-            // 设置ID与statement的映射
-            statementIdMap.put(statement.getId(), statement);
-        }
-        if (requestMappingInfo == null) {
-            return;
-        }
-        // 如果已经注册过，则先取消注册
-        if (statementMappingMap.containsKey(statement.getRequestMapping())) {
-            logger.debug("刷新接口:{}", statement.getRequestMapping());
-            // 取消注册
-            requestMappingHandlerMapping.unregisterMapping(requestMappingInfo);
-        }else{
-            logger.debug("注册接口:{}", statement.getRequestMapping());
-        }
-        // 添加至缓存
-        statementMappingMap.put(statement.getRequestMapping(), statement);
-        // 注册接口
-        requestMappingHandlerMapping.registerMapping(requestMappingInfo,requestHandler,statement.isRequestBody() ? requestWithRequestBodyHandleMethod : requestHandleMethod);
-    }
-
-    /**
-     * 获取RequestMappingInfo对象
-     */
-    private RequestMappingInfo getRequestMappingInfo(Statement statement) {
-        String requestMapping = statement.getRequestMapping();
-        if (StringUtils.isBlank(requestMapping)) {
-            return null;
-        }
-        RequestMappingInfo.Builder builder = RequestMappingInfo.paths(requestMapping);
-        if (StringUtils.isNotBlank(statement.getRequestMethod())) {
-            RequestMethod requestMethod = RequestMethod.valueOf(statement.getRequestMethod().toUpperCase());
-            Assert.isNotNull(requestMethod, String.format("不支持的请求方法:%s", statement.getRequestMethod()));
-            builder.methods(requestMethod);
-        }
-        return builder.build();
-    }
-
-    public void setRequestMappingHandlerMapping(RequestMappingHandlerMapping requestMappingHandlerMapping) {
-        this.requestMappingHandlerMapping = requestMappingHandlerMapping;
-    }
-
-    public void setRequestHandler(Object requestHandler) {
-        this.requestHandler = requestHandler;
-    }
-
-    public void setRequestHandleMethod(Method requestHandleMethod) {
-        this.requestHandleMethod = requestHandleMethod;
-    }
-
-    public void setXmlLocations(String[] xmlLocations) {
-        this.xmlLocations = xmlLocations;
-    }
-
-    public void setEnableRefresh(boolean enableRefresh) {
-        this.enableRefresh = enableRefresh;
-    }
-
-    public void setBanner(boolean banner) {
-        this.banner = banner;
-    }
-
-    public boolean isThrowException() {
-        return throwException;
-    }
-
-    public void setRequestWithRequestBodyHandleMethod(Method requestWithRequestBodyHandleMethod) {
-        this.requestWithRequestBodyHandleMethod = requestWithRequestBodyHandleMethod;
-    }
-
-    public void setThrowException(boolean throwException) {
-        this.throwException = throwException;
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        if(this.banner){
-            System.out.println("  ____    ____    ____    ____    ____    ____    ____    ____  ");
-            System.out.println(" / ___|  / ___|  / ___|  / ___|  / ___|  / ___|  / ___|  / ___| ");
-            System.out.println("\\___ \\  \\___ \\  \\___ \\  \\___ \\  \\___ \\  \\___ \\  \\___ \\  \\___ \\ ");
-            System.out.println("  ___) |  ___) |  ___) |  ___) |  ___) |  ___) |  ___) |  ___) |");
-            System.out.println(" |____/  |____/  |____/  |____/  |____/  |____/  |____/  |____/       " + Configuration.class.getPackage().getImplementationVersion());
-        }
-        if(this.xmlLocations == null){
-            logger.error("ssssssss.xml-locations不能为空");
-        }else{
-            XmlFileLoader loader = new XmlFileLoader(xmlLocations, this);
-            loader.run();
-            // 如果启动刷新则定时重新加载
-            if(enableRefresh){
-                logger.info("启动自动刷新ssssssss");
-                Executors.newScheduledThreadPool(1).scheduleAtFixedRate(loader,3,3, TimeUnit.SECONDS);
-            }
-        }
+    public long metricUpdateGapInSeconds()
+    {
+        if (upload_interval_in_seconds > MAX_METRIC_UPDATE_GAP_IN_SECONDS)
+            return MAX_METRIC_UPDATE_GAP_IN_SECONDS;
+        else
+            return upload_interval_in_seconds;
     }
 }

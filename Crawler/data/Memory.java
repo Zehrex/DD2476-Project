@@ -1,56 +1,50 @@
-4
-https://raw.githubusercontent.com/kemusiro/jr100-emulator-v2/master/src/jp/asamomiji/emulator/Memory.java
-/**
- * JR-100 Emulator Version 2
- *
- * Copyright (c) 2006-2020 Kenichi Miyata
- *
- * This software is released under the the MIT license
- * http://opensource.org/licenses/mit-license.php
- */
-package jp.asamomiji.emulator;
+16
+https://raw.githubusercontent.com/wmm1996528/unidbg_douyin10/master/src/main/java/com/github/unidbg/memory/Memory.java
+package com.github.unidbg.memory;
 
-/**
- * このクラスはアドレス範囲を持ち各アドレスにデータを保存することのできる
- * 汎用的なメモリを実装する。
- * メモリアドレスに対して特別な意味を持たせる場合は、このクラスを継承して
- * load,store命令をオーバーライドする。
- *
- */
-public class Memory implements Addressable {
-    protected byte[] data = null;
-    protected int start;
-    protected int length;
+import com.github.unidbg.pointer.UnicornPointer;
+import com.github.unidbg.spi.Loader;
+import com.github.unidbg.unix.IO;
 
-    public Memory(int start, int length) {
-        this.start = start;
-        this.length = length;
-        data = new byte[length];
-    }
-    public int getStartAddress() {
-        return start;
-    }
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 
-    public int getEndAddress() {
-        return start + length - 1;
-    }
+@SuppressWarnings("unused")
+public interface Memory extends IO, Loader, StackMemory {
 
-    public byte load8(int address) {
-        return data[address - start];
-    }
+    long HEAP_BASE = 0x8048000;
+    long STACK_BASE = 0xc0000000L;
+    int STACK_SIZE_OF_PAGE = 512; // 2M
 
-    public short load16(int address) {
-        byte val1 = data[address - start];
-        byte val2 = data[address - start + 1];
-        return (short)((val1 << 8) + val2);
-    }
+    long MMAP_BASE = 0x40000000L;
 
-    public void store8(int address, byte value) {
-        data[address - start] = value;
-    }
+    UnicornPointer allocateStack(int size);
+    UnicornPointer pointer(long address);
+    void setStackPoint(long sp);
+    long getStackPoint();
+    long getStackBase();
+    int getStackSize();
 
-    public void store16(int address, short value) {
-        data[address - start] = (byte)(value >> 8);
-        data[address - start + 1] = (byte)(value & 0xff);
-    }
+    void setCallInitFunction();
+
+    long mmap2(long start, int length, int prot, int flags, int fd, int offset);
+    int mprotect(long address, int length, int prot);
+    int brk(long address);
+
+    MemoryBlock malloc(int length);
+    MemoryBlock malloc(int length, boolean runtime);
+    UnicornPointer mmap(int length, int prot);
+    int munmap(long start, int length);
+
+    /**
+     * set errno
+     */
+    void setErrno(int errno);
+
+    File dumpHeap() throws IOException;
+    File dumpStack() throws IOException;
+
+    Collection<MemoryMap> getMemoryMap();
+
 }

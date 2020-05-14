@@ -1,0 +1,30 @@
+16
+https://raw.githubusercontent.com/wmm1996528/unidbg_douyin10/master/src/main/java/com/github/unidbg/ios/struct/kernel/TaskInfoReply.java
+package com.github.unidbg.ios.struct.kernel;
+
+import com.github.unidbg.ios.struct.sysctl.TaskDyldInfo;
+import com.github.unidbg.pointer.UnicornStructure;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class TaskInfoReply extends UnicornStructure {
+
+    public TaskInfoReply(Pointer p) {
+        super(p);
+        setAlignType(Structure.ALIGN_NONE);
+    }
+
+    public NDR_record NDR;
+    public int retCode;
+    public int task_info_outCnt;
+    public TaskDyldInfo dyldInfo;
+
+    @Override
+    protected List<String> getFieldOrder() {
+        return Arrays.asList("NDR", "retCode", "task_info_outCnt", "dyldInfo");
+    }
+
+}

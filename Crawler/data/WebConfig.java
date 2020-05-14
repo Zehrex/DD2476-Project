@@ -1,14 +1,27 @@
-2
-https://raw.githubusercontent.com/gardle/gardle-web/master/src/main/java/com/gardle/web/config/WebConfig.java
-package com.gardle.web.config;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/api/src/main/java/engineering/everest/lhotse/api/config/WebConfig.java
+package engineering.everest.lhotse.api.config;
 
+import engineering.everest.lhotse.api.AuthUserArgumentResolver;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    public WebConfig() {
+    private final AuthUserArgumentResolver authUserArgumentResolver;
 
+    @Autowired
+    public WebConfig(AuthUserArgumentResolver authUserArgumentResolver) {
+        this.authUserArgumentResolver = authUserArgumentResolver;
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(authUserArgumentResolver);
     }
 }

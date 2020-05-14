@@ -1,118 +1,66 @@
-2
-https://raw.githubusercontent.com/gardle/gardle-web/master/src/main/java/com/gardle/config/SecurityConfiguration.java
-package com.gardle.config;
-
-import com.gardle.security.AuthoritiesConstants;
-import com.gardle.security.jwt.JWTConfigurer;
-import com.gardle.security.jwt.TokenProvider;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-crawl/src/main/java/com/java2nb/novel/core/config/SecurityConfiguration.java
+package com.java2nb.novel.core.config;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
-import org.springframework.web.filter.CorsFilter;
-import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
+/**
+ * SpringSecurity配置
+ * @author Administrator
+ */
+@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-@Import(SecurityProblemSupport.class)
+@RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final TokenProvider tokenProvider;
+    @Value("${admin.username}")
+    private String username;
 
-    private final CorsFilter corsFilter;
-    private final SecurityProblemSupport problemSupport;
+    @Value("${admin.password}")
+    private String password;
 
-    public SecurityConfiguration(TokenProvider tokenProvider, CorsFilter corsFilter, SecurityProblemSupport problemSupport) {
-        this.tokenProvider = tokenProvider;
-        this.corsFilter = corsFilter;
-        this.problemSupport = problemSupport;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+
     @Override
-    public void configure(WebSecurity web) {
-        web.ignoring()
-            .antMatchers(HttpMethod.OPTIONS, "/**")
-            .antMatchers("/app/**/*.{js,html}")
-            .antMatchers("/i18n/**")
-            .antMatchers("/content/**")
-            .antMatchers("/swagger-ui/index.html")
-            .antMatchers("/test/**");
+    public void configure(WebSecurity web) throws Exception {
+        super.configure(web);
     }
 
     @Override
-    public void configure(HttpSecurity http) throws Exception {
-        // @formatter:off
-        http
-            .csrf()
-            .disable()
-            .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
-            .exceptionHandling()
-            .authenticationEntryPoint(problemSupport)
-            .accessDeniedHandler(problemSupport)
-            .and()
-            .headers()
-            .contentSecurityPolicy("default-src 'self'; " +
-                "frame-src 'self' https://js.stripe.com data:;" +
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com https://analytics.gardle.ga https://js.stripe.com; " +
-                "style-src 'self' 'unsafe-inline'; img-src 'self' *.locationiq.com s3.eu-central-1.amazonaws.com https://analytics.gardle.ga https://fonts.googleapis.com/ data:; " +
-                "font-src 'self' data:; " +
-                "connect-src 'self' *.locationiq.com https://analytics.gardle.ga")
-            .and()
-            .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-            .and()
-            .featurePolicy("geolocation 'none'; midi 'none'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; fullscreen 'self'; payment 'none'")
-            .and()
-            .frameOptions()
-            .deny()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-            .antMatchers("/api/v1/authenticate").permitAll()
-            .antMatchers("/api/v1/register").permitAll()
-            .antMatchers("/api/v1/activate").permitAll()
-            .antMatchers("/api/v1/account/reset-password/init").permitAll()
-            .antMatchers("/api/v1/account/reset-password/finish").permitAll()
-            .antMatchers("/api/v1/gardenfields").permitAll()
-            .antMatchers("/api/v1/gardenfields/user").authenticated()
-            .antMatchers("/api/v1/gardenfields/{\\d+}").permitAll()
-            .antMatchers("/api/v1/gardenfields/{\\d+}").permitAll()
-            .antMatchers("/api/v1/gardenfields/{\\d+}/downloadImage/*").permitAll()
-            .antMatchers("/api/v1/gardenfields/{\\d+}/downloadThumbnail/*").permitAll()
-            .antMatchers("/api/v1/gardenfields/{\\d+}/downloadImages").permitAll()
-            .antMatchers("/api/v1/gardenfields/{\\d+}/coverImageName").permitAll()
-            .antMatchers("/api/v1/leasings/{\\d+}/leasedDateRanges").permitAll()
-            .antMatchers("/api/v1/**").authenticated()
-            .antMatchers("/websocket/tracker").hasAuthority(AuthoritiesConstants.ADMIN)
-            .antMatchers("/websocket/**").permitAll()
-            .antMatchers("/management/health").permitAll()
-            .antMatchers("/management/info").permitAll()
-            .antMatchers("/management/prometheus").permitAll()
-            .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
-            .antMatchers("/stripe/**").permitAll()
-            .and()
-            .httpBasic()
-            .and()
-            .apply(securityConfigurerAdapter());
-        // @formatter:on
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+
+        User.UserBuilder builder = User.builder().passwordEncoder(passwordEncoder()::encode);
+        auth.inMemoryAuthentication().withUser(builder.username(username).password(password).roles("ADMIN").build());
     }
 
-    private JWTConfigurer securityConfigurerAdapter() {
-        return new JWTConfigurer(tokenProvider);
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()//禁用了 csrf 功能
+                .authorizeRequests()//限定签名成功的请求
+                .antMatchers("/**").hasRole("ADMIN")
+                .anyRequest().permitAll()//其他没有限定的请求，允许访问
+                .and().anonymous()//对于没有配置权限的其他请求允许匿名访问
+                .and().formLogin()//使用 spring security 默认登录页面
+                .and().httpBasic();//启用http 基础验证
+
     }
+
+
+
+
 }

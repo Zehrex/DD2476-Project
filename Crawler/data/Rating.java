@@ -1,93 +1,33 @@
-4
-https://raw.githubusercontent.com/abdalmoniem/Movie-App/master/base/src/main/java/butter/droid/base/providers/media/response/models/common/Rating.java
-package butter.droid.base.providers.media.response.models.common;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
+21
+https://raw.githubusercontent.com/Suranchiyev/java-sdet-2020/master/src/day12/Rating.java
+package day12;
 
 public class Rating {
-
-    @JsonProperty("percentage")
-    private int percentage;
-    @JsonProperty("watching")
-    private int watching;
-    @JsonProperty("votes")
-    private int votes;
-    @JsonProperty("loved")
-    private int loved;
-    @JsonProperty("hated")
-    private int hated;
-
-    /**
-     * @return The percentage
-     */
-    public int getPercentage() {
-        return percentage;
-    }
-
-    /**
-     * @param percentage The percentage
-     */
-    public void setPercentage(int percentage) {
-        this.percentage = percentage;
-    }
-
-    /**
-     * @return The watching
-     */
-    public int getWatching() {
-        return watching;
-    }
-
-    /**
-     * @param watching The watching
-     */
-    public void setWatching(int watching) {
-        this.watching = watching;
-    }
-
-    /**
-     * @return The votes
-     */
-    public int getVotes() {
-        return votes;
-    }
-
-    /**
-     * @param votes The votes
-     */
-    public void setVotes(int votes) {
-        this.votes = votes;
-    }
-
-    /**
-     * @return The loved
-     */
-    public int getLoved() {
-        return loved;
-    }
-
-    /**
-     * @param loved The loved
-     */
-    public void setLoved(int loved) {
-        this.loved = loved;
-    }
-
-    /**
-     * @return The hated
-     */
-    public int getHated() {
-        return hated;
-    }
-
-    /**
-     * @param hated The hated
-     */
-    public void setHated(int hated) {
-        this.hated = hated;
-    }
-
+	enum MovieRating {EXCELLENT, AVERAGE, BAD};
+	
+	public static void main(String[] args) {		
+		String message = getRatingMessage(MovieRating.EXCELLENT);
+		System.out.println(message);
+	}
+	
+	public static String getRatingMessage(MovieRating rating) {
+		String message;
+		
+		switch(rating) {
+		case EXCELLENT:
+			message = "You must see this movie!";
+			break;
+		case AVERAGE:
+			message = "This movie is OK, but not great.";
+			break;
+		case BAD:
+			message = "Skip it!";
+			break;
+		default:
+			message = "Something is wrong";
+			break;
+		}
+		
+		return message;
+	}
 }

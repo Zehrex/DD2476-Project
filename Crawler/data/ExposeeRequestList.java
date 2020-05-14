@@ -1,0 +1,32 @@
+125
+https://raw.githubusercontent.com/DP-3T/dp3t-sdk-backend/develop/dpppt-backend-sdk/dpppt-backend-sdk-model/src/main/java/org/dpppt/backend/sdk/model/ExposeeRequestList.java
+package org.dpppt.backend.sdk.model;
+
+import java.util.List;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+public class ExposeeRequestList {
+    @NotNull
+    @NotEmpty
+    List<ExposedKey> exposedKeys;
+
+    private Integer fake = 0;
+
+    public List<ExposedKey> getExposedKeys() {
+        return exposedKeys;
+    }
+
+    public Integer isFake() {
+        return fake;
+    }
+
+    public void setFake(Integer fake) {
+        this.fake = fake;
+    }
+
+    public void setExposedKeys(List<ExposedKey> exposedKeys) {
+        this.exposedKeys = exposedKeys;
+    }
+}

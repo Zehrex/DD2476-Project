@@ -1,58 +1,32 @@
-2
-https://raw.githubusercontent.com/ryandw11/ODS/master/src/test/java/me/ryandw11/ods/tests/Car.java
-package me.ryandw11.ods.tests;
-
-import me.ryandw11.ods.ODS;
-import me.ryandw11.ods.serializer.Serializable;
-import me.ryandw11.ods.tags.IntTag;
-import me.ryandw11.ods.tags.ObjectTag;
-import me.ryandw11.ods.tags.StringTag;
-
-import java.util.List;
+21
+https://raw.githubusercontent.com/Suranchiyev/java-sdet-2020/master/src/day9/Car.java
+package day9;
 
 public class Car {
-
-    @Serializable
-    private String type;
-    @Serializable
-    private int gas;
-    @Serializable
-    private List<String> cords;
-    @Serializable
-    private Owner owner;
-
-    public Car(){}
-
-    public Car init(String type, int gas, List<String> cords, Owner owner){
-        this.type = type;
-        this.gas = gas;
-        this.cords = cords;
-        this.owner = owner;
-        return this;
-    }
-
-    public String getType(){
-        return type;
-    }
-
-    public int getGas(){
-        return gas;
-    }
-
-    public List<String> getCords(){
-        return cords;
-    }
-
-    public Owner getOwner(){
-        return owner;
-    }
-
-    public ObjectTag serialize(int i){
-        ObjectTag ot = new ObjectTag("car" + i);
-        ot.addTag(new StringTag("type", type));
-        ot.addTag(new IntTag("gas", gas));
-        ot.addTag(ODS.wrap("cords", cords));
-        ot.addTag(owner.serialize());
-        return ot;
-    }
+	// public - can be used from any class
+	// private - can be used only inside same class
+	// protected - can be used in the same package or in subclasses
+	// default access - can be used only in the same package
+	
+	public String model;
+	int year;
+	protected double price;
+	private String color;
+	String name;
+	
+	public void drive() {
+		color = "black";
+	}
+	
+	private void stop() {
+		System.out.println("Stop!");
+	}
+	
+	protected void turnLeft() {
+		System.out.println("Turning left");
+	}
+	
+	void reverse() {
+		System.out.println("Reversing..");
+	}
 }

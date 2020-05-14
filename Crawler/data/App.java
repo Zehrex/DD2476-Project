@@ -1,49 +1,49 @@
-2
-https://raw.githubusercontent.com/iboxdb/jmegradle/master/src/main/java/demo/jmegradle/App.java
-package demo.jmegradle;
+9
+https://raw.githubusercontent.com/idanapp/IdanPlusPlus/master/app/src/main/java/com/example/idan/plusplus/app.java
+package com.example.idan.plusplus;
 
-import iBoxDB.LocalServer.*;
-import java.io.File;
+import android.app.Application;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.util.Log;
 
-public class App {
+import com.example.idan.plusplus.Classes.LocaleManager;
+import com.example.idan.plusplus.V2.Services.Retrofit2Services.DaggerIRetrofitServices;
+import com.example.idan.plusplus.V2.Services.Retrofit2Services.IRetrofitServices;
 
-    public static final AutoBox auto = config();
+public class app extends Application {
+    private final String TAG = "DEBUG";
 
-    public static Box cube() {
-        return auto.cube();
+    // for the sake of simplicity. use DI in real apps instead
+    public static LocaleManager localeManager;
+    private static IRetrofitServices sRetrofitServices;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Utils.setAppContext(getApplicationContext());
+        sRetrofitServices = DaggerIRetrofitServices.create();
+
     }
 
-    private static AutoBox config() {
-
-        String path = "../jmedemodata";
-        new File(path).mkdirs();
-        DB.root(path);
-        DB db = new DB();
-
-        db.getConfig().ensureTable(new Ason(Id, 0L), "Table");
-
-        return db.open();
-
+    @Override
+    protected void attachBaseContext(Context base) {
+        localeManager = new LocaleManager(base);
+        localeManager.setNewLocale(base,"iw");
+        super.attachBaseContext(localeManager.setLocale(base));
+        Log.d(TAG, "attachBaseContext");
+       // ACRA.init(this);
     }
 
-    public static void set(Ason ason, String name, Object value) {
-        Object old = ason.get(name);
-        if (old != null && value != null) {
-            value = new Variant(value).as(old);
-        }
-        ason.put(name, value);
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        localeManager.setLocale(this);
+        Log.d(TAG, "onConfigurationChanged: " + newConfig.locale.getLanguage());
     }
 
-    public static <T> T get(Ason ason, String name) {
-        return get(ason, name, null);
+    public static IRetrofitServices getsRetrofitServices() {
+        return sRetrofitServices;
     }
-
-    public static <T> T get(Ason ason, String name, T defaultValue) {
-        T re = (T) ason.get(name);
-        return re != null ? re : defaultValue;
-    }
-
-    public static final String Id = "Id";
-    public static final String Count = "Count";
 
 }

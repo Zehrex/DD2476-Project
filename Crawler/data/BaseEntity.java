@@ -1,38 +1,21 @@
-7
-https://raw.githubusercontent.com/zeoio/fabric-toolkit/master/bcp-install-common/src/main/java/com/cgb/bcpinstall/common/entity/BaseEntity.java
-/*
- *  Copyright CGB Corp All Rights Reserved.
- * 
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-package com.cgb.bcpinstall.common.entity;
+15
+https://raw.githubusercontent.com/Florizt/RxMVVM/master/rxmvvmlib/src/main/java/com/rx/rxmvvmlib/entity/BaseEntity.java
+package com.rx.rxmvvmlib.entity;
 
-import com.alibaba.fastjson.JSON;
-import lombok.Data;
-import org.springframework.data.annotation.Transient;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
 
 /**
- * @program: BaseEntity
- * @description: DO抽象父类
- * @author: Zhun.Xiao
- * @create: 2018-10-29 15:20
- **/
+ * Created by wuwei
+ * 2018/1/12
+ * 佛祖保佑       永无BUG
+ */
 
-@Data
-public abstract class BaseEntity implements Serializable {
-    private static final long serialVersionUID = 8240263207556866796L;
-
-    public String toJson() {
-       return JSON.toJSONString(this);
-   }
+public class BaseEntity implements Serializable {
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 }

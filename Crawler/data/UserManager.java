@@ -1,94 +1,41 @@
-4
-https://raw.githubusercontent.com/justneon33/Sketchcode/master/app/src/main/java/com/sketch/code/two/api/manager/UserManager.java
-package com.sketch.code.two.api.manager;
+14
+https://raw.githubusercontent.com/FanChael/MVVM/master/librarys/lib_common/src/main/java/com/hl/base_module/appcomponent/UserManager.java
+package com.hl.base_module.appcomponent;
 
-import com.sketch.code.two.api.item.BaseResponse;
-import com.sketch.code.two.api.item.User;
-import com.sketch.code.two.api.item.UserResponse;
+import android.text.TextUtils;
 
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Body;
-import retrofit2.http.Field;
-import retrofit2.http.FormUrlEncoded;
-import retrofit2.http.POST;
+import com.hl.base_module.CommonApi;
+import com.hl.base_module.util.storage.SharedPreferencesUtil;
 
-import static com.sketch.code.two.util.Const.BASE_HOST;
-
+/**
+ * 用户本地信息管理
+ */
 public class UserManager {
-
-    private static UserManager mInstance;
-
-    private Retrofit mRetrofit;
-
-    private UserManager () {
-        mRetrofit = new Retrofit.Builder()
-                .baseUrl(BASE_HOST)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-    }
-
-    public static UserManager getInstance() {
-        if (mInstance == null) {
-            mInstance = new UserManager();
+    /**
+     * 是否登录了
+     *
+     * @return
+     */
+    public static boolean bIsLogin() {
+        if (TextUtils.isEmpty(getName())) {
+            return false;
         }
-        return mInstance;
+        return true;
     }
 
-    public UserManagerApi getUserManagerApi () {
-        return mRetrofit.create(UserManagerApi.class);
+    public static String getName() {
+        return SharedPreferencesUtil.getInstance(CommonApi.getApplication()).getSP(userKey());
     }
 
-    public interface UserManagerApi {
-
-        @FormUrlEncoded
-        @POST("user/get")
-        Call<UserResponse> get(
-                @Field("token") String token,
-                @Field("id") int id
-        );
-
-        @FormUrlEncoded
-        @POST("user/get")
-        Call<UserResponse> get(
-                @Field("token") String token
-        );
-
-        @FormUrlEncoded
-        @POST("https://api.neonteam.net/sketchcode/user/auth/register")
-        Call<BaseResponse> register(
-                @Field("email") String email,
-                @Field("password") String password,
-                @Field("first_name") String first_name,
-                @Field("surname") String surname
-        );
-
-        @FormUrlEncoded
-        @POST("user/auth/login")
-        Call<BaseResponse> login(
-                @Field("email") String email,
-                @Field("password") String password
-        );
-
-        // FIXME
-        @POST("user/edit")
-        Call<BaseResponse> edit(@Body User user);
-
-        // FIXME
-        @FormUrlEncoded
-        @POST("user/edit")
-        Call<BaseResponse> edit(
-                @Field("token") String token,
-                @Field("first_name") String first_name,
-                @Field("surname") String surname,
-                @Field("bio") String bio
-        );
-
-        @FormUrlEncoded
-        @POST("user/auth/logout")
-        Call<BaseResponse> logout (@Field("token") String token);
-
+    public static void saveUser(String name) {
+        SharedPreferencesUtil.getInstance(CommonApi.getApplication()).putSP(userKey(), name);
     }
 
+    public static void clearCount() {
+        SharedPreferencesUtil.getInstance(CommonApi.getApplication()).putSP(userKey(), "");
+    }
+
+    private static String userKey() {
+        return "user_key";
+    }
 }

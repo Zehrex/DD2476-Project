@@ -1,40 +1,46 @@
-2
-https://raw.githubusercontent.com/Heemooo/Bored/master/src/main/java/com/bored/core/Container.java
-package com.bored.core;
+50
+https://raw.githubusercontent.com/iqiyi/TaskManager/master/TaskManager/src/main/java/org/qiyi/basecore/taskmanager/impl/model/Container.java
+/*
+ *
+ * Copyright (C) 2020 iQIYI (www.iqiyi.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+package org.qiyi.basecore.taskmanager.impl.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import org.qiyi.basecore.taskmanager.Task;
+
 import java.util.List;
-import java.util.Map;
 
-public class Container {
-    private static final Map<String, URL> URL_LIST = new HashMap<>();
+/**
+ * 任务保存类
+ */
+public interface Container {
 
-    public static void put(String uri, URL url) {
-        URL_LIST.put(uri, url);
-    }
+    public boolean add(Task taskRequest);
 
-    public static boolean contains(String uri) {
-        return URL_LIST.containsKey(uri);
-    }
+    public void add(List<? extends Task> taskRequestList);
 
-    public static URL get(String uri) {
-        return URL_LIST.get(uri);
-    }
+    //    public TaskRequest findTaskById(String uuid);
+    public boolean contains(Task request);
 
-    public static void update(URL url) {
-        if (contains(url.uri)) {
-            URL_LIST.put(url.uri, url);
-        }
-    }
+    public boolean remove(Task taskRequest);
 
-    public static void delete(String uri){
-        URL url = URL_LIST.get(uri);
-        URL_LIST.remove(uri);
-    }
+    public int size();
 
-    public static List<URL> list(){
-        return new ArrayList<>(URL_LIST.values());
-    }
+    public void clear();
 
+    //返回地一个因为延迟执行进入队列中的
+    public Task offerTaskInIdleState(boolean isBGTask);
 }

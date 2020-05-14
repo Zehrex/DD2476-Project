@@ -1,23 +1,18 @@
-2
-https://raw.githubusercontent.com/chengcheng1021/javaStudy/master/src/cc1021/fan/array.java
-package cc1021.fan;
+16
+https://raw.githubusercontent.com/wmm1996528/unidbg_douyin10/master/src/main/java/com/github/unidbg/linux/android/dvm/Array.java
+package com.github.unidbg.linux.android.dvm;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
+import com.github.unidbg.Emulator;
+import com.github.unidbg.pointer.UnicornPointer;
+import com.sun.jna.Pointer;
 
-public class array {
+public interface Array<T> {
 
-    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        ArrayList<Integer> array = new ArrayList<>();
+    int length();
 
-        Class<? extends ArrayList> c = array.getClass();
-        Method m = c.getMethod("add", Object.class);
+    void setData(int start, T data);
 
-        m.invoke(array, "hello");
-        m.invoke(array, "world");
-        m.invoke(array, "java");
+    UnicornPointer allocateMemoryBlock(Emulator<?> emulator, int length);
+    void freeMemoryBlock(Pointer pointer);
 
-        System.out.println(array);
-    }
 }

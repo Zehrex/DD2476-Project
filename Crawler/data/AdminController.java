@@ -1,78 +1,130 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/controller/admin/api/AdminController.java
-package cn.tsxygfy.beyond.controller.admin.api;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_user/src/main/java/com/tensquare/user/controller/AdminController.java
+package com.tensquare.user.controller;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import cn.tsxygfy.beyond.Application;
-import cn.tsxygfy.beyond.model.dto.BlogInfo;
-import cn.tsxygfy.beyond.model.dto.LoginParam;
-import cn.tsxygfy.beyond.security.token.AuthToken;
-import cn.tsxygfy.beyond.service.AdminService;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tensquare.user.pojo.Admin;
+import com.tensquare.user.service.AdminService;
+
+import entity.PageResult;
+import entity.Result;
+import entity.StatusCode;
+import util.JwtUtil;
 
 /**
- * <p>
- * Description:
- * </p>
+ * admin控制器层
+ * @author Administrator
  *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.controller.admin
- * @since 2020-02-29 22:45:31
  */
-@Slf4j
 @RestController
-@RequestMapping("/api/admin")
+@CrossOrigin
+@RequestMapping("/admin")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
+	@Autowired
+	private AdminService adminService;
 
-    @ApiOperation("获取博客信息")
-    @GetMapping("info")
-    public BlogInfo getBlogInfo() {
-        return adminService.getBlogInfo();
-    }
+	@Autowired
+    private JwtUtil jwtUtil;
 
-    @ApiOperation("用户登录")
-    @PostMapping("login")
-    public AuthToken login(@RequestBody LoginParam loginParam) {
-        Assert.notNull(loginParam, "Username or password must be not null!");
-        return adminService.authenticate(loginParam);
-    }
-
-    @ApiOperation("用户登出")
-    @PostMapping("logout")
-    public void logout() {
-        adminService.clearToken();
-    }
-
-    @ApiOperation("刷新token")
-    @PostMapping("refresh/{refreshToken}")
-    public AuthToken refresh(@PathVariable String refreshToken) {
-        return adminService.refreshToken(refreshToken);
-    }
-
-    @ApiOperation("关闭应用")
-    @PostMapping("beyond-shutdown")
-    public String shutdown() {
-        try {
-            return "{\"message\":\"Shutting down, bye...\"}";
-        } finally {
-            Application.shutdown();
+	@RequestMapping(value = "/login",method = RequestMethod.POST)
+	public Result login(@RequestBody Admin admin) {
+        Admin adminLogin = adminService.login(admin);
+        if(adminLogin == null) {
+            return new Result(false,StatusCode.LOGINERROR,"登录失败");
         }
+        //使得前后端可以通话的操作--jwt
+        //生成令牌
+        String token = jwtUtil.createJWT(adminLogin.getId(), adminLogin.getLoginname(), "admin");
+        Map<String,Object> map = new HashMap<>();
+        map.put("token",token);
+        map.put("role","admin");
+        return new Result(true,StatusCode.OK,"登录成功",map);
     }
+	
+	/**
+	 * 查询全部数据
+	 * @return
+	 */
+	@RequestMapping(method= RequestMethod.GET)
+	public Result findAll(){
+		return new Result(true,StatusCode.OK,"查询成功",adminService.findAll());
+	}
+	
+	/**
+	 * 根据ID查询
+	 * @param id ID
+	 * @return
+	 */
+	@RequestMapping(value="/{id}",method= RequestMethod.GET)
+	public Result findById(@PathVariable String id){
+		return new Result(true,StatusCode.OK,"查询成功",adminService.findById(id));
+	}
 
-    @ApiOperation("重启应用")
-    @PostMapping("beyond-restart")
-    public String restart() {
-        try {
-            return "{\"message\":\"Application is restarting...Please wait a moment.\"}";
-        } finally {
-            Application.restart();
-        }
+
+	/**
+	 * 分页+多条件查询
+	 * @param searchMap 查询条件封装
+	 * @param page 页码
+	 * @param size 页大小
+	 * @return 分页结果
+	 */
+	@RequestMapping(value="/search/{page}/{size}",method=RequestMethod.POST)
+	public Result findSearch(@RequestBody Map searchMap , @PathVariable int page, @PathVariable int size){
+		Page<Admin> pageList = adminService.findSearch(searchMap, page, size);
+		return  new Result(true,StatusCode.OK,"查询成功",  new PageResult<Admin>(pageList.getTotalElements(), pageList.getContent()) );
+	}
+
+	/**
+     * 根据条件查询
+     * @param searchMap
+     * @return
+     */
+    @RequestMapping(value="/search",method = RequestMethod.POST)
+    public Result findSearch( @RequestBody Map searchMap){
+        return new Result(true,StatusCode.OK,"查询成功",adminService.findSearch(searchMap));
     }
+	
+	/**
+	 * 增加
+	 * @param admin
+	 */
+	@RequestMapping(method=RequestMethod.POST)
+	public Result add(@RequestBody Admin admin  ){
+		adminService.add(admin);
+		return new Result(true,StatusCode.OK,"增加成功");
+	}
+	
+	/**
+	 * 修改
+	 * @param admin
+	 */
+	@RequestMapping(value="/{id}",method= RequestMethod.PUT)
+	public Result update(@RequestBody Admin admin, @PathVariable String id ){
+		admin.setId(id);
+		adminService.update(admin);		
+		return new Result(true,StatusCode.OK,"修改成功");
+	}
+	
+	/**
+	 * 删除
+	 * @param id
+	 */
+	@RequestMapping(value="/{id}",method= RequestMethod.DELETE)
+	public Result delete(@PathVariable String id ){
+		adminService.deleteById(id);
+		return new Result(true,StatusCode.OK,"删除成功");
+	}
+	
 }

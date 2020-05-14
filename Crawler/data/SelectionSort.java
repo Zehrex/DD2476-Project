@@ -1,20 +1,50 @@
-2
-https://raw.githubusercontent.com/likith22/DataStructures/master/SelectionSort.java
-package DataStructures;
+21
+https://raw.githubusercontent.com/Suranchiyev/java-sdet-2020/master/src/day21/SelectionSort.java
+package day21;
+
+import java.util.Arrays;
 
 public class SelectionSort {
-	public void sort(int[] arr) {
-		int min ;
-		int temp ;
-		for(int i = 0;i < arr.length;i++) {
-			min = i;
-			for(int j = i+1;j < arr.length;j++) {
-				if(arr[j] < arr[min]) {
-					temp =arr[min];
-					arr[min] = arr[j];
-					arr[j] = temp; 
-				}
+	public static void main(String[] args) {
+		int[] num = {6, 3, 2, 10, 0, 7, 5};
+		System.out.println(Arrays.toString(num));
+		// [6, 3, 2, 10, 0, 7, 5]
+		
+		
+		selectionSort(num);
+		// [0, 2, 3, 5, 6, 7, 10]
+		System.out.println(Arrays.toString(num));
+		
+		// 1. find smallest value
+		// 2. swap
+	}
+	
+	public static void selectionSort(int[] num) {
+		for(int i = 0; i < num.length; i++) {
+			//                                   1
+			int smallestIndex = getSmallestIndex(i, num);
+			
+			swapElements(i, smallestIndex, num);
+		}
+	}
+	
+	public static int getSmallestIndex(int startIndex, int[] num) {
+		int min = num[startIndex];
+		int minIndex = startIndex;
+		
+		for(int i = startIndex + 1; i < num.length; i++) {
+			if(min > num[i]) {
+				min = num[i];
+				minIndex = i;
 			}
 		}
+		
+		return minIndex;
+	}
+	
+	public static void swapElements(int i, int j, int[] num) {
+		int temp = num[i]; 
+		num[i] = num[j];
+		num[j] = temp;
 	}
 }

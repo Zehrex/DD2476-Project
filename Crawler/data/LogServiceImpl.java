@@ -1,50 +1,30 @@
-2
-https://raw.githubusercontent.com/chenval/my-site/master/src/main/java/cn/blog/serviceImp/LogServiceImpl.java
-package cn.blog.serviceImp;
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/modules/sys/service/LogServiceImpl.java
+package com.kalvin.kvf.modules.sys.service;
 
-import cn.blog.constant.ErrorConstant;
-import cn.blog.dao.LogDao;
-import cn.blog.exception.BusinessException;
-import cn.blog.Domin.LogDomain;
-import cn.blog.service.LogService;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.kalvin.kvf.modules.sys.entity.Log;
+import com.kalvin.kvf.modules.sys.mapper.LogMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- *  请求日志
+ * <p>
+ * 日志表 服务实现类
+ * </p>
+ *
+ * @author Kalvin
+ * @since 2019-05-10
  */
 @Service
-public class LogServiceImpl implements LogService {
-
-    @Autowired
-    private LogDao logDao;
+public class LogServiceImpl extends ServiceImpl<LogMapper, Log> implements ILogService {
 
     @Override
-    public void addLog(String action, String data, String ip, Integer authorId) {
-        LogDomain logDomain = new LogDomain();
-        logDomain.setAuthorId(authorId);
-        logDomain.setIp(ip);
-        logDomain.setData(data);
-        logDomain.setAction(action);
-        logDao.addLog(logDomain);
-    }
-
-    @Override
-    public void deleteLogById(Integer id) {
-        if (null == id)
-            throw BusinessException.withErrorCode(ErrorConstant.Common.PARAM_IS_EMPTY);
-        deleteLogById(id);
-    }
-
-    @Override
-    public PageInfo<LogDomain> getLogs(int pageNum, int pageSize) {
-        PageHelper.startPage(pageNum, pageSize);
-        List<LogDomain> logs = logDao.getLogs();
-        PageInfo<LogDomain> pageInfo = new PageInfo<>(logs);
-        return pageInfo;
+    public Page<Log> listLogPage(Log log) {
+        Page<Log> page = new Page<>(log.getCurrent(), log.getSize());
+        List<Log> logs = baseMapper.selectLogList(log, page);
+        return page.setRecords(logs);
     }
 }

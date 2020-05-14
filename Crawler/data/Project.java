@@ -1,94 +1,27 @@
-4
-https://raw.githubusercontent.com/justneon33/Sketchcode/master/app/src/main/java/com/sketch/code/two/api/item/Project.java
-package com.sketch.code.two.api.item;
-
-import com.google.gson.annotations.SerializedName;
-
-import java.util.ArrayList;
+21
+https://raw.githubusercontent.com/Suranchiyev/java-sdet-2020/master/src/day5/Project.java
+package day5;
 
 public class Project {
+    public static void main (String[] args) { 
+       int amount = Integer.parseInt(args[0]); 
+       int cents = amount;
+      
+       int quarters = amount / 25;
+       amount = amount % 25;
 
-    @SerializedName("id")
-    private int id;
+       int dimes = amount / 10;
+       amount = amount % 10;
 
-    @SerializedName("project_name")
-    private String projectName;
-
-    @SerializedName("project_about")
-    private String projectAbout;
-
-    @SerializedName("project_icon_id")
-    private int projectIcon;
-
-    @SerializedName("project_attachment_id")
-    private int project;
-
-    @SerializedName("project_category_id")
-    private int projectCategory;
-
-    @SerializedName("project_category")
-    private String projectCategoryName;
-
-    @SerializedName("project_screenshots_ids")
-    private ArrayList<Integer> projectScreenshots;
-
-    public String getProjectCategoryName() {
-        return projectCategoryName;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public ArrayList<Integer> getProjectScreenshots() {
-        return projectScreenshots;
-    }
-
-    public int getProject() {
-        return project;
-    }
-
-    public int getProjectCategory() {
-        return projectCategory;
-    }
-
-    public int getProjectIcon() {
-        return projectIcon;
-    }
-
-    public String getProjectAbout() {
-        return projectAbout;
-    }
-
-    public void setProjectAbout(String projectAbout) {
-        this.projectAbout = projectAbout;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectScreenshots(ArrayList<Integer> projectScreenshots) {
-        this.projectScreenshots = projectScreenshots;
-    }
-
-    public void setProjectCategory(int projectCategory) {
-        this.projectCategory = projectCategory;
-    }
-
-    public void setProject(int project) {
-        this.project = project;
-    }
-
-    public void setProjectIcon(int projectIcon) {
-        this.projectIcon = projectIcon;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
+       int nickels = amount / 5;
+       amount = amount % 5;
+       
+       int pennies = amount;
+       
+       System.out.println(cents + " cents in coins:");
+       System.out.println(quarters + " quarters");
+       System.out.println(dimes + " dimes");
+       System.out.println(nickels + " nickels");
+       System.out.println(pennies + " pennies");
     }
 }

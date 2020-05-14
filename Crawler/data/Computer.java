@@ -1,78 +1,47 @@
-2
-https://raw.githubusercontent.com/wangIQD/GoF23/master/GOF23/DesignPattern/src/com/wz/creational/builder/v2/Computer.java
-package com.wz.creational.builder.v2;
-
-/**
- * @author 隔壁老王
- * @create 2020-04-28 18:59
- * @bilibili https://space.bilibili.com/320299990
- * @description
- */
-//模式演进：使用静态内部类，静态内部类就是建造者，这种写法可以实现链式调用
+38
+https://raw.githubusercontent.com/piyush6348/Design-Patterns/master/Builder%20Pattern/src/Computer.java
 public class Computer {
-    //属性过多，只列举一部分
-    private String CPU;     //CUP
-    private String motherboard;   //主板
-    private String RAM;     //内存条
-    private String GPU;     //显卡
-    private String monitor; //显示器
+    // Required parameters
+    String HDD;
+    String RAM;
 
-    public Computer(ComputerBuilder computerBuilder) {
-        this.CPU = computerBuilder.CPU;
-        this.motherboard = computerBuilder.motherboard;
-        this.RAM = computerBuilder.RAM;
-        this.GPU = computerBuilder.GPU;
-        this.monitor = computerBuilder.monitor;
+    // Optional parameters
+    String graphicCard;
+    String speaker;
+
+    private Computer(ComputerBuilder builder) {
+        this.HDD = builder.HDD;
+        this.RAM = builder.RAM;
+        this.graphicCard = builder.graphicCard;
+        this.speaker  = builder.speaker;
     }
 
-    public static class ComputerBuilder{
-        private String CPU;     //CUP
-        private String motherboard;   //主板
-        private String RAM;     //内存条
-        private String GPU;     //显卡
-        private String monitor; //显示器
+    public static class ComputerBuilder {
+        // Required parameters
+        private String HDD;
+        private String RAM;
 
-        public ComputerBuilder buildCPU(String CPU) {
-            this.CPU = CPU;
-            return this;
-        }
+        // Optional parameters
+        private String graphicCard;
+        private String speaker;
 
-        public ComputerBuilder buildMotherboard(String motherboard) {
-            this.motherboard = motherboard;
-            return this;
-        }
-
-        public ComputerBuilder buildRAM(String RAM) {
+        public ComputerBuilder(String HDD, String RAM) {
+            this.HDD = HDD;
             this.RAM = RAM;
+        }
+
+        public ComputerBuilder setGraphicCard(String graphicCard) {
+            this.graphicCard = graphicCard;
             return this;
         }
 
-        public ComputerBuilder buildGPU(String GPU) {
-            this.GPU = GPU;
+        public ComputerBuilder setSpeaker(String speaker) {
+            this.speaker = speaker;
             return this;
         }
 
-        public ComputerBuilder buildMonitor(String monitor) {
-            this.monitor = monitor;
-            return this;
-        }
-
-        public Computer build(){
+        public Computer build() {
             return new Computer(this);
         }
-
-    }
-
-
-
-    @Override
-    public String toString() {
-        return "Computer{" +
-                "CPU='" + CPU + '\'' +
-                ", motherboard='" + motherboard + '\'' +
-                ", RAM='" + RAM + '\'' +
-                ", GPU='" + GPU + '\'' +
-                ", monitor='" + monitor + '\'' +
-                '}';
     }
 }

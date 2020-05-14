@@ -1,62 +1,27 @@
-2
-https://raw.githubusercontent.com/billsonnn/nitro-java/master/core/src/main/java/com/nitro/core/communication/messages/MessageEvent.java
-package com.nitro.core.communication.messages;
+15
+https://raw.githubusercontent.com/Florizt/RxMVVM/master/rxmvvmlib/src/main/java/com/rx/rxmvvmlib/config/MessageEvent.java
+package com.rx.rxmvvmlib.config;
 
-import com.nitro.core.communication.connections.IConnection;
+/**
+ * Created by wuwei
+ * 2019/12/6
+ * 佛祖保佑       永无BUG
+ */
+public class MessageEvent {
+    public int type;
+    public Object src;
 
-import java.lang.reflect.Method;
-
-public class MessageEvent implements IMessageEvent {
-
-    private Method messageCallback;
-    private IMessageListener messageListener;
-    private Class<? extends IMessageParser> parserClass;
-    protected IMessageParser parser;
-    private IConnection connection;
-
-    public MessageEvent(Method messageCallback, Class<? extends IMessageParser> parserClass) {
-        this.messageCallback = messageCallback;
-        this.messageListener = null;
-        this.parserClass = parserClass;
-        this.parser = null;
-        this.connection = null;
+    public MessageEvent() {
     }
 
-    public void dispose() {
-        this.parserClass = null;
-        this.parser = null;
-        this.connection = null;
+    public MessageEvent(int type) {
+        this.type = type;
     }
 
-    public Method getMessageCallback() {
-        return this.messageCallback;
+    public MessageEvent(int type, Object src) {
+        this.type = type;
+        this.src = src;
     }
 
-    public IMessageListener getMessageListener() {
-        return this.messageListener;
-    }
-
-    public void setMessageListener(IMessageListener listener) {
-        this.messageListener = listener;
-    }
-
-    public Class<? extends IMessageParser> getParserClass() {
-        return this.parserClass;
-    }
-
-    public IMessageParser getParser() {
-        return this.parser;
-    }
-
-    public void setParser(IMessageParser parser) {
-        this.parser = parser;
-    }
-
-    public IConnection getConnection() {
-        return this.connection;
-    }
-
-    public void setConnection(IConnection connection) {
-        this.connection = connection;
-    }
+    public static final int MSG_TEST = 0;
 }

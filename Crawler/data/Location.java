@@ -1,24 +1,48 @@
-1
-https://raw.githubusercontent.com/zakariaelattar/Cannon-Bank/master/src/main/java/org/cannonbank/core/Entities/Location.java
-package org.cannonbank.core.Entities;
+74
+https://raw.githubusercontent.com/rayfowler/rotp-public/master/src/rotp/model/galaxy/Location.java
+/*
+ * Copyright 2015-2020 Ray Fowler
+ * 
+ * Licensed under the GNU General Public License, Version 3 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     https://www.gnu.org/licenses/gpl-3.0.html
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package rotp.model.galaxy;
 
-import javax.persistence.CascadeType;
-import javax.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import rotp.util.Base;
 
-public class Location {
+public class Location implements IMappedObject, Base, Serializable {
+    private static final long serialVersionUID = 1L;
+    private float x;
+    private float y;
 
-    private long id_location;
+    @Override
+    public float x()        { return x; }
+    public void x(float d)  { x = d; }
+    @Override
+    public float y()        { return y;  }
+    public void y(float d)  { y = d; }
 
-    @OneToMany(
-            mappedBy = "locations",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Agency> agencyList = new ArrayList<>();
-
-    private float longitude;
-    private float latitude;
-
+    public void setXY(float d1, float d2) {
+        x(d1);
+        y(d2);
+    }
+    public Location() {
+        x = 0; y = 0; 
+    }
+    public Location(float x1, float y1) {
+        x = x1; y = y1; 
+    }
+    public Location(IMappedObject loc) {
+        x = loc.x(); y = loc.y();
+    }
 }

@@ -1,18 +1,22 @@
-3
-https://raw.githubusercontent.com/jroutine/jroutine/master/src/main/java/org/coral/jroutine/schedule/Executor.java
-package org.coral.jroutine.schedule;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgerp/plugin/blow/model/Executor.java
+package ru.bgerp.plugin.blow.model;
 
-import org.coral.jroutine.Lifecycle;
-import org.coral.jroutine.schedule.lb.Instance;
+import java.util.HashSet;
+import java.util.Set;
+
+import ru.bgcrm.model.IdTitle;
+import ru.bgcrm.model.process.Process;
 
 /**
- * executor
+ * Исполнитель процесса - пользователь, либо группа.
  * 
- * @author lihao
- * @date 2020-05-12
+ * @author Shamil
  */
-public interface Executor<T extends Runnable> extends Instance, Lifecycle {
-
-    void execute(T t);
-
+public class Executor extends IdTitle {
+    public Set<Process> processes = new HashSet<>();
+    
+    public void add(Process process) {
+        processes.add(process);
+    }
 }

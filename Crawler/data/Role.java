@@ -1,15 +1,10 @@
-1
-https://raw.githubusercontent.com/wanzicong/mybatis-study/master/src/main/java/com/mybatis/model/lotlot/Role.java
-package com.mybatis.model.lotlot;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/common/src/main/java/engineering/everest/lhotse/axon/common/domain/Role.java
+package engineering.everest.lhotse.axon.common.domain;
 
-import lombok.Data;
-
-import java.util.List;
-
-@Data
-public class Role {
-    private String roleId;
-    private String roleName;
-    private String roleDesc;
-    private List<User> users;
+public enum Role {
+    ADMIN,
+    ORG_ADMIN,
+    ORG_USER,
+    GUEST
 }

@@ -1,162 +1,93 @@
-18
-https://raw.githubusercontent.com/WeBankFinTech/Schedulis/master/azkaban-common/src/main/java/azkaban/flow/Edge.java
-/*
- * Copyright 2012 LinkedIn Corp.
+97
+https://raw.githubusercontent.com/Sipkab/jvm-tail-recursion/master/src/sipka/jvm/tailrec/thirdparty/org/objectweb/asm/Edge.java
+// ASM: a very small and fast Java bytecode manipulation framework
+// Copyright (c) 2000-2011 INRIA, France Telecom
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+// 3. Neither the name of the copyright holders nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+package sipka.jvm.tailrec.thirdparty.org.objectweb.asm;
+
+/**
+ * An edge in the control flow graph of a method. Each node of this graph is a basic block,
+ * represented with the Label corresponding to its first instruction. Each edge goes from one node
+ * to another, i.e. from one basic block to another (called the predecessor and successor blocks,
+ * respectively). An edge corresponds either to a jump or ret instruction or to an exception
+ * handler.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * @see Label
+ * @author Eric Bruneton
  */
+final class Edge {
 
-package azkaban.flow;
+  /**
+   * A control flow graph edge corresponding to a jump or ret instruction. Only used with {@link
+   * ClassWriter#COMPUTE_FRAMES}.
+   */
+  static final int JUMP = 0;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+  /**
+   * A control flow graph edge corresponding to an exception handler. Only used with {@link
+   * ClassWriter#COMPUTE_MAXS}.
+   */
+  static final int EXCEPTION = 0x7FFFFFFF;
 
-public class Edge {
+  /**
+   * Information about this control flow graph edge.
+   *
+   * <ul>
+   *   <li>If {@link ClassWriter#COMPUTE_MAXS} is used, this field contains either a stack size
+   *       delta (for an edge corresponding to a jump instruction), or the value EXCEPTION (for an
+   *       edge corresponding to an exception handler). The stack size delta is the stack size just
+   *       after the jump instruction, minus the stack size at the beginning of the predecessor
+   *       basic block, i.e. the one containing the jump instruction.
+   *   <li>If {@link ClassWriter#COMPUTE_FRAMES} is used, this field contains either the value JUMP
+   *       (for an edge corresponding to a jump instruction), or the index, in the {@link
+   *       ClassWriter} type table, of the exception type that is handled (for an edge corresponding
+   *       to an exception handler).
+   * </ul>
+   */
+  final int info;
 
-  private final String sourceId;
-  private final String targetId;
-  private Node source;
-  private Node target;
-  private String error;
+  /** The successor block of this control flow graph edge. */
+  final Label successor;
 
-  // Useful in rendering.
-  private String guideType;
-  private List<Point2D> guideValues;
+  /**
+   * The next edge in the list of outgoing edges of a basic block. See {@link Label#outgoingEdges}.
+   */
+  Edge nextEdge;
 
-  public Edge(final String fromId, final String toId) {
-    this.sourceId = fromId;
-    this.targetId = toId;
+  /**
+   * Constructs a new Edge.
+   *
+   * @param info see {@link #info}.
+   * @param successor see {@link #successor}.
+   * @param nextEdge see {@link #nextEdge}.
+   */
+  Edge(final int info, final Label successor, final Edge nextEdge) {
+    this.info = info;
+    this.successor = successor;
+    this.nextEdge = nextEdge;
   }
-
-  public Edge(final Edge clone) {
-    this.sourceId = clone.getSourceId();
-    this.targetId = clone.getTargetId();
-    this.error = clone.getError();
-  }
-
-  public static Edge fromObject(final Object obj) {
-    final HashMap<String, Object> edgeObj = (HashMap<String, Object>) obj;
-
-    final String source = (String) edgeObj.get("source");
-    final String target = (String) edgeObj.get("target");
-
-    final String error = (String) edgeObj.get("error");
-
-    final Edge edge = new Edge(source, target);
-    edge.setError(error);
-
-    if (edgeObj.containsKey("guides")) {
-      final Map<String, Object> guideMap =
-          (Map<String, Object>) edgeObj.get("guides");
-      final List<Object> values = (List<Object>) guideMap.get("values");
-      final String type = (String) guideMap.get("type");
-
-      final ArrayList<Point2D> valuePoints = new ArrayList<>();
-      for (final Object pointObj : values) {
-        final Map<String, Double> point = (Map<String, Double>) pointObj;
-
-        final Double x = point.get("x");
-        final Double y = point.get("y");
-
-        valuePoints.add(new Point2D.Double(x, y));
-      }
-
-      edge.setGuides(type, valuePoints);
-    }
-
-    return edge;
-  }
-
-  public String getId() {
-    return getSourceId() + ">>" + getTargetId();
-  }
-
-  public String getSourceId() {
-    return this.sourceId;
-  }
-
-  public String getTargetId() {
-    return this.targetId;
-  }
-
-  public String getError() {
-    return this.error;
-  }
-
-  public void setError(final String error) {
-    this.error = error;
-  }
-
-  public boolean hasError() {
-    return this.error != null;
-  }
-
-  public Node getSource() {
-    return this.source;
-  }
-
-  public void setSource(final Node source) {
-    this.source = source;
-  }
-
-  public Node getTarget() {
-    return this.target;
-  }
-
-  public void setTarget(final Node target) {
-    this.target = target;
-  }
-
-  public String getGuideType() {
-    return this.guideType;
-  }
-
-  public List<Point2D> getGuideValues() {
-    return this.guideValues;
-  }
-
-  public void setGuides(final String type, final List<Point2D> values) {
-    this.guideType = type;
-    this.guideValues = values;
-  }
-
-  public Object toObject() {
-    final HashMap<String, Object> obj = new HashMap<>();
-    obj.put("source", getSourceId());
-    obj.put("target", getTargetId());
-    if (hasError()) {
-      obj.put("error", this.error);
-    }
-    if (this.guideValues != null) {
-      final HashMap<String, Object> lineGuidesObj = new HashMap<>();
-      lineGuidesObj.put("type", this.guideType);
-
-      final ArrayList<Object> guides = new ArrayList<>();
-      for (final Point2D point : this.guideValues) {
-        final HashMap<String, Double> pointObj = new HashMap<>();
-        pointObj.put("x", point.getX());
-        pointObj.put("y", point.getY());
-        guides.add(pointObj);
-      }
-      lineGuidesObj.put("values", guides);
-
-      obj.put("guides", lineGuidesObj);
-    }
-
-    return obj;
-  }
-
 }

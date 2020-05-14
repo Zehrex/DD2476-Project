@@ -1,43 +1,25 @@
-4
-https://raw.githubusercontent.com/justneon33/Sketchcode/master/app/src/main/java/com/sketch/code/two/api/item/UserResponse.java
-package com.sketch.code.two.api.item;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/api/src/main/java/engineering/everest/lhotse/api/rest/responses/UserResponse.java
+package engineering.everest.lhotse.api.rest.responses;
 
-import androidx.annotation.Nullable;
+import engineering.everest.lhotse.axon.common.domain.Role;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Set;
+import java.util.UUID;
 
-import java.util.ArrayList;
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserResponse {
-    @SerializedName("success")
-    private boolean success;
 
-    @SerializedName("errors_messages")
-    private ArrayList<Error> errors_messages;
-
-    @Nullable
-    @SerializedName("data")
-    private User data;
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    @Nullable
-    public User getData() {
-        return data;
-    }
-
-    public ArrayList<Error> getErrorsMessages() {
-        return errors_messages;
-    }
-
-    public String getErrorsString () {
-        String output = "";
-        for (Error error : errors_messages) {
-            output = output.concat(error.getErrorMessage()).concat("\n");
-        }
-        return output.substring(0, output.lastIndexOf("\n"));
-    }
-
+    private UUID id;
+    private UUID organizationId;
+    private String username;
+    private String displayName;
+    private String email;
+    private boolean disabled;
+    private Set<Role> roles;
 }

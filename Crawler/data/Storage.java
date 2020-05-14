@@ -1,63 +1,133 @@
-18
-https://raw.githubusercontent.com/WeBankFinTech/Schedulis/master/azkaban-spi/src/main/java/azkaban/spi/Storage.java
+13
+https://raw.githubusercontent.com/CoboVault/cobo-vault-cold/master/app/src/main/java/com/cobo/cold/update/utils/Storage.java
 /*
- * Copyright 2017 LinkedIn Corp.
+ * Copyright (c) 2020 Cobo
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
+ * You should have received a copy of the GNU General Public License
+ * in the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package azkaban.spi;
+package com.cobo.cold.update.utils;
+
+import android.content.Context;
+import android.os.Environment;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
+public class Storage {
+    private static final String UPDATE_CACHE = "update_cache";
+    private static final String UPDATE_ZIP_FILE = "update.zip";
 
-/**
- * The Azkaban Storage interface would facilitate getting and putting objects into a storage
- * mechanism of choice. By default, this is set to the MySQL database. However, users can have the
- * ability to choose between multiple storage types in future.
- *
- * This is different from storing Azkaban state in MySQL which would typically be maintained in a
- * different database.
- *
- * Note: This is a synchronous interface.
- */
-public interface Storage {
+    private final File mInternalDir;
+    private final File mExternalDir;
 
-  /**
-   * Get an InputStream object by providing a key.
-   *
-   * @param key The key is a string pointing to the blob in Storage.
-   * @return InputStream for fetching the blob. null if the key is not found.
-   */
-  InputStream get(String key) throws IOException;
+    private Storage(@NonNull File internalDir, @NonNull File externalDir) {
+        mInternalDir = internalDir;
+        mExternalDir = externalDir;
+    }
 
-  /**
-   * Put an object and return a key.
-   *
-   * @param metadata Metadata related to the input stream
-   * @param localFile Read data from a local file
-   * @return Key associated with the current object on successful put
-   */
-  String put(StorageMetadata metadata, File localFile);
+    public static void resetCacheDir() {
+        final File dir = new File(Environment.getExternalStorageDirectory(), UPDATE_CACHE);
 
-  /**
-   * Delete an object from Storage.
-   *
-   * @param key The key is a string pointing to the blob in Storage.
-   * @return true if delete was successful. false if there was nothing to delete.
-   */
-  boolean delete(String key);
+        if (dir.exists()) {
+            FileUtils.deleteRecursive(dir);
+        }
+
+        dir.mkdir();
+    }
+
+    @Nullable
+    public static Storage createByEnvironment(@NonNull Context context) {
+        final File[] result = new File[2];
+        final File[] current = context.getExternalFilesDirs(null);
+
+        for (File dir : current) {
+            if (dir != null && dir.isDirectory()) {
+                if (Environment.isExternalStorageRemovable(dir)) {
+                    result[1] = dir;
+                } else {
+                    result[0] = dir;
+                }
+            }
+        }
+
+        if (result[0] == null || result[1] == null) {
+            return null;
+        }
+
+        final File internalRootDir = getRootDir(result[0]);
+        final File externalRootDir = getRootDir(result[1]);
+
+        return new Storage(internalRootDir, externalRootDir);
+    }
+
+    @NonNull
+    private static File getRootDir(@NonNull File file) {
+        final String currentPath = file.toString();
+        final int endIndex = currentPath.indexOf("/Android/data");
+
+        if (endIndex >= 0) {
+            return new File(currentPath.substring(0, endIndex));
+        } else {
+            return file;
+        }
+    }
+
+    @Nullable
+    public File getInternalDir() {
+        return mInternalDir;
+    }
+
+    @Nullable
+    public File getExternalDir() {
+        return mExternalDir;
+    }
+
+    public void resetUpdateCacheDir() {
+        final File dir = new File(mInternalDir, UPDATE_CACHE);
+
+        try {
+            if (dir.exists()) {
+                FileUtils.deleteRecursive(dir);
+            }
+
+            dir.mkdirs();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @NonNull
+    public File getUpdateCacheDir() {
+        final File dir = new File(mInternalDir, UPDATE_CACHE);
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return dir;
+    }
+
+    @NonNull
+    public File getElectrumDir() {
+        return mExternalDir;
+    }
+
+    @NonNull
+    public File getUpdateZipFile() {
+        return new File(mExternalDir, UPDATE_ZIP_FILE);
+    }
 }

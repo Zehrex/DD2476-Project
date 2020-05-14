@@ -1,29 +1,52 @@
-12
-https://raw.githubusercontent.com/Crystallinqq/Mercury-Client/master/src/main/java/fail/mercury/client/client/gui/click/panel/Panel.java
-package fail.mercury.client.client.gui.click.panel;
+33
+https://raw.githubusercontent.com/jabo-bernardo/Kree-Java/master/src/dev/jabo/kree/ui/Panel.java
+package dev.jabo.kree.ui;
 
-/**
- * @author auto on 2/16/2020
- */
-public class Panel {
+import java.awt.Color;
+import java.awt.Graphics;
 
-    private String label;
+import dev.jabo.kree.Scene;
+import dev.jabo.kree.Sprite;
+import dev.jabo.kree.Vector2;
 
-    public Panel(String label) {
-        this.label = label;
-    }
+public class Panel extends UserInterface {
+	
+	private Color color;
+	
+	private Sprite backgroundImage;
+	
+	public Panel(Scene parentScene, Vector2 position, Vector2 scale) {
+		
+		transform.setPosition(position);
+		transform.setScale(scale);
+		
+		AddToScene(parentScene);
+		
+	}
 
-    public String getLabel() {
-        return this.label;
-    }
+	@Override
+	public void Update() {
+		
+	}
 
-    public void draw(int mouseY, int mouseX, float partialTicks) {}
+	@Override
+	public void Render(Graphics g) {
+		
+		if(backgroundImage == null) {
+			g.setColor(color);		
+			g.fillRect(transform.getPosition().getX(), transform.getPosition().getY(), transform.getScale().getX(), transform.getScale().getY());
+		} else {
+			g.drawImage(backgroundImage.getImage(), transform.getPosition().getX(), transform.getPosition().getY(), transform.getScale().getX(), transform.getScale().getY(), null);
+		}
+		
+	}
+	
+	public void setColor(Color color) {
+		this.color = color;
+	}
+	
+	public void setBackgroundImage(Sprite spr) {
+		this.backgroundImage = spr;
+	}
 
-    public void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) {}
-
-    public void keyTyped(final char typedChar, final int keyCode) {}
-
-    public void mouseReleased(final int mouseX, final int mouseY, final int state) {}
-
-    public void onGuiClosed() {}
 }

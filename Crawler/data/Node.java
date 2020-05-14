@@ -1,43 +1,44 @@
-2
-https://raw.githubusercontent.com/qintianchen/GAutomatorView/master/src/sample/Node.java
-package sample;
+9
+https://raw.githubusercontent.com/ishugaliy/allgood-consistent-hash/master/src/main/java/org/ishugaliy/allgood/consistent/hash/node/Node.java
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2020 Iurii Shugalii
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.property.SimpleStringProperty;
-import sample.utils.Element;
-import sample.utils.Engine;
+package org.ishugaliy.allgood.consistent.hash.node;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+/**
+ *  Base interface for Consistent Hash nodes
+ *  {@link org.ishugaliy.allgood.consistent.hash.ConsistentHash}
+ *
+ *  @author Iurii Shugalii
+ */
+public interface Node {
 
-public class Node {
-    public ArrayList<Node> children;
-
-    public String name;
-    public String fullpath;
-    public HashMap<String, String> attrs;
-    public Element e;
-
-
-    public Element getElement() throws Exception {
-        if(e == null)e = Engine.getEngine().findElement(fullpath);
-        return e;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
-    public String attrsInfo()
-    {
-        if(attrs == null)return "";
-        StringBuilder ret = new StringBuilder();
-        for(String value : attrs.values())
-        {
-            ret.append(value);
-        }
-        return ret.toString();
-    }
+    /**
+     * Node key, uniquely identifies node.
+     * Used by {@link org.ishugaliy.allgood.consistent.hash.ConsistentHash} for load distribution.
+     *
+     * @return the node key
+     */
+    String getKey();
 }

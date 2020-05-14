@@ -1,15 +1,30 @@
-2
-https://raw.githubusercontent.com/wangIQD/GoF23/master/GOF23/DesignPattern/src/com/wz/behavioral/command/Command.java
-package com.wz.behavioral.command;
+17
+https://raw.githubusercontent.com/javmarina/Nintendo-Switch-Remote-Control/master/gui/client/src/main/java/com/javmarina/client/services/bot/Command.java
+package com.javmarina.client.services.bot;
 
-/**
- * @author 隔壁老王
- * @create 2020-05-08 14:34
- * @bilibili https://space.bilibili.com/320299990
- * @description
- */
-//业务场景：公司Boss下达命令做一个项目，员工接收Boss下的的命令。此场景中，Boss请求者。员工是接收者。
-//抽象命令类
-public interface Command {
-    void execute();
+
+public final class Command {
+
+    public final byte[] packet;
+    private final long startTime;
+    private final long endTime;
+
+    public Command(final byte[] packet, final long duration) {
+        this(packet, duration, 0);
+    }
+
+    public Command(final byte[] packet, final long duration, final long startDelay) {
+        this.packet = packet;
+        this.startTime = System.currentTimeMillis() + startDelay;
+        this.endTime = this.startTime + duration;
+    }
+
+    public boolean hasExpired() {
+        return System.currentTimeMillis() >= endTime;
+    }
+
+    public boolean isRunning() {
+        final long millis = System.currentTimeMillis();
+        return millis > startTime && millis < endTime;
+    }
 }

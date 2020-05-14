@@ -1,58 +1,93 @@
-4
-https://raw.githubusercontent.com/justneon33/Sketchcode/master/app/src/main/java/com/sketch/code/two/util/GlideUtil.java
-package com.sketch.code.two.util;
+14
+https://raw.githubusercontent.com/FanChael/MVVM/master/librarys/lib_common/src/main/java/com/hl/base_module/util/glide/GlideUtil.java
+package com.hl.base_module.util.glide;
 
 import android.content.Context;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
-import com.sketch.code.two.R;
 
-import java.io.File;
-
-import static com.sketch.code.two.util.Const.BASE_HOST;
+import java.lang.ref.WeakReference;
 
 public class GlideUtil {
-    public static void set(String url, ImageView src, Context context) {
+
+    /**
+     * 设置带缓存的图片
+     *
+     * @param context
+     * @param url
+     * @param imageView
+     */
+    public static void initImageWithFileCache(Context context, String url, ImageView imageView) {
+        if (null == context) {
+            return;
+        }
+        // 这种方式可以解决因为Context为null的问题，内部做了处理
+        RequestManager mRequestManager = Glide.with(new WeakReference<>(context).get());
+        mRequestManager
+                .load(url)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .dontAnimate()
+                .into(imageView);
+    }
+
+    /**
+     * 设置不带缓存的图片
+     *
+     * @param context
+     * @param url
+     * @param imageView
+     */
+    public static void initImageNoCache(Context context, String url, ImageView imageView) {
+        if (null == context) {
+            return;
+        }
+        // 这种方式可以解决因为Context为null的问题，内部做了处理
+        RequestManager mRequestManager = Glide.with(new WeakReference<>(context).get());
+        mRequestManager
+                .load(url)
+                .skipMemoryCache(true)
+                .dontAnimate()
+                .centerCrop()
+                .into(imageView);
+    }
+
+    /**
+     * 清理内存
+     *
+     * @param context
+     */
+    public static void clearMemoryCache(Context context) {
+        if (null == context) {
+            return;
+        }
         try {
-            RequestOptions requestOptions = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                    .dontAnimate();
-
-            Glide.with(context).load(url.concat("&token=").concat(new SketchcodeUtil.User(context).getToken())).apply(requestOptions).into(src);
+            Glide.get(context).clearMemory();
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
     }
 
-    public static void set(int attachmentId, ImageView src, Context context) {
-        if (context != null) {
-            RequestOptions requestOptions = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                    .dontAnimate();
-
-            Glide.with(context)
-                    .load(BASE_HOST.concat("attachment/get?id=").concat(String.valueOf(attachmentId)).concat("&token=").concat(new SketchcodeUtil.User(context).getToken()))
-                    .apply(requestOptions)
-                    .into(src);
+    /**
+     * 清理磁盘缓存
+     *
+     * @param context
+     */
+    public static void clearFileCache(Context context) {
+        if (null == context) {
+            return;
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Glide.get(context).clearDiskCache();
+                } catch (Exception e) {
+
+                }
+            }
+        }).start();
     }
-
-    public static void set(File file, ImageView src, Context context)
-    {
-        if (context != null) {
-            RequestOptions requestOptions = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                    .error(R.mipmap.ic_launcher)
-                    .dontAnimate();
-
-            Glide.with(context)
-                    .load(file)
-                    .apply(requestOptions)
-                    .into(src);
-        }
-    }
-
 }

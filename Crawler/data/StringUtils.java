@@ -1,23 +1,55 @@
-2
-https://raw.githubusercontent.com/lixiangwudi/service/master/src/main/java/com/example/lx/utils/StringUtils.java
-package com.example.lx.utils;
-/**
- * @Author lixiang
- * @Date 2020/5/10 14:30
- * @Version 1.0
- */
+10
+https://raw.githubusercontent.com/pkxing/CodeGenerator/master/CodeGenerator/src/main/java/com/pkx/code/util/StringUtils.java
+package com.pkx.code.util;
 
-import java.util.Random;
-
+/****
+ * @Author: PKXING
+ * @Description:字符串处理
+ * @Date  PKXING 19:51
+ *****/
 public class StringUtils {
-    public static String getRandomString(int length) {
-        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
-        Random random = new Random();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; i++) {
-            int number = random.nextInt(base.length());
-            sb.append(base.charAt(number));
+
+    /***
+     * 首字母大写
+     * @param str
+     * @return
+     */
+    public static String firstUpper(String str){
+        return str.substring(0,1).toUpperCase()+str.substring(1);
+    }
+
+    /**
+     * 首字母小写
+     * @param str
+     * @return
+     */
+    public static String firstLower(String str){
+        return str.substring(0,1).toLowerCase()+str.substring(1);
+    }
+
+    /***
+     * 移除tab_,tb_
+     * @return
+     */
+    public static String replaceTab(String str){
+        return str.replaceFirst("tab_","").replaceFirst("tb_","");
+    }
+
+    /***
+     * 将下划线替换掉
+     * @param str
+     * @return
+     */
+    public static String replace_(String str){
+        // 根据下划线分割
+        String[] split = str.split("_");
+        // 循环组装
+        String result = split[0];
+        if(split.length>1){
+            for (int i = 1; i < split.length; i++) {
+                result+=firstUpper(split[i]);
+            }
         }
-        return sb.toString();
+        return result;
     }
 }

@@ -1,31 +1,13 @@
-1
-https://raw.githubusercontent.com/wanzicong/mybatis-study/master/src/main/java/com/mybatis/service/AccountService.java
-package com.mybatis.service;
+11
+https://raw.githubusercontent.com/yfelvis/mtcc/master/mtcc-demo/mtcc-demo-account/src/main/java/com/hyf/mtcc/demo/account/service/AccountService.java
+package com.hyf.mtcc.demo.account.service;
 
-import com.mybatis.mapper.AccountMapper;
-import com.mybatis.model.single.Account;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.hyf.mtcc.demo.account.request.DecreaseAccountReq;
 
-import java.util.List;
+public interface AccountService {
 
-@Service
-public class AccountService {
-    @Autowired
-    AccountMapper accountMapper;
+    Integer decrease(DecreaseAccountReq req);
 
-    /*查询全部*/
-    public List<Account> findAll() {
-        return accountMapper.findAll();
-    }
+    String findAccountByName(String username);
 
-    /*根据大于条件查询*/
-    public List<Account> findSomeBigThanMoney(Float small, Float big) {
-        return accountMapper.findSomeBigThanMoney(small, big);
-    }
-
-    /*批量的添加*/
-    public void insertSome(List<Account> list) {
-        accountMapper.insertSome(list);
-    }
 }

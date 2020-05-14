@@ -1,45 +1,101 @@
-2
-https://raw.githubusercontent.com/billsonnn/nitro-java/master/application/src/main/java/com/nitro/application/EventListener.java
-package com.nitro.application;
+23
+https://raw.githubusercontent.com/mrchengwenlong/NettyIM/master/im_lib/src/main/java/com/takiku/im_lib/listener/EventListener.java
+package com.takiku.im_lib.listener;
 
-import com.nitro.core.communication.events.connection.ConnectionAddedEvent;
-import com.nitro.core.communication.events.connection.ConnectionRemovedEvent;
-import com.nitro.core.communication.events.messages.MessageConfigurationEvent;
-import com.nitro.core.communication.events.messages.MessageListenerEvent;
-import com.nitro.core.communication.events.server.ServerAddedEvent;
-import com.nitro.core.communication.events.server.ServerRemovedEvent;
-import com.nitro.core.events.EventHandler;
-import com.nitro.core.events.IEventListener;
+import com.takiku.im_lib.call.Call;
+import com.takiku.im_lib.dispatcher.Connection;
+import com.takiku.im_lib.entity.base.Request;
 
-public class EventListener implements IEventListener {
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 
-    @EventHandler
-    public void onServerAddedEvent(ServerAddedEvent event) {
-        System.out.println("The server will be added");
+/**
+ * author:chengwl
+ * Description:事件监听
+ * Date:2020/4/11
+ */
+public abstract class EventListener {
+    public static final EventListener NONE = new EventListener() {
+    };
+    public static EventListener.Factory factory(final EventListener listener) {
+        return new EventListener.Factory() {
+            public EventListener create(Call call) {
+                return listener;
+            }
+        };
     }
 
-    @EventHandler
-    public void onServerRemovedEvent(ServerRemovedEvent event) {
-        System.out.println("The server will be removed");
+    public interface Factory {
+        EventListener create(Call call);
     }
 
-    @EventHandler
-    public void onConnectionAddedEvent(ConnectionAddedEvent event) {
-        System.out.println("The connection will be added");
+
+    /**
+     * 连接开始
+     * @param inetSocketAddress
+     */
+    public  void connectStart( InetSocketAddress inetSocketAddress){
+
     }
 
-    @EventHandler
-    public void onConnectionRemovedEvent(ConnectionRemovedEvent event) {
-        System.out.println("The connection will be removed");
+    /**
+     * 连接成功
+     */
+    public  void connectSuccess(){
+
     }
 
-    @EventHandler
-    public void onMessageConfigurationEvent(MessageConfigurationEvent event) {
-        System.out.println("A configuration was registered");
+    /**
+     * 连接出现异常
+     * @param throwable
+     */
+    public void connectionException(Throwable throwable){
+
     }
 
-    @EventHandler
-    public void onMessageListenerEvent(MessageListenerEvent event) {
-        System.out.println("A listener was registered");
+    /**
+     * 连接失败
+     * @param inetSocketAddress
+     * @param ioe
+     */
+    public void connectFailed( InetSocketAddress inetSocketAddress, IOException ioe) {
+
     }
+
+    /**
+     * 连接断开
+     */
+    public void connectionBroken(){
+
+    }
+
+
+    /**
+     * 连接释放
+     * @param connection
+     */
+    public void connectionReleased(Connection connection) {
+    }
+
+    /**
+     * 发送开始
+     * @param call
+     */
+    public void sendMsgStart(Call call) {
+    }
+
+    /**
+     * 发送结束
+     * @param call
+     */
+    public void sendMsgEnd(Call call) {
+    }
+
+    /**
+     * 发送失败
+     * @param call
+     */
+    public void sendMsgFailed(Call call){}
+
 }

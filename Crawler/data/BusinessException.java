@@ -1,34 +1,44 @@
-1
-https://raw.githubusercontent.com/ryewen/quickbuy/master/src/main/java/com/loststars/quickbuy/error/BusinessException.java
-package com.loststars.quickbuy.error;
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-core/src/main/java/io/geekidea/cloud/common/core/exception/BusinessException.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-public class BusinessException extends Exception implements CommonError {
-    
-    private EmBusinessError businessError;
-    
-    public BusinessException(EmBusinessError businessError) {
-        this.businessError = businessError;
-    }
-    
-    public BusinessException(EmBusinessError businessError, String errMsg) {
-        this.businessError = businessError;
-        businessError.setErrMsg(errMsg);
+package io.geekidea.cloud.common.core.exception;
+
+import io.geekidea.cloud.common.core.api.ApiCode;
+
+/**
+ * 业务异常
+ *
+ * @author geekidea
+ * @date 2018-11-08
+ */
+public class BusinessException extends ScpException {
+    private static final long serialVersionUID = -2303357122330162359L;
+
+    public BusinessException(String message) {
+        super(message);
     }
 
-    @Override
-    public Integer getErrCode() {
-        return businessError.getErrCode();
+    public BusinessException(Integer errorCode, String message) {
+        super(errorCode, message);
     }
 
-    @Override
-    public String getErrMsg() {
-        return businessError.getErrMsg();
-    }
-
-    @Override
-    public CommonError setErrMsg(String errMsg) {
-        this.businessError.setErrMsg(errMsg);
-        return this;
+    public BusinessException(ApiCode apiCode) {
+        super(apiCode);
     }
 
 }

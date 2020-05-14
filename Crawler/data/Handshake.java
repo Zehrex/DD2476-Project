@@ -1,42 +1,76 @@
-12
-https://raw.githubusercontent.com/Crystallinqq/Mercury-Client/master/src/main/java/fail/mercury/client/client/modules/misc/Handshake.java
-package fail.mercury.client.client.modules.misc;
-
-import fail.mercury.client.api.module.Module;
-import fail.mercury.client.api.module.annotations.ModuleManifest;
-import fail.mercury.client.api.module.category.Category;
-import fail.mercury.client.client.events.PacketEvent;
-import io.netty.buffer.Unpooled;
-import me.kix.lotus.property.annotations.Property;
-import net.b0at.api.event.EventHandler;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.client.CPacketCustomPayload;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
-
-/**
- * @author auto on 2/24/2020
+139
+https://raw.githubusercontent.com/DP-3T/dp3t-sdk-android/master-alpha/dp3t-sdk/sdk/src/main/java/org/dpppt/android/sdk/internal/database/models/Handshake.java
+/*
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
-@ModuleManifest(label = "Handshake", aliases = {"CustomHandshake", "NoHandshake"}, category = Category.MISC, hidden = true)
-public class Handshake extends Module {
+package org.dpppt.android.sdk.internal.database.models;
 
-    @Property("Brand")
-    public String brand = "vanilla";
+import org.dpppt.android.sdk.internal.crypto.EphId;
 
-    @EventHandler
-    public void onPacket(PacketEvent event) {
-        if (event.getType().equals(PacketEvent.Type.OUTGOING)) {
-            if (event.getPacket() instanceof FMLProxyPacket && !mc.isSingleplayer()) {
-                event.setCancelled(true);
-            }
-            if (event.getPacket() instanceof CPacketCustomPayload) {
-                final CPacketCustomPayload packet = (CPacketCustomPayload) event.getPacket();
-                if (packet.getChannelName().equals("MC|Brand")) {
-                    packet.data = new PacketBuffer(Unpooled.buffer()).writeString(brand);
-                }
-            }
-            /*if (event.getPacket() instanceof FMLHandshakeMessage.ModList) {
-                FMLHandshakeMessage.ModList packet = (FMLHandshakeMessage.ModList) event.getPacket();
-            }*/
-        }
-    }
+public class Handshake {
+
+	private int id;
+	private long timestamp;
+	private EphId ephId;
+	private int txPowerLevel;
+	private int rssi;
+	private String primaryPhy;
+	private String secondaryPhy;
+	private long timestampNanos;
+
+	public Handshake(int id, long timestamp, EphId ephId, int txPowerLevel, int rssi, String primaryPhy, String secondaryPhy,
+			long timestampNanos) {
+		this.id = id;
+		this.timestamp = timestamp;
+		this.ephId = ephId;
+		this.txPowerLevel = txPowerLevel;
+		this.rssi = rssi;
+
+		this.primaryPhy = primaryPhy;
+		this.secondaryPhy = secondaryPhy;
+		this.timestampNanos = timestampNanos;
+	}
+
+	public EphId getEphId() {
+		return ephId;
+	}
+
+	public void setEphId(EphId ephId) {
+		this.ephId = ephId;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	public int getTxPowerLevel() {
+		return txPowerLevel;
+	}
+
+	public int getRssi() {
+		return rssi;
+	}
+
+	public String getPrimaryPhy() {
+		return primaryPhy;
+	}
+
+	public String getSecondaryPhy() {
+		return secondaryPhy;
+	}
+
+	public long getTimestampNanos() {
+		return timestampNanos;
+	}
+
+	public int getAttenuation() {
+		return txPowerLevel - rssi;
+	}
+
 }

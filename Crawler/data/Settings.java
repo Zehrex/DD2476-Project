@@ -1,444 +1,465 @@
-3
-https://raw.githubusercontent.com/valentjn/ltex-ls-old/master/src/main/java/org/bsplines/languagetool_languageserver/Settings.java
-package org.bsplines.languagetool_languageserver;
+9
+https://raw.githubusercontent.com/quite/mumla/master/app/src/main/java/se/lublin/mumla/Settings.java
+/*
+ * Copyright (C) 2014 Andrew Comminos
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+package se.lublin.mumla;
 
-import com.google.gson.*;
-import org.eclipse.lsp4j.DiagnosticSeverity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Gravity;
+import android.widget.Toast;
 
+import org.spongycastle.jce.provider.BouncyCastleProvider;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.HashSet;
+import java.util.Set;
+
+import se.lublin.humla.Constants;
+import se.lublin.mumla.db.DatabaseCertificate;
+import se.lublin.mumla.db.MumlaSQLiteDatabase;
+
+import static se.lublin.mumla.Constants.TAG;
+
+/**
+ * Singleton settings class for universal access to the app's preferences.
+ * @author morlunk
+ */
 public class Settings {
-  private String languageShortCode = null;
-  private DiagnosticSeverity diagnosticSeverity = null;
-  private List<String> dictionary = null;
-  private List<String> disabledRules = null;
-  private List<String> enabledRules = null;
-  private List<String> dummyCommandPrototypes = null;
-  private List<String> ignoreCommandPrototypes = null;
-  private List<String> ignoreEnvironments = null;
-  private List<String> dummyMarkdownNodeTypes = null;
-  private List<String> ignoreMarkdownNodeTypes = null;
-  private List<IgnoreRuleSentencePair> ignoreRuleSentencePairs = null;
-  private String motherTongueShortCode = null;
-  private String languageModelRulesDirectory = null;
-  private String neuralNetworkModelRulesDirectory = null;
-  private String word2VecModelRulesDirectory = null;
-  private Integer initialJavaHeapSize = null;
-  private Integer maximumJavaHeapSize = null;
-  private Integer sentenceCacheSize = null;
+    public static final String PREF_INPUT_METHOD = "audioInputMethod";
+    public static final Set<String> ARRAY_INPUT_METHODS;
+    /** Voice activity transmits depending on the amplitude of user input. */
+    public static final String ARRAY_INPUT_METHOD_VOICE = "voiceActivity";
+    /** Push to talk transmits on command. */
+    public static final String ARRAY_INPUT_METHOD_PTT = "ptt";
+    /** Continuous transmits always. */
+    public static final String ARRAY_INPUT_METHOD_CONTINUOUS = "continuous";
 
-  public Settings() {
-  }
+    public static final String PREF_THRESHOLD = "vadThreshold";
+    public static final int DEFAULT_THRESHOLD = 50;
 
-  public Settings(JsonElement jsonSettings) {
-    setSettings(jsonSettings);
-  }
+    public static final String PREF_PUSH_KEY = "talkKey";
+    public static final Integer DEFAULT_PUSH_KEY = -1;
 
-  private static JsonElement getSettingFromJSON(JsonElement jsonSettings, String name) {
-    for (String component : name.split("\\.")) {
-      jsonSettings = jsonSettings.getAsJsonObject().get(component);
+    public static final String PREF_HOT_CORNER_KEY = "hotCorner";
+    public static final String ARRAY_HOT_CORNER_NONE = "none";
+    public static final String ARRAY_HOT_CORNER_TOP_LEFT = "topLeft";
+    public static final String ARRAY_HOT_CORNER_BOTTOM_LEFT = "bottomLeft";
+    public static final String ARRAY_HOT_CORNER_TOP_RIGHT = "topRight";
+    public static final String ARRAY_HOT_CORNER_BOTTOM_RIGHT = "bottomRight";
+    public static final String DEFAULT_HOT_CORNER = ARRAY_HOT_CORNER_NONE;
+
+    public static final String PREF_PUSH_BUTTON_HIDE_KEY = "hidePtt";
+    public static final Boolean DEFAULT_PUSH_BUTTON_HIDE = false;
+
+    public static final String PREF_PTT_TOGGLE = "togglePtt";
+    public static final Boolean DEFAULT_PTT_TOGGLE = false;
+
+    public static final String PREF_INPUT_RATE = "input_quality";
+    public static final String DEFAULT_RATE = "48000";
+
+    public static final String PREF_INPUT_QUALITY = "input_bitrate";
+    public static final int DEFAULT_INPUT_QUALITY = 40000;
+
+    public static final String PREF_AMPLITUDE_BOOST = "inputVolume";
+    public static final Integer DEFAULT_AMPLITUDE_BOOST = 100;
+
+    public static final String PREF_CHAT_NOTIFY = "chatNotify";
+    public static final Boolean DEFAULT_CHAT_NOTIFY = true;
+
+    public static final String PREF_USE_TTS = "useTts";
+    public static final Boolean DEFAULT_USE_TTS = true;
+
+    public static final String PREF_SHORT_TTS_MESSAGES = "shortTtsMessages";
+    public static final boolean DEFAULT_SHORT_TTS_MESSAGES = false;
+
+    public static final String PREF_AUTO_RECONNECT = "autoReconnect";
+    public static final Boolean DEFAULT_AUTO_RECONNECT = true;
+
+    public static final String PREF_THEME = "theme";
+    public static final String ARRAY_THEME_LIGHT = "lightDark";
+    public static final String ARRAY_THEME_DARK = "dark";
+    public static final String ARRAY_THEME_SOLARIZED_LIGHT = "solarizedLight";
+    public static final String ARRAY_THEME_SOLARIZED_DARK = "solarizedDark";
+
+    public static final String PREF_PTT_BUTTON_HEIGHT = "pttButtonHeight";
+    public static final int DEFAULT_PTT_BUTTON_HEIGHT = 150;
+
+    /** @deprecated use {@link #PREF_CERT_ID } */
+    public static final String PREF_CERT_DEPRECATED = "certificatePath";
+    /** @deprecated use {@link #PREF_CERT_ID } */
+    public static final String PREF_CERT_PASSWORD_DEPRECATED = "certificatePassword";
+
+    /**
+     * The DB identifier for the default certificate.
+     * @see se.lublin.mumla.db.DatabaseCertificate
+     */
+    public static final String PREF_CERT_ID = "certificateId";
+
+    public static final String PREF_DEFAULT_USERNAME = "defaultUsername";
+    public static final String DEFAULT_DEFAULT_USERNAME = "Mumla_User"; // funny var name
+
+    public static final String PREF_FORCE_TCP = "forceTcp";
+    public static final Boolean DEFAULT_FORCE_TCP = false;
+
+    public static final String PREF_USE_TOR = "useTor";
+    public static final Boolean DEFAULT_USE_TOR = false;
+
+    public static final String PREF_DISABLE_OPUS = "disableOpus";
+    public static final Boolean DEFAULT_DISABLE_OPUS = false;
+
+    public static final String PREF_MUTED = "muted";
+    public static final Boolean DEFAULT_MUTED = false;
+
+    public static final String PREF_DEAFENED = "deafened";
+    public static final Boolean DEFAULT_DEAFENED = false;
+
+    public static final String PREF_FIRST_RUN = "firstRun";
+    public static final Boolean DEFAULT_FIRST_RUN = true;
+
+    public static final String PREF_LOAD_IMAGES = "load_images";
+    public static final boolean DEFAULT_LOAD_IMAGES = true;
+
+    public static final String PREF_FRAMES_PER_PACKET = "audio_per_packet";
+    public static final String DEFAULT_FRAMES_PER_PACKET = "2";
+
+    public static final String PREF_HALF_DUPLEX = "half_duplex";
+    public static final boolean DEFAULT_HALF_DUPLEX = false;
+
+    public static final String PREF_HANDSET_MODE = "handset_mode";
+    public static final boolean DEFAULT_HANDSET_MODE = false;
+
+    public static final String PREF_PTT_SOUND = "ptt_sound";
+    public static final boolean DEFAULT_PTT_SOUND = false;
+
+    public static final String PREF_PREPROCESSOR_ENABLED = "preprocessor_enabled";
+    public static final boolean DEFAULT_PREPROCESSOR_ENABLED = true;
+
+    public static final String PREF_STAY_AWAKE = "stay_awake";
+    public static final boolean DEFAULT_STAY_AWAKE = false;
+
+    public static final String PREF_SHOW_USER_COUNT = "show_user_count";
+    public static final boolean DEFAULT_SHOW_USER_COUNT = false;
+
+    public static final String PREF_START_UP_IN_PINNED_MODE = "startUpInPinnedMode";
+    public static final boolean DEFAULT_START_UP_IN_PINNED_MODE = false;
+
+    static {
+        ARRAY_INPUT_METHODS = new HashSet<String>();
+        ARRAY_INPUT_METHODS.add(ARRAY_INPUT_METHOD_VOICE);
+        ARRAY_INPUT_METHODS.add(ARRAY_INPUT_METHOD_PTT);
+        ARRAY_INPUT_METHODS.add(ARRAY_INPUT_METHOD_CONTINUOUS);
     }
 
-    return jsonSettings;
-  }
+    private final SharedPreferences preferences;
 
-  private static List<String> convertJsonArrayToList(JsonArray array) {
-    List<String> result = new ArrayList<>();
-    for (JsonElement element : array) result.add(element.getAsString());
-    return result;
-  }
-
-  public void setSettings(JsonElement jsonSettings) {
-    try {
-      languageShortCode = getSettingFromJSON(jsonSettings, "language").getAsString();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      languageShortCode = null;
+    public static Settings getInstance(Context context) {
+        return new Settings(context);
     }
 
-    try {
-      String diagnosticSeverityString =
-          getSettingFromJSON(jsonSettings, "diagnosticSeverity").getAsString();
+    private Settings(Context ctx) {
+        preferences = PreferenceManager.getDefaultSharedPreferences(ctx);
 
-      if (diagnosticSeverityString.equals("error")) {
-        diagnosticSeverity = DiagnosticSeverity.Error;
-      } else if (diagnosticSeverityString.equals("warning")) {
-        diagnosticSeverity = DiagnosticSeverity.Warning;
-      } else if (diagnosticSeverityString.equals("information")) {
-        diagnosticSeverity = DiagnosticSeverity.Information;
-      } else if (diagnosticSeverityString.equals("hint")) {
-        diagnosticSeverity = DiagnosticSeverity.Hint;
-      } else {
-        diagnosticSeverity = null;
-      }
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      diagnosticSeverity = null;
+        // TODO(acomminos): Settings migration infra.
+        if (preferences.contains(PREF_CERT_DEPRECATED)) {
+            // Perform legacy certificate migration into MumlaSQLiteDatabase.
+            Toast.makeText(ctx, R.string.migration_certificate_begin, Toast.LENGTH_LONG).show();
+            String certPath = preferences.getString(PREF_CERT_DEPRECATED, "");
+            String certPassword = preferences.getString(PREF_CERT_PASSWORD_DEPRECATED, "");
+
+            Log.d(TAG, "Migrating certificate from " + certPath);
+            try {
+                File certFile = new File(certPath);
+                FileInputStream certInput = new FileInputStream(certFile);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                KeyStore oldStore = KeyStore.getInstance("PKCS12", new BouncyCastleProvider());
+                oldStore.load(certInput, certPassword.toCharArray());
+                oldStore.store(outputStream, new char[0]);
+
+                MumlaSQLiteDatabase database = new MumlaSQLiteDatabase(ctx);
+                DatabaseCertificate certificate =
+                        database.addCertificate(certFile.getName(), outputStream.toByteArray());
+                database.close();
+
+                setDefaultCertificateId(certificate.getId());
+
+                Toast.makeText(ctx, R.string.migration_certificate_success, Toast.LENGTH_LONG).show();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            } catch (FileNotFoundException e) {
+                // We can safely ignore this; the only case in which we might still want to recover
+                // would be if the user's external storage is removed.
+            } catch (CertificateException e) {
+                // Likely caused due to stored password being incorrect.
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                preferences.edit()
+                        .remove(PREF_CERT_DEPRECATED)
+                        .remove(PREF_CERT_PASSWORD_DEPRECATED)
+                        .apply();
+            }
+
+        }
     }
 
-    try {
-      dictionary = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, languageShortCode + ".dictionary").
-          getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      dictionary = null;
+    public String getInputMethod() {
+        String method = preferences.getString(PREF_INPUT_METHOD, ARRAY_INPUT_METHOD_VOICE);
+        if(!ARRAY_INPUT_METHODS.contains(method)) {
+            // Set default method for users who used to use handset mode before removal.
+            method = ARRAY_INPUT_METHOD_VOICE;
+        }
+        return method;
     }
 
-    try {
-      disabledRules = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, languageShortCode + ".disabledRules").
-          getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      disabledRules = null;
+    /**
+     * Converts the preference input method value to the one used to connect to a server via Humla.
+     * @return An input method value used to instantiate a Humla service.
+     */
+    public int getHumlaInputMethod() {
+        String inputMethod = getInputMethod();
+        if (ARRAY_INPUT_METHOD_VOICE.equals(inputMethod)) {
+            return Constants.TRANSMIT_VOICE_ACTIVITY;
+        } else if (ARRAY_INPUT_METHOD_PTT.equals(inputMethod)) {
+            return Constants.TRANSMIT_PUSH_TO_TALK;
+        } else if (ARRAY_INPUT_METHOD_CONTINUOUS.equals(inputMethod)) {
+            return Constants.TRANSMIT_CONTINUOUS;
+        }
+        throw new RuntimeException("Could not convert input method '" + inputMethod + "' to a Humla input method id!");
     }
 
-    try {
-      enabledRules = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, languageShortCode + ".enabledRules").
-          getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      enabledRules = null;
+    public void setInputMethod(String inputMethod) {
+        if(ARRAY_INPUT_METHOD_VOICE.equals(inputMethod) ||
+                ARRAY_INPUT_METHOD_PTT.equals(inputMethod) ||
+                ARRAY_INPUT_METHOD_CONTINUOUS.equals(inputMethod)) {
+            preferences.edit().putString(PREF_INPUT_METHOD, inputMethod).apply();
+        } else {
+            throw new RuntimeException("Invalid input method " + inputMethod);
+        }
     }
 
-    try {
-      dummyCommandPrototypes = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, "commands.dummy").getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      dummyCommandPrototypes = null;
+    public int getInputSampleRate() {
+        return Integer.parseInt(preferences.getString(Settings.PREF_INPUT_RATE, DEFAULT_RATE));
     }
 
-    try {
-      ignoreCommandPrototypes = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, "commands.ignore").getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      ignoreCommandPrototypes = null;
+    public int getInputQuality() {
+        return preferences.getInt(Settings.PREF_INPUT_QUALITY, DEFAULT_INPUT_QUALITY);
     }
 
-    try {
-      ignoreEnvironments = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, "environments.ignore").getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      ignoreEnvironments = null;
+    public float getAmplitudeBoostMultiplier() {
+        return (float)preferences.getInt(Settings.PREF_AMPLITUDE_BOOST, DEFAULT_AMPLITUDE_BOOST)/100;
     }
 
-    try {
-      dummyMarkdownNodeTypes = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, "markdown.dummy").getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      dummyMarkdownNodeTypes = null;
+    public float getDetectionThreshold() {
+        return (float)preferences.getInt(PREF_THRESHOLD, DEFAULT_THRESHOLD)/100;
     }
 
-    try {
-      ignoreMarkdownNodeTypes = convertJsonArrayToList(
-          getSettingFromJSON(jsonSettings, "markdown.ignore").getAsJsonArray());
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      ignoreMarkdownNodeTypes = null;
+    public int getPushToTalkKey() {
+        return preferences.getInt(PREF_PUSH_KEY, DEFAULT_PUSH_KEY);
     }
 
-    try {
-      ignoreRuleSentencePairs = new ArrayList<>();
-
-      for (JsonElement element :
-            getSettingFromJSON(jsonSettings, "ignoreRuleInSentence").getAsJsonArray()) {
-        JsonObject elementObject = element.getAsJsonObject();
-        ignoreRuleSentencePairs.add(new IgnoreRuleSentencePair(
-            elementObject.get("rule").getAsString(), elementObject.get("sentence").getAsString()));
-      }
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      ignoreRuleSentencePairs = null;
+    public String getHotCorner() {
+        return preferences.getString(PREF_HOT_CORNER_KEY, DEFAULT_HOT_CORNER);
     }
 
-    try {
-      motherTongueShortCode = getSettingFromJSON(
-          jsonSettings, "additionalRules.motherTongue").getAsString();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      motherTongueShortCode = null;
+    /**
+     * Returns whether or not the hot corner is enabled.
+     * @return true if a hot corner should be shown.
+     */
+    public boolean isHotCornerEnabled() {
+        return !ARRAY_HOT_CORNER_NONE.equals(preferences.getString(PREF_HOT_CORNER_KEY, DEFAULT_HOT_CORNER));
     }
 
-    try {
-      languageModelRulesDirectory = getSettingFromJSON(
-          jsonSettings, "additionalRules.languageModel").getAsString();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      languageModelRulesDirectory = null;
+    /**
+     * Returns the view gravity of the hot corner, or 0 if hot corner is disabled.
+     * @return A {@link android.view.Gravity} value, or 0 if disabled.
+     */
+    public int getHotCornerGravity() {
+        String hc = getHotCorner();
+        if(ARRAY_HOT_CORNER_BOTTOM_LEFT.equals(hc)) {
+            return Gravity.LEFT | Gravity.BOTTOM;
+        } else if(ARRAY_HOT_CORNER_BOTTOM_RIGHT.equals(hc)) {
+            return Gravity.RIGHT | Gravity.BOTTOM;
+        } else if(ARRAY_HOT_CORNER_TOP_LEFT.equals(hc)) {
+            return Gravity.LEFT | Gravity.TOP;
+        } else if(ARRAY_HOT_CORNER_TOP_RIGHT.equals(hc)) {
+            return Gravity.RIGHT | Gravity.TOP;
+        }
+        return 0;
     }
 
-    try {
-      neuralNetworkModelRulesDirectory = getSettingFromJSON(
-          jsonSettings, "additionalRules.neuralNetworkModel").getAsString();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      neuralNetworkModelRulesDirectory = null;
+    /**
+     * @return the resource ID of the user-defined theme.
+     */
+    public int getTheme() {
+        String theme = preferences.getString(PREF_THEME, ARRAY_THEME_LIGHT);
+        if(ARRAY_THEME_LIGHT.equals(theme))
+            return R.style.Theme_Mumla;
+        else if(ARRAY_THEME_DARK.equals(theme))
+            return R.style.Theme_Mumla_Dark;
+        else if(ARRAY_THEME_SOLARIZED_LIGHT.equals(theme))
+            return R.style.Theme_Mumla_Solarized_Light;
+        else if(ARRAY_THEME_SOLARIZED_DARK.equals(theme))
+            return R.style.Theme_Mumla_Solarized_Dark;
+        return -1;
     }
 
-    try {
-      word2VecModelRulesDirectory = getSettingFromJSON(
-          jsonSettings, "additionalRules.word2VecModel").getAsString();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      word2VecModelRulesDirectory = null;
+    /* @return the height of PTT button */
+    public int getPTTButtonHeight() {
+        return preferences.getInt(Settings.PREF_PTT_BUTTON_HEIGHT, DEFAULT_PTT_BUTTON_HEIGHT);
     }
 
-    try {
-      initialJavaHeapSize = getSettingFromJSON(
-          jsonSettings, "performance.initialJavaHeapSize").getAsInt();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      initialJavaHeapSize = null;
+    /**
+     * Returns a database identifier for the default certificate, or a negative number if there is
+     * no default certificate set.
+     * @return The default certificate's ID, or a negative integer if not set.
+     */
+    public long getDefaultCertificate() {
+        return preferences.getLong(PREF_CERT_ID, -1);
     }
 
-    try {
-      maximumJavaHeapSize = getSettingFromJSON(
-          jsonSettings, "performance.maximumJavaHeapSize").getAsInt();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      maximumJavaHeapSize = null;
+    public String getDefaultUsername() {
+        return preferences.getString(PREF_DEFAULT_USERNAME, DEFAULT_DEFAULT_USERNAME);
     }
 
-    try {
-      sentenceCacheSize = getSettingFromJSON(
-          jsonSettings, "performance.sentenceCacheSize").getAsInt();
-    } catch (NullPointerException | UnsupportedOperationException e) {
-      sentenceCacheSize = null;
-    }
-  }
-
-  @Override
-  public Object clone() {
-    Settings obj = new Settings();
-
-    obj.languageShortCode = languageShortCode;
-    obj.diagnosticSeverity = ((diagnosticSeverity == null) ? null : diagnosticSeverity);
-    obj.dictionary = ((dictionary == null) ? null : new ArrayList<>(dictionary));
-    obj.disabledRules = ((disabledRules == null) ? null : new ArrayList<>(disabledRules));
-    obj.enabledRules = ((enabledRules == null) ? null : new ArrayList<>(enabledRules));
-    obj.dummyCommandPrototypes = ((dummyCommandPrototypes == null) ? null :
-        new ArrayList<>(dummyCommandPrototypes));
-    obj.ignoreCommandPrototypes = ((ignoreCommandPrototypes == null) ? null :
-        new ArrayList<>(ignoreCommandPrototypes));
-    obj.ignoreEnvironments = ((ignoreEnvironments == null) ? null :
-        new ArrayList<>(ignoreEnvironments));
-    obj.dummyMarkdownNodeTypes = ((dummyMarkdownNodeTypes == null) ? null :
-        new ArrayList<>(dummyMarkdownNodeTypes));
-    obj.ignoreMarkdownNodeTypes = ((ignoreMarkdownNodeTypes == null) ? null :
-        new ArrayList<>(ignoreMarkdownNodeTypes));
-    obj.ignoreRuleSentencePairs = ((ignoreRuleSentencePairs == null) ? null :
-        new ArrayList<>(ignoreRuleSentencePairs));
-    obj.motherTongueShortCode = motherTongueShortCode;
-    obj.languageModelRulesDirectory = languageModelRulesDirectory;
-    obj.neuralNetworkModelRulesDirectory = neuralNetworkModelRulesDirectory;
-    obj.word2VecModelRulesDirectory = word2VecModelRulesDirectory;
-    obj.initialJavaHeapSize = initialJavaHeapSize;
-    obj.maximumJavaHeapSize = maximumJavaHeapSize;
-    obj.sentenceCacheSize = sentenceCacheSize;
-
-    return obj;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if ((obj == null) || !Settings.class.isAssignableFrom(obj.getClass())) return false;
-    Settings other = (Settings)obj;
-
-    if ((languageShortCode == null) ? (other.languageShortCode != null) :
-          !languageShortCode.equals(other.languageShortCode)) {
-      return false;
+    public boolean isPushToTalkToggle() {
+        return preferences.getBoolean(PREF_PTT_TOGGLE, DEFAULT_PTT_TOGGLE);
     }
 
-    if ((diagnosticSeverity == null) ? (other.diagnosticSeverity != null) :
-          (diagnosticSeverity != other.diagnosticSeverity)) {
-      return false;
+    public boolean isPushToTalkButtonShown() {
+        return !preferences.getBoolean(PREF_PUSH_BUTTON_HIDE_KEY, DEFAULT_PUSH_BUTTON_HIDE);
     }
 
-    if ((dictionary == null) ? (other.dictionary != null) :
-          !dictionary.equals(other.dictionary)) {
-      return false;
+    public boolean isChatNotifyEnabled() {
+        return preferences.getBoolean(PREF_CHAT_NOTIFY, DEFAULT_CHAT_NOTIFY);
     }
 
-    if ((disabledRules == null) ? (other.disabledRules != null) :
-          !disabledRules.equals(other.disabledRules)) {
-      return false;
+    public boolean isTextToSpeechEnabled() {
+        return preferences.getBoolean(PREF_USE_TTS, DEFAULT_USE_TTS);
     }
 
-    if ((enabledRules == null) ? (other.enabledRules != null) :
-          !enabledRules.equals(other.enabledRules)) {
-      return false;
+    public boolean isShortTextToSpeechMessagesEnabled() {
+        return preferences.getBoolean(PREF_SHORT_TTS_MESSAGES, DEFAULT_SHORT_TTS_MESSAGES);
     }
 
-    if ((dummyCommandPrototypes == null) ? (other.dummyCommandPrototypes != null) :
-          !dummyCommandPrototypes.equals(other.dummyCommandPrototypes)) {
-      return false;
+    public boolean isAutoReconnectEnabled() {
+        return preferences.getBoolean(PREF_AUTO_RECONNECT, DEFAULT_AUTO_RECONNECT);
     }
 
-    if ((ignoreCommandPrototypes == null) ? (other.ignoreCommandPrototypes != null) :
-          !ignoreCommandPrototypes.equals(other.ignoreCommandPrototypes)) {
-      return false;
+    public boolean isTcpForced() {
+        return preferences.getBoolean(PREF_FORCE_TCP, DEFAULT_FORCE_TCP);
     }
 
-    if ((ignoreEnvironments == null) ? (other.ignoreEnvironments != null) :
-          !ignoreEnvironments.equals(other.ignoreEnvironments)) {
-      return false;
+    public boolean isOpusDisabled() {
+        return preferences.getBoolean(PREF_DISABLE_OPUS, DEFAULT_DISABLE_OPUS);
     }
 
-    if ((dummyMarkdownNodeTypes == null) ? (other.dummyMarkdownNodeTypes != null) :
-          !dummyMarkdownNodeTypes.equals(other.dummyMarkdownNodeTypes)) {
-      return false;
+    public boolean isTorEnabled() {
+        return preferences.getBoolean(PREF_USE_TOR, DEFAULT_USE_TOR);
+    }
+    public void disableTor() {
+        preferences.edit().putBoolean(PREF_USE_TOR, false).apply();
     }
 
-    if ((ignoreMarkdownNodeTypes == null) ? (other.ignoreMarkdownNodeTypes != null) :
-          !ignoreMarkdownNodeTypes.equals(other.ignoreMarkdownNodeTypes)) {
-      return false;
+    public boolean isMuted() {
+        return preferences.getBoolean(PREF_MUTED, DEFAULT_MUTED);
     }
 
-    if ((ignoreRuleSentencePairs == null) ? (other.ignoreRuleSentencePairs != null) :
-          !ignoreRuleSentencePairs.equals(other.ignoreRuleSentencePairs)) {
-      return false;
+    public boolean isDeafened() {
+        return preferences.getBoolean(PREF_DEAFENED, DEFAULT_DEAFENED);
     }
 
-    if ((motherTongueShortCode == null) ? (other.motherTongueShortCode != null) :
-          !motherTongueShortCode.equals(other.motherTongueShortCode)) {
-      return false;
+    public boolean isFirstRun() {
+        return preferences.getBoolean(PREF_FIRST_RUN, DEFAULT_FIRST_RUN);
     }
 
-    if ((languageModelRulesDirectory == null) ? (other.languageModelRulesDirectory != null) :
-          !languageModelRulesDirectory.equals(other.languageModelRulesDirectory)) {
-      return false;
+    public boolean shouldLoadExternalImages() {
+        return preferences.getBoolean(PREF_LOAD_IMAGES, DEFAULT_LOAD_IMAGES);
     }
 
-    if ((neuralNetworkModelRulesDirectory == null) ?
-          (other.neuralNetworkModelRulesDirectory != null) :
-          !neuralNetworkModelRulesDirectory.equals(other.neuralNetworkModelRulesDirectory)) {
-      return false;
+    public void setMutedAndDeafened(boolean muted, boolean deafened) {
+        Editor editor = preferences.edit();
+        editor.putBoolean(PREF_MUTED, muted || deafened);
+        editor.putBoolean(PREF_DEAFENED, deafened);
+        editor.apply();
     }
 
-    if ((word2VecModelRulesDirectory == null) ? (other.word2VecModelRulesDirectory != null) :
-          !word2VecModelRulesDirectory.equals(other.word2VecModelRulesDirectory)) {
-      return false;
+    public void setFirstRun(boolean run) {
+        preferences.edit().putBoolean(PREF_FIRST_RUN, run).apply();
     }
 
-    if ((initialJavaHeapSize == null) ? (other.initialJavaHeapSize != null) :
-          !initialJavaHeapSize.equals(other.initialJavaHeapSize)) {
-      return false;
+    public int getFramesPerPacket() {
+        return Integer.parseInt(preferences.getString(PREF_FRAMES_PER_PACKET, DEFAULT_FRAMES_PER_PACKET));
     }
 
-    if ((maximumJavaHeapSize == null) ? (other.maximumJavaHeapSize != null) :
-          !maximumJavaHeapSize.equals(other.maximumJavaHeapSize)) {
-      return false;
+    public boolean isHalfDuplex() {
+        return preferences.getBoolean(PREF_HALF_DUPLEX, DEFAULT_HALF_DUPLEX);
     }
 
-    if ((sentenceCacheSize == null) ? (other.sentenceCacheSize != null) :
-          !sentenceCacheSize.equals(other.sentenceCacheSize)) {
-      return false;
+    public boolean isHandsetMode() {
+        return preferences.getBoolean(PREF_HANDSET_MODE, DEFAULT_HANDSET_MODE);
     }
 
-    return true;
-  }
+    public boolean isPttSoundEnabled() {
+        return preferences.getBoolean(PREF_PTT_SOUND, DEFAULT_PTT_SOUND);
+    }
 
-  @Override
-  public int hashCode() {
-    int hash = 3;
+    public boolean isPreprocessorEnabled() {
+        return preferences.getBoolean(PREF_PREPROCESSOR_ENABLED, DEFAULT_PREPROCESSOR_ENABLED);
+    }
 
-    hash = 53 * hash + ((languageShortCode != null) ? languageShortCode.hashCode() : 0);
-    hash = 53 * hash + ((diagnosticSeverity != null) ? diagnosticSeverity.hashCode() : 0);
-    hash = 53 * hash + ((dictionary != null) ? dictionary.hashCode() : 0);
-    hash = 53 * hash + ((disabledRules != null) ? disabledRules.hashCode() : 0);
-    hash = 53 * hash + ((enabledRules != null) ? enabledRules.hashCode() : 0);
-    hash = 53 * hash + ((dummyCommandPrototypes != null) ? dummyCommandPrototypes.hashCode() : 0);
-    hash = 53 * hash + ((ignoreCommandPrototypes != null) ? ignoreCommandPrototypes.hashCode() : 0);
-    hash = 53 * hash + ((ignoreEnvironments != null) ? ignoreEnvironments.hashCode() : 0);
-    hash = 53 * hash + ((dummyMarkdownNodeTypes != null) ?
-        dummyMarkdownNodeTypes.hashCode() : 0);
-    hash = 53 * hash + ((ignoreMarkdownNodeTypes != null) ?
-        ignoreMarkdownNodeTypes.hashCode() : 0);
-    hash = 53 * hash + ((ignoreRuleSentencePairs != null) ? ignoreRuleSentencePairs.hashCode() : 0);
-    hash = 53 * hash + ((motherTongueShortCode != null) ? motherTongueShortCode.hashCode() : 0);
-    hash = 53 * hash + ((languageModelRulesDirectory != null) ?
-        languageModelRulesDirectory.hashCode() : 0);
-    hash = 53 * hash + ((neuralNetworkModelRulesDirectory != null) ?
-        neuralNetworkModelRulesDirectory.hashCode() : 0);
-    hash = 53 * hash + ((word2VecModelRulesDirectory != null) ?
-        word2VecModelRulesDirectory.hashCode() : 0);
-    hash = 53 * hash + ((initialJavaHeapSize != null) ?
-        initialJavaHeapSize.hashCode() : 0);
-    hash = 53 * hash + ((maximumJavaHeapSize != null) ?
-        maximumJavaHeapSize.hashCode() : 0);
-    hash = 53 * hash + ((sentenceCacheSize != null) ?
-        sentenceCacheSize.hashCode() : 0);
+    public boolean shouldStayAwake() {
+        return preferences.getBoolean(PREF_STAY_AWAKE, DEFAULT_STAY_AWAKE);
+    }
 
-    return hash;
-  }
+    public void setDefaultCertificateId(long defaultCertificateId) {
+        preferences.edit().putLong(PREF_CERT_ID, defaultCertificateId).apply();
+    }
 
-  private static <T> T getDefault(T obj, T default_) {
-    return ((obj != null) ? obj : default_);
-  }
+    public void disableCertificate() {
+        preferences.edit().putLong(PREF_CERT_ID, -1).apply();
+    }
 
-  public String getLanguageShortCode() {
-    return getDefault(languageShortCode, "en-US");
-  }
+    public boolean isUsingCertificate() {
+        return getDefaultCertificate() >= 0;
+    }
 
-  public DiagnosticSeverity getDiagnosticSeverity() {
-    return getDefault(diagnosticSeverity, DiagnosticSeverity.Information);
-  }
+    /**
+     * @return true if the user count should be shown next to channels.
+     */
+    public boolean shouldShowUserCount() {
+        return preferences.getBoolean(PREF_SHOW_USER_COUNT, DEFAULT_SHOW_USER_COUNT);
+    }
 
-  public List<String> getDictionary() {
-    return getDefault(dictionary, Collections.emptyList());
-  }
-
-  public List<String> getDisabledRules() {
-    return getDefault(disabledRules, Collections.emptyList());
-  }
-
-  public List<String> getEnabledRules() {
-    return getDefault(enabledRules, Collections.emptyList());
-  }
-
-  public List<String> getDummyCommandPrototypes() {
-    return getDefault(dummyCommandPrototypes, Collections.emptyList());
-  }
-
-  public List<String> getIgnoreCommandPrototypes() {
-    return getDefault(ignoreCommandPrototypes, Collections.emptyList());
-  }
-
-  public List<String> getIgnoreEnvironments() {
-    return getDefault(ignoreEnvironments, Collections.emptyList());
-  }
-
-  public List<String> getDummyMarkdownNodeTypes() {
-    return getDefault(dummyMarkdownNodeTypes, Arrays.asList(
-        "AutoLink", "Code"));
-  }
-
-  public List<String> getIgnoreMarkdownNodeTypes() {
-    return getDefault(ignoreMarkdownNodeTypes, Arrays.asList(
-        "CodeBlock", "FencedCodeBlock", "IndentedCodeBlock"));
-  }
-
-  public List<IgnoreRuleSentencePair> getIgnoreRuleSentencePairs() {
-    return getDefault(ignoreRuleSentencePairs, Collections.emptyList());
-  }
-
-  public String getMotherTongueShortCode() {
-    return getDefault(motherTongueShortCode, null);
-  }
-
-  public String getLanguageModelRulesDirectory() {
-    return getDefault(languageModelRulesDirectory, null);
-  }
-
-  public String getNeuralNetworkModelRulesDirectory() {
-    return getDefault(neuralNetworkModelRulesDirectory, null);
-  }
-
-  public String getWord2VecModelRulesDirectory() {
-    return getDefault(word2VecModelRulesDirectory, null);
-  }
-
-  public Integer getInitialJavaHeapSize() {
-    return getDefault(initialJavaHeapSize, null);
-  }
-
-  public Integer getMaximumJavaHeapSize() {
-    return getDefault(maximumJavaHeapSize, null);
-  }
-
-  public Integer getSentenceCacheSize() {
-    return getDefault(sentenceCacheSize, 2000);
-  }
+    public boolean shouldStartUpInPinnedMode() {
+        return preferences.getBoolean(PREF_START_UP_IN_PINNED_MODE, DEFAULT_START_UP_IN_PINNED_MODE);
+    }
 }

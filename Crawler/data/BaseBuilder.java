@@ -1,151 +1,140 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/main/java/org/apache/ibatis/builder/BaseBuilder.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
+13
+https://raw.githubusercontent.com/CoboVault/cobo-vault-cold/master/app/src/main/java/com/cobo/cold/protocol/builder/BaseBuilder.java
+/*
+ * Copyright (c) 2020 Cobo
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * in the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.apache.ibatis.builder;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
+package com.cobo.cold.protocol.builder;
 
-import org.apache.ibatis.mapping.ParameterMode;
-import org.apache.ibatis.mapping.ResultSetType;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.type.*;
+import android.os.SystemProperties;
+import android.text.TextUtils;
+import android.util.Log;
 
-/**
- * @author Clinton Begin
- */
-public abstract class BaseBuilder {
-  protected final Configuration configuration;
-  protected final TypeAliasRegistry typeAliasRegistry;
-  protected final TypeHandlerRegistry typeHandlerRegistry;
+import com.cobo.cold.BuildConfig;
+import com.cobo.cold.callables.GetUuidCallable;
+import com.cobo.cold.encryptioncore.utils.ByteFormatter;
+import com.cobo.cold.protobuf.BaseProtoc;
+import com.cobo.cold.protobuf.PayloadProtoc;
+import com.cobo.cold.protobuf.SignTransactionResultProtoc;
+import com.cobo.cold.protobuf.SyncProtoc;
+import com.cobo.cold.protocol.EncodeConfig;
+import com.cobo.cold.protocol.ZipUtil;
+import com.googlecode.protobuf.format.JsonFormat;
 
-  public BaseBuilder(Configuration configuration) {
-    this.configuration = configuration;
-    this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
-    this.typeHandlerRegistry = this.configuration.getTypeHandlerRegistry();
-  }
+import org.spongycastle.util.encoders.Base64;
 
-  public Configuration getConfiguration() {
-    return configuration;
-  }
+public class BaseBuilder {
 
-  protected Pattern parseExpression(String regex, String defaultValue) {
-    return Pattern.compile(regex == null ? defaultValue : regex);
-  }
+    protected final BaseProtoc.Base.Builder base;
+    protected PayloadProtoc.Payload.Builder payload;
+    protected SyncProtoc.Sync.Builder sync;
+    protected SignTransactionResultProtoc.SignTransactionResult.Builder signTxResult;
+    private final EncodeConfig config;
 
-  protected Boolean booleanValueOf(String value, Boolean defaultValue) {
-    return value == null ? defaultValue : Boolean.valueOf(value);
-  }
-
-  protected Integer integerValueOf(String value, Integer defaultValue) {
-    return value == null ? defaultValue : Integer.valueOf(value);
-  }
-
-  protected Set<String> stringSetValueOf(String value, String defaultValue) {
-    value = value == null ? defaultValue : value;
-    return new HashSet<>(Arrays.asList(value.split(",")));
-  }
-
-  protected JdbcType resolveJdbcType(String alias) {
-    if (alias == null) {
-      return null;
+    BaseBuilder(PayloadProtoc.Payload.Type type, EncodeConfig config) {
+        Header header = new Header();
+        base = BaseProtoc.Base.newBuilder()
+                .setVersion(header.version)
+                .setDescription(header.description)
+                .setDeviceType(header.deviceType)
+                .setColdVersion(header.coldVersion);
+        initPayload(type, header);
+        this.config = config;
     }
-    try {
-      return JdbcType.valueOf(alias);
-    } catch (IllegalArgumentException e) {
-      throw new BuilderException("Error resolving JdbcType. Cause: " + e, e);
-    }
-  }
 
-  protected ResultSetType resolveResultSetType(String alias) {
-    if (alias == null) {
-      return null;
-    }
-    try {
-      return ResultSetType.valueOf(alias);
-    } catch (IllegalArgumentException e) {
-      throw new BuilderException("Error resolving ResultSetType. Cause: " + e, e);
-    }
-  }
+    private void initPayload(PayloadProtoc.Payload.Type type, Header header) {
+        payload = PayloadProtoc.Payload.newBuilder()
+                .setUuid(header.uuid);
 
-  protected ParameterMode resolveParameterMode(String alias) {
-    if (alias == null) {
-      return null;
+        switch (type) {
+            case TYPE_SYNC:
+                sync = SyncProtoc.Sync.newBuilder();
+                break;
+            case TYPE_SIGN_TX_RESULT:
+                signTxResult = SignTransactionResultProtoc.SignTransactionResult.newBuilder();
+                break;
+        }
+        payload.setType(type);
     }
-    try {
-      return ParameterMode.valueOf(alias);
-    } catch (IllegalArgumentException e) {
-      throw new BuilderException("Error resolving ParameterMode. Cause: " + e, e);
-    }
-  }
 
-  protected Object createInstance(String alias) {
-    Class<?> clazz = resolveClass(alias);
-    if (clazz == null) {
-      return null;
+    public String build() {
+        base.setData(payload);
+        if (BuildConfig.DEBUG) {
+            String json = new JsonFormat().printToString(base.build());
+            String TAG = "Vault.QrCode";
+            Log.d(TAG, "json = " + json);
+        }
+        byte[] data = getBytes();
+        return getEncodedString(data);
     }
-    try {
-      return clazz.getDeclaredConstructor().newInstance();
-    } catch (Exception e) {
-      throw new BuilderException("Error creating instance. Cause: " + e, e);
-    }
-  }
 
-  protected <T> Class<? extends T> resolveClass(String alias) {
-    if (alias == null) {
-      return null;
+    private String getEncodedString(byte[] data) {
+        String res;
+        switch (config.encoding) {
+            case Hex:
+                res = ByteFormatter.bytes2hex(data);
+                break;
+            case BASE64:
+            default:
+                res = Base64.toBase64String(data);
+        }
+        return res;
     }
-    try {
-      return resolveAlias(alias);
-    } catch (Exception e) {
-      throw new BuilderException("Error resolving class. Cause: " + e, e);
-    }
-  }
 
-  protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, String typeHandlerAlias) {
-    if (typeHandlerAlias == null) {
-      return null;
-    }
-    //Class<?> type = resolveClass(typeHandlerAlias); modify by xuliang 20200403
-    Class<?> type =ObjectTypeHandler.class;
-    if (type != null && !TypeHandler.class.isAssignableFrom(type)) {
-      throw new BuilderException("Type " + type.getName() + " is not a valid TypeHandler because it does not implement TypeHandler interface");
-    }
-    @SuppressWarnings("unchecked") // already verified it is a TypeHandler
-    Class<? extends TypeHandler<?>> typeHandlerType = (Class<? extends TypeHandler<?>>) type;
-    return resolveTypeHandler(javaType, typeHandlerType);
-  }
+    private byte[] getBytes() {
+        byte[] data;
+        switch (config.format) {
+            case JSON:
+                data = new JsonFormat().printToString(base.build()).getBytes();
+                break;
+            case PROTOBUF:
+            default:
+                data = base.build().toByteArray();
+        }
 
-  protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, Class<? extends TypeHandler<?>> typeHandlerType) {
-    if (typeHandlerType == null) {
-      return null;
+        data = config.compress ? ZipUtil.zip(data) : data;
+        return data;
     }
-    // javaType ignored for injected handlers see issue #746 for full detail
-    TypeHandler<?> handler = typeHandlerRegistry.getMappingTypeHandler(typeHandlerType);
-    if (handler == null) {
-      // not in registry, create a new one
-      handler = typeHandlerRegistry.getInstance(javaType, typeHandlerType);
-    }
-    return handler;
-  }
 
-  protected <T> Class<? extends T> resolveAlias(String alias) {
-    return typeAliasRegistry.resolveAlias(alias);
-  }
+    class Header {
+        private final int version = 1;
+        private final String uuid;
+        private final String description;
+        private final int coldVersion;
+        private final String deviceType;
+
+        Header() {
+            String uuid = getUuid();
+            this.uuid = TextUtils.isEmpty(uuid) ? " " : uuid;
+            description = "cobo vault qrcode";
+            coldVersion = BuildConfig.VERSION_CODE;
+            deviceType = getDeviceType();
+        }
+
+        private String getDeviceType() {
+            String boardType = SystemProperties.get("boardtype");
+            if ("B".equals(boardType)) {
+                return "Cobo Vault Essential";
+            } else {
+                return "Cobo Vault Pro";
+            }
+        }
+
+        private String getUuid() {
+            return new GetUuidCallable().call();
+        }
+    }
 }

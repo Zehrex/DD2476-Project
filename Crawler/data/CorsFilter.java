@@ -1,45 +1,46 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/core/CorsFilter.java
-package cn.tsxygfy.beyond.core;
+25
+https://raw.githubusercontent.com/griabcrh/vue-activiti-demo/master/vue-activiti-service-demo/src/main/java/com/activiti/filter/CorsFilter.java
+package com.activiti.filter;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.cors.CorsUtils;
+import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static cn.tsxygfy.beyond.core.BeyondConst.ADMIN_TOKEN_HEADER_NAME;
-
 /**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.core
- * @since 2020-03-11 14:00:21
+ * @Author yiyoung
+ * @date 2020/4/21
  */
+@Configuration
 public class CorsFilter implements Filter {
-
-    private final String ALLOW_HEADERS = StringUtils.joinWith(",", HttpHeaders.CONTENT_TYPE, ADMIN_TOKEN_HEADER_NAME);
-
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    
+    }
+    
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, request.getHeader(HttpHeaders.ORIGIN));
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ALLOW_HEADERS);
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "3600");
-
-        if (!CorsUtils.isPreFlightRequest(request)) {
-            filterChain.doFilter(request, response);
-        }
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "*");
+        response.setHeader("Access-Control-Max-Age", "3600");
+        // 提示OPTIONS预检时，后端需要设置的两个常用自定义头
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type,X-Requested-With");
+        // 是否支持cookie跨域
+        response.setHeader("Access-Control-Allow-Credentials", "false");
+        filterChain.doFilter(servletRequest, servletResponse);
+    }
+    
+    @Override
+    public void destroy() {
+    
     }
 }

@@ -1,98 +1,77 @@
-1
-https://raw.githubusercontent.com/niufuwei/block_chian/master/Stock/app/src/main/java/com/hjq/demo/action/StatusAction.java
-package com.hjq.demo.action;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/model/process/StatusAction.java
+package ru.bgcrm.model.process;
 
-import android.app.Application;
-import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.view.View;
+/*
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.RawRes;
-import androidx.annotation.StringRes;
-import androidx.core.content.ContextCompat;
+import ru.bgcrm.plugin.bgbilling.ws.bgcrm.util.DefaultSetup;
+import ru.bgcrm.plugin.bgbilling.ws.bgcrm.util.Utils;
 
-import com.hjq.demo.R;
-import com.hjq.demo.helper.ActivityStackManager;
-import com.hjq.demo.widget.HintLayout;
+**
+ * Действие, разрешенное к выполнению над инцидентом в каком-либо статусе.
+ *
+public class StatusAction        
+{
+    private String title;
+    private List<Integer> actionIdList = new ArrayList<Integer>();
+    private List<StatusActionParam> paramList = new ArrayList<StatusActionParam>();
+    private List<String> areaList = new ArrayList<String>();
 
-/**
- *    author : Android 轮子哥
- *    github : https://github.com/getActivity/AndroidProject
- *    time   : 2019/12/08
- *    desc   : 界面状态提示
- */
-public interface StatusAction {
-
-    /**
-     * 获取提示布局
-     */
-    HintLayout getHintLayout();
-
-    /**
-     * 显示加载中
-     */
-    default void showLoading() {
-        showLoading(R.raw.loading);
+    public String getTitle()
+    {
+        return title;
     }
-
-    default void showLoading(@RawRes int id) {
-        HintLayout layout = getHintLayout();
-        layout.show();
-        layout.setAnim(id);
-        layout.setHint("");
-        layout.setOnClickListener(null);
+    
+    public List<StatusActionParam> getParamList()
+    {
+        return paramList;
     }
-
-    /**
-     * 显示加载完成
-     */
-    default void showComplete() {
-        HintLayout layout = getHintLayout();
-        if (layout != null && layout.isShow()) {
-            layout.hide();
+     
+    public List<Integer> getActionIdList()
+    {
+        return actionIdList;
+    }
+    
+    public void loadFromData( DefaultSetup data, String prefix )
+    {
+        paramList.clear();
+        
+        actionIdList = Utils.stringToIntegerList( data.get( prefix + "action_ids" ) );
+        areaList = Utils.stringToList( data.get( prefix + "areas" ) );
+        title = data.get( prefix + "title" );
+        
+        for(  Map<String, String> actionParam : data.parseObjects( prefix + "param." ) )
+        {
+            String id = actionParam.get( "id" );
+            String paramPrefix = prefix + "param." + id + ".";
+            
+            StatusActionParam param = new StatusActionParam();
+            param.loadFromData( data, paramPrefix );
+            paramList.add( param );
         }
     }
 
-    /**
-     * 显示空提示
-     */
-    default void showEmpty() {
-        showLayout(R.drawable.ic_hint_empty, R.string.hint_layout_no_data, null);
+    public void serializeToData( StringBuilder data, String prefix )
+    {
+        Utils.addSetupPair( data, prefix, "title", title );
+        Utils.addSetupPair( data, prefix, "action_ids", Utils.collectionToString( actionIdList ) );
+        Utils.addSetupPair( data, prefix, "areas", Utils.collectionToString( areaList ) );
+        
+        int i = 1;
+        for( StatusActionParam param : paramList )
+        {
+            String pref = prefix + "param." + (i++) + ".";
+            param.serializeToData( data, pref );
+        }            
     }
-
-    /**
-     * 显示错误提示
-     */
-    default void showError(View.OnClickListener listener) {
-        Application application = ActivityStackManager.getInstance().getApplication();
-        if (application != null) {
-            ConnectivityManager manager = ContextCompat.getSystemService(application, ConnectivityManager.class);
-            if (manager != null) {
-                NetworkInfo info = manager.getActiveNetworkInfo();
-                // 判断网络是否连接
-                if (info == null || !info.isConnected()) {
-                    showLayout(R.drawable.ic_hint_nerwork, R.string.hint_layout_error_network, listener);
-                    return;
-                }
-            }
-        }
-        showLayout(R.drawable.ic_hint_error, R.string.hint_layout_error_request, listener);
-    }
-
-    /**
-     * 显示自定义提示
-     */
-    default void showLayout(@DrawableRes int drawableId, @StringRes int stringId, View.OnClickListener listener) {
-        showLayout(ContextCompat.getDrawable(ActivityStackManager.getInstance().getTopActivity(), drawableId), ActivityStackManager.getInstance().getTopActivity().getString(stringId), listener);
-    }
-
-    default void showLayout(Drawable drawable, CharSequence hint, View.OnClickListener listener) {
-        HintLayout layout = getHintLayout();
-        layout.show();
-        layout.setIcon(drawable);
-        layout.setHint(hint);
-        layout.setOnClickListener(listener);
-    }
-}
+    
+    @Override
+    public String toString()
+    {
+        return title;
+    }  
+    
+}*/

@@ -1,19 +1,26 @@
-2
-https://raw.githubusercontent.com/wangIQD/GoF23/master/GOF23/DesignPattern/src/com/wz/behavioral/mediator/Mediator.java
-package com.wz.behavioral.mediator;
+38
+https://raw.githubusercontent.com/piyush6348/Design-Patterns/master/Mediator%20Pattern/src/Mediator.java
+import java.util.ArrayList;
 
-/**
- * @author 隔壁老王
- * @create 2020-05-08 18:01
- * @bilibili https://space.bilibili.com/320299990
- * @description
- */
-//抽象中介者
-public interface Mediator {
+public class Mediator implements IMediator {
+    // Stores all the people the mediator has to interact with.
+    private ArrayList<User> users;
 
-    //注册同事
-    abstract void register(Colleague colleague);
+    public Mediator() {
+        users = new ArrayList<>();
+    }
 
-    //通知中介者，发送消息
-    abstract void relay(Colleague colleague);
+    @Override
+    public void addUser(User user) {
+        users.add(user);
+    }
+
+    @Override
+    public void sendMessage(String message, User sender) {
+        for(int i = 0; i < users.size(); i++) {
+            if (users.get(i) != sender) {
+                users.get(i).receiveMessage(message, sender);
+            }
+        }
+    }
 }

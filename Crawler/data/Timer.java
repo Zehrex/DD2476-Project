@@ -1,51 +1,80 @@
-12
-https://raw.githubusercontent.com/Crystallinqq/Mercury-Client/master/src/main/java/fail/mercury/client/client/modules/player/Timer.java
-package fail.mercury.client.client.modules.player;
+23
+https://raw.githubusercontent.com/datastax/metric-collector-for-apache-cassandra/master/src/main/java/com/datastax/mcac/insights/metrics/Timer.java
+package com.datastax.mcac.insights.metrics;
 
-import fail.mercury.client.api.module.Module;
-import fail.mercury.client.api.module.annotations.ModuleManifest;
-import fail.mercury.client.api.module.category.Category;
-import fail.mercury.client.api.util.EntityUtil;
-import fail.mercury.client.client.events.UpdateEvent;
-import fail.mercury.client.api.module.Module;
-import fail.mercury.client.api.module.annotations.ModuleManifest;
-import fail.mercury.client.api.module.category.Category;
-import fail.mercury.client.api.util.EntityUtil;
-import fail.mercury.client.client.events.UpdateEvent;
-import me.kix.lotus.property.annotations.Clamp;
-import me.kix.lotus.property.annotations.Mode;
-import me.kix.lotus.property.annotations.Property;
-import net.b0at.api.event.EventHandler;
+import java.util.Map;
+import java.util.Optional;
 
-@ModuleManifest(label = "Timer", aliases = {"GameSpeed"}, category = Category.PLAYER)
-public class Timer extends Module {
+import com.datastax.mcac.insights.InsightMetadata;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-    @Property("Speed")
-    @Clamp(minimum = "0.1", maximum = "10")
-    private float speed = 4.0f;
-
-    @Property("Mode")
-    @Mode({"Normal", "Test"})
-    private String mode = "Normal";
-
-    @Override
-    public void onDisable() {
-        EntityUtil.resetTimer();
+public class Timer extends Metric
+{
+    @JsonCreator
+    public Timer(
+            @JsonProperty("name") String name,
+            @JsonProperty("timestamp") Long timestamp,
+            @JsonProperty("tags") Optional<Map<String, String>> tags,
+            @JsonProperty("count") long count,
+            @JsonProperty("samplingStats") SamplingStats samplingStats,
+            @JsonProperty("rateStats") RateStats rateStats,
+            @JsonProperty("rateUnit") String rateUnit,
+            @JsonProperty("durationUnit") String durationUnit
+    )
+    {
+        super(
+                name,
+                Optional.of(timestamp),
+                tags,
+                InsightMetadata.InsightType.TIMER,
+                new Data(count, samplingStats, rateStats, rateUnit, durationUnit)
+        );
     }
 
-    @EventHandler
-    public void onUpdate(UpdateEvent event) {
-        switch (mode.toLowerCase()) {
-            case "normal":
-                EntityUtil.setTimer(speed);
-                break;
-            case "test":
-                    EntityUtil.setTimer(10f);
-                if (mc.player.ticksExisted % 10 == 0) {
-                    EntityUtil.setTimer(1f);
-                }
-                break;
+    private static final class Data
+    {
+        @JsonProperty("count")
+        public final long count;
+        @JsonProperty("samplingStats")
+        public final SamplingStats samplingStats;
+        @JsonProperty("rateStats")
+        public final RateStats rateStats;
+        @JsonProperty("rateUnit")
+        public final String rateUnit;
+        @JsonProperty("durationUnit")
+        public final String durationUnit;
+
+        @Override
+        public String toString()
+        {
+            return "Data{"
+                    + "count=" + count
+                    + ", samplingStats=" + samplingStats
+                    + ", rateStats=" + rateStats
+                    + ", rateUnit='" + rateUnit + '\''
+                    + ", durationUnit='" + durationUnit + '\''
+                    + '}';
+        }
+
+        @JsonCreator
+        public Data(
+                @JsonProperty("count")
+                        long count,
+                @JsonProperty("samplingStats")
+                        SamplingStats samplingStats,
+                @JsonProperty("rateStats")
+                        RateStats rateStats,
+                @JsonProperty("rateUnit")
+                        String rateUnit,
+                @JsonProperty("durationUnit")
+                        String durationUnit)
+        {
+            this.count = count;
+            this.samplingStats = samplingStats;
+            this.rateStats = rateStats;
+            this.rateUnit = rateUnit;
+            this.durationUnit = durationUnit;
         }
     }
-
 }

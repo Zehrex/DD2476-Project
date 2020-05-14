@@ -1,23 +1,17 @@
-2
-https://raw.githubusercontent.com/984964551/JavassmDemo/master/src/main/java/wac/dao/Admindao.java
-package wac.dao;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_user/src/main/java/com/tensquare/user/dao/AdminDao.java
+package com.tensquare.user.dao;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Select;
-import org.springframework.stereotype.Repository;
-import wac.domain.Admin;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-@Repository
-public interface Admindao {
-    //查询管理员的用户名和密码
-    @Select("select * from user where username=#{username}&& password=#{password}")
-    public Admin findlogin(Admin admin);
+import com.tensquare.user.pojo.Admin;
+/**
+ * admin数据访问接口
+ * @author Administrator
+ *
+ */
+public interface AdminDao extends JpaRepository<Admin,String>,JpaSpecificationExecutor<Admin>{
 
-    //添加管理员
-    @Insert("insert into user value (null,#{username},#{password})")
-    public void saveadmin(Admin admin);
-
-    //判断注册的用户名是否重复
-    @Select("select * from user where username=#{username}")
-    public Admin adminusername(String username);
+    public Admin findByLoginname(String loginname);
 }

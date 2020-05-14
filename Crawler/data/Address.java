@@ -1,37 +1,71 @@
-3
-https://raw.githubusercontent.com/mqxu/spring-boot-review/master/spring-boot-jpa/src/main/java/com/soft1851/springboot/jpa/model/cascade/Address.java
-package com.soft1851.springboot.jpa.model.cascade;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/organizations-persistence/src/main/java/engineering/everest/lhotse/organizations/persistence/Address.java
+package engineering.everest.lhotse.organizations.persistence;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
 
-/**
- * @author: mq_xu
- * @date: 2020/5/12
- * @description:
- */
-@Data
-@Entity
+@Embeddable
+@ToString
+@EqualsAndHashCode
 public class Address {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    private String street;
+    private String city;
+    private String state;
+    private String country;
+    private String postalCode;
 
-    @Column(name = "phone", nullable = true, length = 11)
-    private String phone;
+    public Address() {
+    }
 
-    @Column(name = "zipcode", nullable = true, length = 6)
-    private String zipcode;
+    public Address(String street, String city, String state, String country, String postalCode) {
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.postalCode = postalCode;
+    }
 
-    @Column(name = "address", nullable = true, length = 100)
-    private String address;
+    public String getStreet() {
+        return street;
+    }
 
-    /**
-     * 如果不需要根据Address级联查询 People，可以注释掉
-     */
-    @OneToOne(mappedBy = "address", cascade = {CascadeType.MERGE,
-            CascadeType.REFRESH}, optional = false)
-    private People people;
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
 }

@@ -1,65 +1,18 @@
-3
-https://raw.githubusercontent.com/aboullaite/covid-19-picocli/master/src/main/java/me/aboullaite/rest/CovidAPI.java
-package me.aboullaite.rest;
+11
+https://raw.githubusercontent.com/afsalashyana/Covid19-Desktop-Widget/master/src/main/java/com/genuinecoder/datafetch/CovidApi.java
+package com.genuinecoder.datafetch;
 
-import me.aboullaite.model.Country;
-import me.aboullaite.model.History;
+import com.genuinecoder.datafetch.model.CountryData;
+import com.genuinecoder.datafetch.model.GlobalData;
+import com.google.gson.JsonObject;
+import retrofit2.Call;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
 
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import java.util.List;
+public interface CovidApi {
+    @GET("https://coronavirus-19-api.herokuapp.com/all")
+    Call<GlobalData> getGlobalData();
 
-public class CovidAPI {
-    private static final String BASE_URL = "https://corona.lmao.ninja/v2/";
-    private Client client = ClientBuilder.newClient();
-    private WebTarget covidTarget = client.target(BASE_URL);
-
-    public Country globalStats(){
-       return covidTarget.path("all").request(MediaType.APPLICATION_JSON)
-               .get(Country.class);
-    }
-
-    public Country countryStats(String country){
-        return apiCall("countries/" + country, Country.class);
-
-    }
-
-    public List<Country> allCountryStats(){
-        return apiCall("countries", new GenericType<List<Country>>() {});
-    }
-
-    public History history( String country){
-        return this.apiCall("historical/" + country, History.class);
-    }
-
-    private <T> T apiCall(String path, Class<T> tClass){
-        try {
-            return covidTarget.path(path).request(MediaType.APPLICATION_JSON)
-                    .get(tClass);
-        }catch (ClientErrorException cex){
-            System.out.printf("Something happened in our side: %s", cex.getMessage());
-        }catch (ServerErrorException sex){
-            System.out.printf("Something happened in server side: %s", sex.getMessage());
-        }
-        return null;
-    }
-
-    private <T> T apiCall(String path, GenericType<T> tClass){
-        try {
-            return covidTarget.path(path).request(MediaType.APPLICATION_JSON)
-                    .get(tClass);
-        }catch (ClientErrorException cex){
-            System.out.printf("Something happened in our side: %s", cex.getMessage());
-        }catch (ServerErrorException sex){
-            System.out.printf("Something happened in server side: %s", sex.getMessage());
-        }
-        return null;
-    }
-
-
+    @GET("https://coronavirus-19-api.herokuapp.com/countries/{countryName}")
+    Call<CountryData> getCountryData(@Path(value = "countryName") String countryName);
 }

@@ -1,29 +1,34 @@
-2
-https://raw.githubusercontent.com/chenval/my-site/master/src/main/java/cn/blog/dao/LogDao.java
-package cn.blog.dao;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-admin/src/main/java/com/java2nb/common/dao/LogDao.java
+package com.java2nb.common.dao;
 
-import cn.blog.Domin.LogDomain;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import com.java2nb.common.domain.LogDO;
 
 import java.util.List;
+import java.util.Map;
 
+import org.apache.ibatis.annotations.Mapper;
 
+/**
+ * 系统日志
+ * @author xiongxy
+ * @email 1179705413@qq.com
+ * @date 2019-10-03 15:45:42
+ */
 @Mapper
 public interface LogDao {
 
-    /**
-     * 添加日志
-     */
-    int addLog(LogDomain logDomain);
-
-    /**
-     * 删除日志
-     */
-    int deleteLogById(@Param("id") Integer id);
-
-    /**
-     * 获取日志
-     */
-    List<LogDomain> getLogs();
+	LogDO get(Long id);
+	
+	List<LogDO> list(Map<String,Object> map);
+	
+	int count(Map<String,Object> map);
+	
+	int save(LogDO log);
+	
+	int update(LogDO log);
+	
+	int remove(Long id);
+	
+	int batchRemove(Long[] ids);
 }

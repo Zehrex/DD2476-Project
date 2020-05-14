@@ -1,49 +1,36 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/submitted/refcursor/OrderDetail.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-package org.apache.ibatis.submitted.refcursor;
+10
+https://raw.githubusercontent.com/NearbyShops/Nearby-Shops-Android-app/master/app/src/main/java/org/nearbyshops/enduserappnew/DetailScreens/DetailOrder/OrderDetail.java
+package org.nearbyshops.enduserappnew.DetailScreens.DetailOrder;
 
-public class OrderDetail {
-    private Integer orderNumber;
-    private Integer lineNumber;
-    private Integer quantity;
-    private String description;
-    public Integer getLineNumber() {
-        return lineNumber;
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import org.nearbyshops.enduserappnew.R;
+
+
+public class OrderDetail extends AppCompatActivity {
+
+
+
+
+    public static final String FRAGMENT_ORDER_DETAIL = "FRAGMENT_ORDER_DETAIL";
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_fragment_container);
+
+
+
+        if(getSupportFragmentManager().findFragmentByTag(FRAGMENT_ORDER_DETAIL)==null)
+        {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_container,new FragmentOrderDetail(),FRAGMENT_ORDER_DETAIL)
+                    .commit();
+        }
     }
-    public void setLineNumber(Integer lineNumber) {
-        this.lineNumber = lineNumber;
-    }
-    public Integer getQuantity() {
-        return quantity;
-    }
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    public Integer getOrderNumber() {
-        return orderNumber;
-    }
-    public void setOrderNumber(Integer orderNumber) {
-        this.orderNumber = orderNumber;
-    }
+
+
 }

@@ -1,43 +1,28 @@
-2
-https://raw.githubusercontent.com/zcy1010/compilerExperimentSyntaxAnalysis/master/src/com/company/syntaxAnalysis/Statement.java
-package com.company.syntaxAnalysis;
+17
+https://raw.githubusercontent.com/geertvos/gs-lang/master/src/main/java/net/geertvos/gvm/ast/Statement.java
+package net.geertvos.gvm.ast;
 
-/**
- * 语法树的状态
- *
- * @author zcy10
- * @version 1.0
- */
-public enum Statement {
+import org.parboiled.support.Position;
 
-    GOAL,
-    MAINCLASS,
-    CLASSDECLARATION,
-    VARDECLARATION,
-    METHODDECLARATION,
-    TYPE,
-    STATEMENTS,
-    IFSTATEMENT,
-    WHILESTATEMENT,
-    PRINTSTATEMENT,
-    ASSIGNSTATEMENT,
-    ARRAYSTATEMENT,
-    STATEMENT,
-    INTEXPRESSION,
-    TRUEEXPRESSION,
-    FALSEEXPRESSION,
-    IDENTIFIEREXPRESSION,
-    THISEXPRESSION,
-    NEWARRAYEXPRESSION,
-    NEWEXPRESSION,
-    NOEXPRESSION,
-    BRACEEXPREESION,
-    EXPRESSION,
-    OPL,
-    EXPRESSIONL,
-    LENGTHL,
-    METHODL,
-    NULLL,
-    L
+import net.geertvos.gvm.compiler.Compilable;
+import net.geertvos.gvm.compiler.GScriptCompiler;
+import net.geertvos.gvm.core.GVM;
 
+public abstract class Statement implements Compilable {
+
+	private final Position position;
+	
+	protected Statement(Position pos) {
+		this.position = pos;
+	}
+	
+	public void compile( GScriptCompiler c ) {
+		if(c.isDebugModeEnabled()) {
+			c.code.add(GVM.DEBUG);
+			c.code.writeInt(position.line);
+			int moduleName = c.getProgram().addString(c.getCurrentModule());
+			c.code.writeInt(moduleName);
+		}
+	}
+	
 }

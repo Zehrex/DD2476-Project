@@ -1,33 +1,29 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/reflection/factory/TestClass.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-package org.apache.ibatis.reflection.factory;
+160
+https://raw.githubusercontent.com/c0ny1/java-object-searcher/master/src/test/java/me/gv7/tools/josearcher/test/TestClass.java
+package me.gv7.tools.josearcher.test;
 
-/**
- * TestClass
- *
- * @author Ryan Lamore
- */
-public class TestClass {
-  String myString;
-  Integer myInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-  public TestClass(String myString, Integer myInteger) {
-    this.myString = myString;
-    this.myInteger = myInteger;
-  }
+public class TestClass extends TestBaseClass {
+    private TestBaseClass base;
+    private List<Object> lists = new ArrayList<>();
+    private String[] strs = new String[]{"1","2","3"};
+    private Map<String,Object> map = new HashMap<String,Object>();
+
+    public TestClass(){
+        base = new TestBaseClass();
+        EntityTest entity = new EntityTest();
+        entity.setId(1);
+        entity.setName("xxxx");
+        lists.add(entity);
+        lists.add(new Object[0]);
+        lists.add(new Object[0]);
+
+        map.put("aaa",new Object[0]);
+        map.put("bbb",new Object[0]);
+        map.put("ccc",new Object[0]);
+    }
 }

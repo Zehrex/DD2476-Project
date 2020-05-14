@@ -1,52 +1,21 @@
-2
-https://raw.githubusercontent.com/jarryleo/GSYVideoPlayer/master/app/src/main/java/com/example/gsyvideoplayer/utils/floatUtil/Util.java
-package com.example.gsyvideoplayer.utils.floatUtil;
+23
+https://raw.githubusercontent.com/mrchengwenlong/NettyIM/master/im_lib/src/main/java/com/takiku/im_lib/util/Util.java
+package com.takiku.im_lib.util;
 
-import android.content.Context;
-import android.graphics.Point;
-import android.os.Build;
-import android.provider.Settings;
-import androidx.annotation.RequiresApi;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.WindowManager;
-
-/**
- * Created by yhao on 2017/12/22.
- * https://github.com/yhaolpz
- */
+import java.util.Locale;
+import java.util.concurrent.ThreadFactory;
 
 public class Util {
-
-
-    static View inflate(Context applicationContext, int layoutId) {
-        LayoutInflater inflate = (LayoutInflater) applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        return inflate.inflate(layoutId, null);
+    public static String format(String format, Object... args) {
+        return String.format(Locale.US, format, args);
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public static boolean hasPermission(Context context) {
-        return Settings.canDrawOverlays(context);
-    }
-
-
-    private static Point sPoint;
-
-    static int getScreenWidth(Context context) {
-        if (sPoint == null) {
-            sPoint = new Point();
-            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            wm.getDefaultDisplay().getSize(sPoint);
-        }
-        return sPoint.x;
-    }
-
-    static int getScreenHeight(Context context) {
-        if (sPoint == null) {
-            sPoint = new Point();
-            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            wm.getDefaultDisplay().getSize(sPoint);
-        }
-        return sPoint.y;
+    public static ThreadFactory threadFactory(final String name, final boolean daemon) {
+        return new ThreadFactory() {
+            @Override public Thread newThread(Runnable runnable) {
+                Thread result = new Thread(runnable, name);
+                result.setDaemon(daemon);
+                return result;
+            }
+        };
     }
 }

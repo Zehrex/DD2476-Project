@@ -1,44 +1,23 @@
-2
-https://raw.githubusercontent.com/MandalasWang/rbac_shiro/master/src/main/java/ink/boyuan/rbac_shiro/mapper/RoleMapper.java
-package ink.boyuan.rbac_shiro.mapper;
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/modules/sys/mapper/RoleMapper.java
+package com.kalvin.kvf.modules.sys.mapper;
 
-import ink.boyuan.rbac_shiro.domain.Role;
-import org.apache.ibatis.annotations.*;
-import org.apache.ibatis.mapping.FetchType;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kalvin.kvf.modules.sys.entity.Role;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 
 /**
- * @author 有缘
- * @version 1.0
- * @date 2020/4/14 10:47
- * @description
- **/
-@Mapper
-public interface RoleMapper {
+ * <p>
+ * 角色表 Mapper 接口
+ * </p>
+ *
+ * @author Kalvin
+ * @since 2019-04-29
+ */
+public interface RoleMapper extends BaseMapper<Role> {
 
-
-    /**
-     *根据用户id获取用户角色集合
-     * @param userId
-     * @return
-     */
-    @Select("select ur.role_id as id, " +
-            "r.name as roleName, " +
-            "r.description as remark " +
-            " from  user_role ur left join role r on ur.role_id = r.id " +
-            "where  ur.user_id = #{userId}")
-    @Results(
-            value = {
-                    @Result(id=true, property = "id",column = "id"),
-                    @Result(property = "name",column = "name"),
-                    @Result(property = "description",column = "description"),
-                    @Result(property = "permissionList",column = "id",
-                            many = @Many(select = "ink.boyuan.rbac_shiro.mapper.PermissionMapper.getPermissionListByRoleId", fetchType = FetchType.DEFAULT)
-                    )
-            }
-    )
-    List<Role> getRoleListByUserId(@Param(value = "userId")int userId);
-
+    List<Role> selectRoleList(Role role, Page page);
 
 }

@@ -1,0 +1,38 @@
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-front/src/main/java/com/java2nb/novel/FrontNovelApplication.java
+package com.java2nb.novel;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+/**
+ * @author Administrator
+ */
+@SpringBootApplication
+@EnableTransactionManagement
+@EnableScheduling
+@EnableCaching
+@MapperScan(basePackages = {"com.java2nb.novel.mapper"})
+public class FrontNovelApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(FrontNovelApplication.class);
+    }
+
+    /**
+     * 解决同一时间只能一个定时任务执行的问题
+     * */
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(5);
+        return taskScheduler;
+    }
+}

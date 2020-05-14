@@ -1,54 +1,47 @@
-2
-https://raw.githubusercontent.com/pi-181/num-methods-lab6/master/src/main/java/com/demkom58/divine/util/Pair.java
-package com.demkom58.divine.util;
+14
+https://raw.githubusercontent.com/mjtb49/LattiCG/master/src/randomreverser/util/Pair.java
+package randomreverser.util;
 
 import java.util.Objects;
 
-public class Pair<K, V> {
-    private final K key;
-    private final V value;
+public final class Pair<A, B> {
 
-    public Pair(K key, V value) {
-        this.key = key;
-        this.value = value;
-    }
+	private final A a;
+	private final B b;
 
-    public K getKey() {
-        return key;
-    }
+	public Pair(A a, B b) {
+		this.a = a;
+		this.b = b;
+	}
 
-    public K getFirst() {
-        return getKey();
-    }
+	public Pair(Pair<? extends A, ? extends B> other) {
+		this(other.a, other.b);
+	}
 
-    public V getValue() {
-        return value;
-    }
+	public A getFirst() {
+		return this.a;
+	}
 
-    public V getSecond() {
-        return getValue();
-    }
+	public B getSecond() {
+		return this.b;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Pair<?, ?> pair = (Pair<?, ?>) o;
-        return Objects.equals(key, pair.key) &&
-                Objects.equals(value, pair.value);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(a, b);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, value);
-    }
+	@Override
+	public boolean equals(Object other) {
+		if (other == this) return true;
+		if (other == null || other.getClass() != Pair.class) return false;
+		Pair<?, ?> that = (Pair<?, ?>) other;
+		return Objects.equals(this.a, that.a) && Objects.equals(this.b, that.b);
+	}
 
-    @Override
-    public String toString() {
-        return "Pair{" +
-                "key=" + key +
-                ", value=" + value +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "(" + a + ", " + b + ")";
+	}
 
 }

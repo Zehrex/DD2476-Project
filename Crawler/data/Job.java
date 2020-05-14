@@ -1,138 +1,73 @@
-1
-https://raw.githubusercontent.com/Luke-Grammer/IMDB-Database-Application/master/src/data/model/Job.java
-/*
- * Job.java
- * Luke Grammer, Lauren Haylock, and Davis Beilue
- * CSCE 315-907
- * 10/15/2019
- */
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/modules/schedule/entity/Job.java
+package com.kalvin.kvf.modules.schedule.entity;
 
-package data.model;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.kalvin.kvf.common.entity.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
+
 
 /**
- * Job class to store person-title relationships retrieved from the database.
+ * <p>
+ * 定时任务表
+ * </p>
+ * @since 2019-08-17 17:06:12
  */
-public class Job {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Accessors(chain = true)
+@TableName("schedule_job")
+public class Job extends BaseEntity {
 
-	/** Title that the job corresponds with. */
-	private Title title;
+    private static final long serialVersionUID = 1L;
 
-	/** Person that the job corresponds with. */
-	private Person person;
+    /**
+     * 主键
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
 
-	/** The job category (ex: 'actor', 'actress', 'director', ect...). */
-	private String category;
+    /**
+     * 任务bean
+     */
+    private String bean;
 
-	/** The specific job (often null). */
-	private String job;
+    /**
+     * 方法名
+     */
+    private String method;
 
-	/** The character(s) played (if any). */
-	private String[] characters;
+    /**
+     * 参数
+     */
+    private String params;
 
-	/**
-	 * Instantiates a new job.
-	 *
-	 * @param title      the title
-	 * @param person     the person
-	 * @param category   the job category
-	 * @param job        the specific job
-	 * @param characters the characters played (if any)
-	 */
-	public Job(Title title, Person person, String category, String job, String[] characters) {
-		this.title = title;
-		this.person = person;
-		this.category = category;
-		this.job = job;
-		this.characters = characters;
-	}
+    /**
+     * crom表达式
+     */
+    private String cron;
 
-	/**
-	 * Gets the title associated with the job.
-	 *
-	 * @return the title
-	 */
-	public Title getTitle() {
-		return title;
-	}
+    /**
+     * 状态。0：运行中；1：已暂停；2：已完成；3：运行失败；
+     */
+    private Integer status;
 
-	/**
-	 * Sets the title associated with the job.
-	 *
-	 * @param title the new title ID
-	 */
-	public void setTitleID(Title title) {
-		this.title = title;
-	}
+    /**
+     * 备注
+     */
+    private String remark;
 
-	/**
-	 * Gets the person associated with the job.
-	 *
-	 * @return the person
-	 */
-	public Person getPerson() {
-		return person;
-	}
+    /**
+     * 创建时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
 
-	/**
-	 * Sets the person associated with the job.
-	 *
-	 * @param person the new person
-	 */
-	public void setPerson(Person person) {
-		this.person = person;
-	}
-
-	/**
-	 * Gets the job category.
-	 *
-	 * @return the job category
-	 */
-	public String getCategory() {
-		return category;
-	}
-
-	/**
-	 * Sets the job category.
-	 *
-	 * @param category the new job category
-	 */
-	public void setCategory(String category) {
-		this.category = category;
-	}
-
-	/**
-	 * Gets the specific job performed.
-	 *
-	 * @return the job
-	 */
-	public String getJob() {
-		return job;
-	}
-
-	/**
-	 * Sets the specific job performed.
-	 *
-	 * @param job the new job
-	 */
-	public void setJob(String job) {
-		this.job = job;
-	}
-
-	/**
-	 * Gets the characters played.
-	 *
-	 * @return the characters played
-	 */
-	public String[] getCharacters() {
-		return characters;
-	}
-
-	/**
-	 * Sets the characters played.
-	 *
-	 * @param characters the new characters played
-	 */
-	public void setCharacters(String[] characters) {
-		this.characters = characters;
-	}
 }

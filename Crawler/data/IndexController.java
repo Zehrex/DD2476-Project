@@ -1,95 +1,53 @@
-1
-https://raw.githubusercontent.com/miaoo92/xxl-job-mongo/master/src/main/java/com/avon/rga/controller/IndexController.java
-package com.avon.rga.controller;
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-server/src/main/java/io/geekidea/cloud/common/core/controller/IndexController.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import com.avon.rga.controller.annotation.PermissionLimit;
-import com.avon.rga.service.LoginService;
-import com.avon.rga.service.XxlJobService;
-import com.xxl.job.core.biz.model.ReturnT;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
+package io.geekidea.cloud.common.core.controller;
+
+import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * index controller
- * @author xuxueli 2015-12-19 16:13:16
+ * <p>
+ * 项目根路径提示信息
+ * </p>
+ *
+ * @author geekidea
+ * @date 2018/11/12
  */
+@Slf4j
 @Controller
+//@OperationLogIgnore
+@Api(value = "Index API", tags = {"Index"})
 public class IndexController {
 
-	@Resource
-	private XxlJobService xxlJobService;
-	@Resource
-	private LoginService loginService;
-
-
-	@RequestMapping("/")
-	public String index(Model model) {
-
-		Map<String, Object> dashboardMap = xxlJobService.dashboardInfo();
-		model.addAllAttributes(dashboardMap);
-
-		return "index";
-	}
-
-    @RequestMapping("/chartInfo")
-	@ResponseBody
-	public ReturnT<Map<String, Object>> chartInfo(Date startDate, Date endDate) {
-        ReturnT<Map<String, Object>> chartInfo = xxlJobService.chartInfo(startDate, endDate);
-        return chartInfo;
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/index.html";
     }
-	
-	@RequestMapping("/toLogin")
-	@PermissionLimit(limit=false)
-	public String toLogin(HttpServletRequest request, HttpServletResponse response) {
-		if (loginService.ifLogin(request, response) != null) {
-			return "redirect:/";
-		}
-		return "login";
-	}
-	
-	@RequestMapping(value="login", method=RequestMethod.POST)
-	@ResponseBody
-	@PermissionLimit(limit=false)
-	public ReturnT<String> loginDo(HttpServletRequest request, HttpServletResponse response, String userName, String password, String ifRemember){
-		boolean ifRem = (ifRemember!=null && ifRemember.trim().length()>0 && "on".equals(ifRemember))?true:false;
-		return loginService.login(request, response, userName, password, ifRem);
-	}
-	
-	@RequestMapping(value="logout", method=RequestMethod.POST)
-	@ResponseBody
-	@PermissionLimit(limit=false)
-	public ReturnT<String> logout(HttpServletRequest request, HttpServletResponse response){
-		return loginService.logout(request, response);
-	}
-	
-	@RequestMapping("/help")
-	public String help() {
 
-		/*if (!PermissionInterceptor.ifLogin(request)) {
-			return "redirect:/toLogin";
-		}*/
+    /**
+     * SwaggerUI
+     */
+    @GetMapping("/docs")
+    public String swagger() {
+        return "redirect:/swagger-ui.html";
+    }
 
-		return "help";
-	}
-
-	@InitBinder
-	public void initBinder(WebDataBinder binder) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		dateFormat.setLenient(false);
-		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
-	}
-	
 }

@@ -1,0 +1,32 @@
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-front/src/main/java/com/java2nb/novel/vo/BookReadHistoryVO.java
+package com.java2nb.novel.vo;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.java2nb.novel.entity.UserReadHistory;
+import lombok.Data;
+
+import java.util.Date;
+
+/**
+ * @author 11797
+ */
+@Data
+public class BookReadHistoryVO extends UserReadHistory {
+
+    private Integer catId;
+    private String catName;
+    private Long lastIndexId;
+
+    private String lastIndexName;
+    private String bookName;
+
+    @JsonFormat(timezone = "GMT+8", pattern = "MM/dd HH:mm:ss")
+    private Date lastIndexUpdateTime;
+
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+}

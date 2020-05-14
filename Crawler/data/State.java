@@ -1,29 +1,41 @@
-2
-https://raw.githubusercontent.com/zcy1010/compilerExperimentSyntaxAnalysis/master/src/com/company/wordAnalysis/State.java
-package com.company.wordAnalysis;
+12
+https://raw.githubusercontent.com/xindoo/regex/master/src/main/java/xyz/xindoo/re/common/State.java
+package xyz.xindoo.re.common;
 
-public enum State {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+public class State {
+    protected static int idCnt = 0;
+    protected int id;
+    protected int stateType;
 
-    //开始
-    START,          //START
+    public State() {
+        this.id = idCnt++;
+    }
 
+    public Map<String, List<State>> next = new HashMap<>();
 
-    //整数
-    DN,             //Digit Next
+    public void addNext(String edge, State nfaState) {
+        List<State> list = next.get(edge);
+        if (list == null) {
+            list = new ArrayList<>();
+            next.put(edge, list);
+        }
+        list.add(nfaState);
+    }
 
+    public void setStateType() {
+        stateType = 1;
+    }
 
-    //标识符
-    IN,             //Identifier Letter Next
-    UN,             //Underline Next
+    public boolean isEndState() {
+        return stateType == 1;
+    }
 
-
-    //专有符号中间状态
-    AN,             //And Next
-    //结束
-
-
-    DONE,           //Done
-
-
+    public int getId() {
+        return this.id;
+    }
 }

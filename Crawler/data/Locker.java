@@ -1,66 +1,128 @@
-23
-https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/service/src/main/java/com/webank/wedatasphere/exchangis/queue/domain/Locker.java
-/*
- *
- *  Copyright 2020 WeBank
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/dao/Locker.java
+package ru.bgcrm.dao;
 
-package com.webank.wedatasphere.exchangis.queue.domain;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import java.util.Date;
+import org.apache.log4j.Logger;
 
-/**
- * DB locker
- * Created by devendeng on 2018/12/20.
- */
+import ru.bgcrm.cache.UserCache;
+import ru.bgcrm.event.EventProcessor;
+import ru.bgcrm.event.GetPoolTasksEvent;
+import ru.bgcrm.event.client.LockEvent;
+import ru.bgcrm.event.listener.EventListener;
+import ru.bgcrm.model.BGException;
+import ru.bgcrm.model.BGMessageException;
+import ru.bgcrm.model.Lock;
+import ru.bgcrm.util.sql.ConnectionSet;
 
-public class Locker {
-    private Integer id;
-    private String host;
-    private Date modifyTime;
-    private String subGroup;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
-    public String getSubGroup() {
-        return subGroup;
-    }
-
-    public void setSubGroup(String subGroup) {
-        this.subGroup = subGroup;
+//TODO: Добавить поток очистки старых блокировок.
+public class Locker
+{
+	private static final Logger log = Logger.getLogger( Locker.class );
+	
+	private static Map<String, Lock> locksById = new ConcurrentHashMap<String, Lock>();
+	private static Map<Integer, Set<Lock>> locksByUser = new ConcurrentHashMap<Integer, Set<Lock>>();
+	
+	public Locker()
+	{
+		EventProcessor.subscribe( new EventListener<GetPoolTasksEvent>()
+		{
+			@Override
+			public void notify( GetPoolTasksEvent e, ConnectionSet conSet )
+				throws BGException
+			{
+				Set<Lock> locks = locksByUser.get( e.getUser().getId() );
+				if( locks != null )
+				{
+					for( Lock lock : locks )
+					{
+						e.getForm().getResponse().addEvent( new LockEvent( lock ) );
+						lock.continueTime();
+					}
+				}
+			}			
+			
+		}, GetPoolTasksEvent.class );
+	}
+	
+	public static void addLock( Lock lock )
+		throws BGException 
+	{
+		Lock existLock = locksById.get( lock.getId() );
+		if( existLock != null )
+		{
+			if( existLock.getUserId() != lock.getUserId() )
+			{	
+				if( existLock.getToTime() < System.currentTimeMillis() )
+				{
+					freeLock( existLock );
+				}
+				else
+				{
+					throw new BGMessageException( "Ресурс заблокирован пользователем: " + UserCache.getUser( existLock.getUserId() ).getTitle() );
+				}
+			}
+			else
+			{
+				if( log.isDebugEnabled() )
+				{
+					log.debug( "Move lock time: " + lock.getId() );
+				}
+				
+				lock.continueTime();
+				return;
+			}
+		}
+		
+		if( log.isDebugEnabled() )
+		{
+			log.debug( "Add lock: " + lock.getId() );
+		}			
+		
+		Set<Lock> locks = locksByUser.get( lock.getUserId() );
+		if( locks == null )
+		{
+			locksByUser.put( lock.getUserId(), locks = new HashSet<Lock>() );
+		}
+		
+		locksById.put( lock.getId(), lock );
+		locks.add( lock );
+	}
+	
+	public static boolean checkLock( String id )
+	{
+		boolean result = false;
+		
+		Lock lock = locksById.get( id );
+		if( lock != null )
+		{
+			if( result = lock.getToTime() < System.currentTimeMillis() )
+			{
+				freeLock( lock );
+			}
+		}
+		
+		return result;
+	}
+	
+	public static void freeLock( Lock lock )    	 
+    {
+		if( log.isDebugEnabled() )
+		{
+			log.debug( "Free lock: " + lock.getId() );
+		}
+		
+		// TODO: Может проверять, чтобы освобождал тот же, что и занимает, хотя вызов из addLock не так.
+		locksById.remove( lock.getId() );
+		
+		Set<Lock> locks = locksByUser.get( lock.getUserId() );
+		if( locks != null )
+		{
+			locks.remove( lock );
+		}
     }
 }

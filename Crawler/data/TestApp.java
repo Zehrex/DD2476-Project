@@ -1,33 +1,18 @@
-2
-https://raw.githubusercontent.com/pi-181/oop-labs/master/Lab3/src/main/java/com/demkom58/lab3/test/TestApp.java
-package com.demkom58.lab3.test;
+11
+https://raw.githubusercontent.com/yfelvis/mtcc/master/test-tcc/src/main/java/com/hyf/test/TestApp.java
+package com.hyf.test;
 
-import com.demkom58.lab3.model.*;
-import com.demkom58.lab3.store.ProductStore;
-import com.demkom58.lab3.store.WoodDirectory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @Author: Elvis on 2020/4/13
+ * @Email: yfelvis@gmail.com
+ * @Desc: TODO
+ */
+@SpringBootApplication
 public class TestApp {
-    private WoodDirectory woodDirectory = new WoodDirectory();
-    private ProductStore productStore = new ProductStore();
-
-    public void startApp() {
-        productStore.add(new Timber(woodDirectory.get(1), 5f, 0.5f, 0.4f));
-        productStore.add(new Timber(woodDirectory.get(2), 10f, 0.5f, 0.4f));
-        productStore.add(new Cylinder(woodDirectory.get(3), 5f, 0.8f));
-        productStore.add(new Triangle(woodDirectory.get(1), 3f, 0.9f));
-        productStore.add(new Waste(20f));
-
-        System.out.println(woodDirectory);
-        System.out.println(productStore);
-
-        System.out.printf("Загальна вага: %f", calcWeight());
-    }
-
-    private float calcWeight() {
-        float totalWeight = 0;
-        for (IWeight obj : productStore.getArr())
-            totalWeight += obj.weight();
-
-        return totalWeight;
+    public static void main(String[] args) {
+        SpringApplication.run(TestApp.class, args);
     }
 }

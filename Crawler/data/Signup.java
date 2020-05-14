@@ -1,169 +1,201 @@
-3
-https://raw.githubusercontent.com/yashjoshi007/HouseRent/master/app/src/main/java/com/example/houserent/Signup.java
-package com.example.houserent;
+10
+https://raw.githubusercontent.com/NearbyShops/Nearby-Shops-Android-app/master/app/src/main/java/org/nearbyshops/enduserappnew/Login/SignUp/SignUp.java
+package org.nearbyshops.enduserappnew.Login.SignUp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import com.stfalcon.smsverifycatcher.OnSmsCatchListener;
+import com.stfalcon.smsverifycatcher.SmsVerifyCatcher;
 
-import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
-public class Signup extends AppCompatActivity {
+import org.nearbyshops.enduserappnew.Login.SignUp.Interfaces.ShowFragmentSignUp;
+import org.nearbyshops.enduserappnew.R;
 
-    TextInputLayout regName,regUsername,regEmail,regPhoneNo,regPassword;
-    Button regBtn,regToLoginBtn;
 
-    FirebaseDatabase rootNode;
-    DatabaseReference reference;
+public class SignUp extends AppCompatActivity implements ShowFragmentSignUp {
+
+
+    public static final String TAG_STEP_ONE = "tag_step_one";
+    public static final String TAG_STEP_TWO = "tag_step_two";
+    public static final String TAG_STEP_THREE = "tag_step_three";
+    public static final String TAG_STEP_FOUR = "tag_step_four";
+
+//    User signUpProfile = new User();
+
+    SmsVerifyCatcher smsVerifyCatcher;
+
+
+
+
+
+
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signup);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
 
-        // hooks
-        regName = findViewById(R.id.name);
-        regUsername = findViewById(R.id.username);
-        regEmail = findViewById(R.id.email);
-        regPhoneNo = findViewById(R.id.phoneNo);
-        regPassword = findViewById(R.id.password);
-        regBtn = findViewById(R.id.reg_btn);
-        regToLoginBtn = findViewById(R.id.reg_login_btn);
+//        overridePendingTransition(R.anim.enter_from_right,R.anim.exit_to_left);
+        setContentView(R.layout.activity_sign_up);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        toolbar.setTitle("Sign Up");
+        setSupportActionBar(toolbar);
 
 
-        regToLoginBtn.setOnClickListener(new View.OnClickListener() {
+
+//        if(getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT)==null)
+//        {
+
+
+        if(savedInstanceState==null)
+        {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container,new FragmentEnterName(),TAG_STEP_ONE)
+                    .commitNow();
+        }
+
+
+
+
+
+        smsVerifyCatcher = new SmsVerifyCatcher(this, new OnSmsCatchListener<String>() {
             @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Signup.this,login.class));
+            public void onSmsCatch(String message) {
+
 
             }
         });
 
-
-        regBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-                   if (!validateName() | !validateUsername() | !validateEmail() | !validatePhoneNo() | !validatePassword())
-                       return;
-
-
-                rootNode = FirebaseDatabase.getInstance();
-                reference = rootNode.getReference("users");
-
-                //get all values
-                String name = regName.getEditText().getText().toString();
-                String username = regUsername.getEditText().getText().toString();
-                String phoneNo =  regPhoneNo.getEditText().getText().toString();
-                String email = regEmail.getEditText().getText().toString();
-                String password =  regPassword.getEditText().getText().toString();
-
-                Intent intent = new Intent(getApplicationContext(),verify_phone_no.class);
-                intent.putExtra("phoneNo",phoneNo);
-                startActivity(intent);
-
-                UserHelperClass  helperClass = new UserHelperClass(name,username,phoneNo,email,password);
-
-                reference.child(username).setValue(helperClass);
-
-            }
-        });
-    }
-    private Boolean validateName(){
-        String val = regName.getEditText().getText().toString();
-        if(val.isEmpty()) {
-            regName.setError("Field cannot be empty");
-            return false;
-        }
-            else{
-                regName.setError(null);
-                regName.setErrorEnabled(false);
-                return true;
-            }
-
+//        }
     }
 
-    private Boolean validateUsername(){
-        String val = regUsername.getEditText().getText().toString();
-        String noWhiteSpace = "\\A\\w{4,20}\\z";
 
 
 
-        if(val.isEmpty()) {
-            regUsername.setError("Field cannot be empty");
-            return false;
-        }
-        else if(val.length()>=15){
-            regUsername.setError("Username too long");
-            return false;
-        }
-        else if(! val.matches(noWhiteSpace)){
-            regUsername.setError(" White Spaces  are not allowed");
-            return false;
-        }
-        else{
-            regUsername.setError(null);
-            return true;
-        }
 
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+//        overridePendingTransition(R.anim.enter_from_left,R.anim.exit_to_right);
     }
 
-    private Boolean validateEmail(){
-        String val = regEmail.getEditText().getText().toString();
-        String emailPattern = "[a-zA-z0-9._-]+@[a-z]+\\.+[a-z]+";
-        if(val.isEmpty()) {
-            regEmail.setError("Field cannot be empty");
-            return false;
-        }
-        else if(!val.matches(emailPattern)){
-            regEmail.setError("Invalid Email address");
-            return false;
-        }
-        else{
-            regEmail.setError(null);
-            return true;
-        }
+
+
+    @Override
+    public void showEmailPhone() {
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                    .replace(R.id.fragment_container,new FragmentEmailOrPhone(),TAG_STEP_TWO)
+                    .addToBackStack("step_two")
+                    .commit();
+
+//
+    }
+
+
+
+
+
+
+
+
+    @Override
+    public void showVerifyEmail() {
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                .replace(R.id.fragment_container,new FragmentVerify(),TAG_STEP_THREE)
+                .addToBackStack("step_three")
+                .commit();
+    }
+
+
+
+
+    @Override
+    public void showEnterPassword() {
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                .replace(R.id.fragment_container,new FragmentEnterPassword(),TAG_STEP_FOUR)
+                .addToBackStack("step_four")
+                .commit();
+
+//                        .addToBackStack("step_four")
+    }
+
+
+
+
+
+
+
+    @Override
+    public void showResultSuccess() {
+
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                .replace(R.id.fragment_container,new FragmentResult())
+                .commit();
 
     }
 
-    private Boolean validatePhoneNo(){
-        String val = regPhoneNo.getEditText().getText().toString();
-        if(val.isEmpty()) {
-            regPhoneNo.setError("Field cannot be empty");
-            return false;
-        }
-        else{
-            regPhoneNo.setError(null);
-            return true;
-        }
 
+
+
+//    @Override
+//    public User getSignUpProfile() {
+//        return signUpProfile;
+//    }
+//
+//    @Override
+//    public void setSignUpProfile(User signUpProfile) {
+//        this.signUpProfile = signUpProfile;
+//    }
+//
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        smsVerifyCatcher.onStop();
     }
 
-    private Boolean validatePassword(){
-        String val = regPassword.getEditText().getText().toString();
-        String passwordVal = "^"+
-                "(?=.*[a-zA-Z])"+
-                "(?=.[@#$%^&+=])"+
-                "(?=\\s+$)"+
-                ".{4,}"+
-                "$";
-        if(val.isEmpty()) {
-            regPassword.setError("Field cannot be empty");
-            return false;
-        }
 
-        else{
-            regPassword.setError(null);
-            return true;
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        smsVerifyCatcher.onStart();
+    }
 
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        smsVerifyCatcher.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
 }

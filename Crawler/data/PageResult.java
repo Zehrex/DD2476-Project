@@ -1,69 +1,46 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/model/dto/PageResult.java
-package cn.tsxygfy.beyond.model.dto;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_common/src/main/java/entity/PageResult.java
+package entity;
 
 import java.util.List;
 
 /**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.model.dto
- * @since 2020-02-21 15:03:00
+ * @author 李聪
+ * @date 2020/2/16 16:56
  */
-public class PageResult {
-    /**
-     * 当前页码
-     */
-    private int pageNum;
-    /**
-     * 每页数量
-     */
-    private int pageSize;
-    /**
-     * 记录总数
-     */
-    private long totalSize;
-    /**
-     * 页码总数
-     */
-    private int totalPages;
-    /**
-     * 数据模型
-     */
-    private List<?> content;
+public class PageResult <T>{
+    private long total;
+    private List<T> rows;
 
-    public int getPageNum() {
-        return pageNum;
+    public PageResult() {
     }
-    public void setPageNum(int pageNum) {
-        this.pageNum = pageNum;
+
+    public PageResult(long total, List<T> rows) {
+        this.total = total;
+        this.rows = rows;
     }
-    public int getPageSize() {
-        return pageSize;
+
+    public long getTotal() {
+        return total;
     }
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+
+    public void setTotal(long total) {
+        this.total = total;
     }
-    public long getTotalSize() {
-        return totalSize;
+
+    public List<T> getRows() {
+        return rows;
     }
-    public void setTotalSize(long totalSize) {
-        this.totalSize = totalSize;
+
+    public void setRows(List<T> rows) {
+        this.rows = rows;
     }
-    public int getTotalPages() {
-        return totalPages;
-    }
-    public void setTotalPages(int totalPages) {
-        this.totalPages = totalPages;
-    }
-    public List<?> getContent() {
-        return content;
-    }
-    public void setContent(List<?> content) {
-        this.content = content;
+
+    @Override
+    public String toString() {
+        return "PageResult{" +
+                "total=" + total +
+                ", rows=" + rows +
+                '}';
     }
 }

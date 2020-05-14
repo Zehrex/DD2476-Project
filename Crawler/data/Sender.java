@@ -1,35 +1,89 @@
-47572
-https://raw.githubusercontent.com/spring-projects/spring-boot/master/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-amqp/src/main/java/smoketest/amqp/Sender.java
-/*
- * Copyright 2012-2019 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/plugin/dispatch/Sender.java
+package ru.bgcrm.plugin.dispatch;
 
-package smoketest.amqp;
+import java.sql.Connection;
+import java.util.Date;
+import java.util.List;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.apache.log4j.Logger;
 
-public class Sender {
+import ru.bgcrm.model.SearchResult;
+import ru.bgcrm.plugin.dispatch.dao.DispatchDAO;
+import ru.bgcrm.plugin.dispatch.model.DispatchMessage;
+import ru.bgcrm.util.MailMsg;
+import ru.bgcrm.util.Setup;
+import ru.bgcrm.util.sql.SQLUtils;
 
-	@Autowired
-	private RabbitTemplate rabbitTemplate;
-
-	@Scheduled(fixedDelay = 1000L)
-	public void send() {
-		this.rabbitTemplate.convertAndSend("foo", "hello");
+public class Sender
+	implements Runnable
+{
+	private static final Logger log = Logger.getLogger( Sender.class );
+	
+	@Override
+	public void run()
+	{
+		try
+		{
+			List<DispatchMessage> messageList = null; 
+			
+			Connection conSlave = null;
+			try
+			{
+				conSlave = Setup.getSetup().getConnectionPool().getDBSlaveConnectionFromPool();
+				
+				SearchResult<DispatchMessage> result = new SearchResult<DispatchMessage>();
+				new DispatchDAO( conSlave ).messageSearch( result, false );
+				
+				messageList = result.getList();
+			}
+			finally
+			{
+				SQLUtils.closeConnection( conSlave );
+			}
+			
+			Connection con = null;
+			
+			if( messageList.size() > 0 )
+			{
+				log.info( "Found " + messageList.size() + " dispatch messages for send.." );
+				
+				for( DispatchMessage message : messageList )
+				{
+					List<String> accounts = null;
+					
+					try
+					{
+						conSlave = Setup.getSetup().getConnectionPool().getDBSlaveConnectionFromPool();
+						accounts = new DispatchDAO( conSlave ).messageAccountList( message.getId() );
+					}
+					finally
+					{
+						SQLUtils.closeConnection( conSlave );
+					}
+					
+					//TODO: Возможно, стоит впоследствии разнести в разные потоки, если почтовик разрешит параллельную отправку..
+					for( String account : accounts )
+					{
+						new MailMsg( Setup.getSetup() ).sendMessage( account, message.getTitle(), message.getText() );
+					}
+					
+					try
+					{
+						con = Setup.getSetup().getDBConnectionFromPool();
+						message.setSentTime( new Date() );
+						new DispatchDAO( con ).messageUpdate( message );
+					}
+					finally
+					{
+						SQLUtils.closeConnection( con );
+					}
+				}
+			}
+		}
+		catch( Exception e )
+		{
+    		log.error( e.getMessage(), e );
+		}				
 	}
-
 }

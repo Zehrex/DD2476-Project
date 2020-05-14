@@ -1,30 +1,42 @@
-1
-https://raw.githubusercontent.com/niufuwei/block_chian/master/Stock/app/src/main/java/com/hjq/demo/ui/activity/AboutActivity.java
-package com.hjq.demo.ui.activity;
+9
+https://raw.githubusercontent.com/swesust/covid-19-help-support-bd/master/Covid19Shahajjo/app/src/main/java/com/example/covid19shahajjo/activities/AboutActivity.java
+package com.example.covid19shahajjo.activities;
 
-import com.hjq.demo.R;
-import com.hjq.demo.common.MyActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
-/**
- *    author : Android 轮子哥
- *    github : https://github.com/getActivity/AndroidProject
- *    time   : 2018/10/18
- *    desc   : 关于界面
- */
-public final class AboutActivity extends MyActivity {
+import android.os.Bundle;
+import android.widget.TextView;
+
+import com.example.covid19shahajjo.R;
+import com.example.covid19shahajjo.utils.Enums;
+import com.example.covid19shahajjo.utils.SharedStorge;
+
+public class AboutActivity extends AppCompatActivity {
+    private TextView mesaage;
 
     @Override
-    protected int getLayoutId() {
-        return R.layout.activity_about;
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_about);
+        mesaage = findViewById(R.id.user_message);
+        setText();
     }
 
-    @Override
-    protected void initView() {
-
+    private void setUerPreferableTitle(){
+        Enums.Language language = SharedStorge.getUserLanguage(this);
+        if(language == Enums.Language.BD){
+            setTitle("শর্তাবলী");
+        }else{
+            setTitle("About");
+        }
     }
 
-    @Override
-    protected void initData() {
-
+    public void setText(){
+        Enums.Language language = SharedStorge.getUserLanguage(this);
+        if(language == Enums.Language.EN){
+            mesaage.setText(R.string.message_for_user_eng);
+        }else{
+            mesaage.setText(R.string.message_for_user_ban);
+        }
     }
 }

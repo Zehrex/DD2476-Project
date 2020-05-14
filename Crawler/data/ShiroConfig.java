@@ -1,202 +1,156 @@
-2
-https://raw.githubusercontent.com/MandalasWang/rbac_shiro/master/src/main/java/ink/boyuan/rbac_shiro/config/ShiroConfig.java
-package ink.boyuan.rbac_shiro.config;
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/common/shiro/ShiroConfig.java
+package com.kalvin.kvf.common.shiro;
 
-import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.crypto.hash.SimpleHash;
+import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
+import cn.hutool.core.codec.Base64;
+import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.crazycake.shiro.RedisCacheManager;
-import org.crazycake.shiro.RedisManager;
-import org.crazycake.shiro.RedisSessionDAO;
+import org.apache.shiro.web.servlet.SimpleCookie;
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 import javax.servlet.Filter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
 /**
- * @author wyy
- * @version 1.0
- * @Classname ShiroConfig
- * @date 2020/4/16 10:56
- * @description
- **/
+ * 作用：Shiro配置<br>
+ * 说明：(无)
+ *
+ * @author Kalvin
+ * @Date 2019年05月05日 11:29
+ */
 @Configuration
 public class ShiroConfig {
 
-    @Bean
-    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
-        System.out.println("ShiroFilterFactoryBean.shiroFilter() 执行了");
+    /**
+     * 集成缓存
+     * @return sessionManager
+     */
+    @Bean("sessionManager")
+    public SessionManager sessionManager() {
+        DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+        //设置session过期时间(单位：毫秒)，默认为15分钟
+        sessionManager.setGlobalSessionTimeout(1000 * 60 * 15);
+        sessionManager.setSessionValidationSchedulerEnabled(true);
+        sessionManager.setSessionIdUrlRewritingEnabled(false);
 
-        ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
-
-        shiroFilterFactoryBean.setSecurityManager(securityManager);
-
-        //这里设置了登录接口  如果访问了某个接口没有登录  就会调用这个接口（如果不是前后端分离就返回页面）
-        shiroFilterFactoryBean.setLoginUrl("/pub/need_login");
-
-        //如果是前后端分离则不需要这个
-        //shiroFilterFactoryBean.setSuccessUrl();
-
-        //这个是用户登录了  但没有权限 就会调用这个接口
-        shiroFilterFactoryBean.setUnauthorizedUrl("/pub/need_permission");
-
-
-        Map<String, Filter> filtersMap = new LinkedHashMap<>();
-        filtersMap.put("roleOrFilter",new CustomRolesOrAuthorizationFilter());
-        shiroFilterFactoryBean.setFilters(filtersMap);
-
-        //拦截器路径 坑1：部分路径无法拦截，拦截效果时有时无，因为使用了hashMap 无序的应该使用linkedHashMap
-        Map<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
-
-        //匿名访问  游客访问路径
-        filterChainDefinitionMap.put("/pub/**", "anon");
-
-        //退出过滤器
-        filterChainDefinitionMap.put("/user/logout", "logout");
-
-        //登录用户才能访问
-        filterChainDefinitionMap.put("/authc/**", "authc");
-
-        //只有管理员才能访问
-        filterChainDefinitionMap.put("/admin/**", "roleOrFilter[admin,root]");
-
-        //视频修改权限
-        filterChainDefinitionMap.put("/goods/video/update", "perms[video_update]");
-
-        //坑2：过滤链是顺序执行的，从上而下，一般来讲/** 是放到最下面的
-
-        //authc : url 必须通过认证才能访问
-        //anon : url可以匿名访问
-        filterChainDefinitionMap.put("/**", "authc");
-
-        shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
-        return shiroFilterFactoryBean;
+        return sessionManager;
     }
 
-
-    @Bean
-    public SecurityManager securityManager() {
+    @Bean("securityManager")
+    public SecurityManager securityManager(UserRealm userRealm, SessionManager sessionManager) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setSessionManager(sessionManager());
+        securityManager.setRealm(userRealm);
+        // 自定义缓存实现
+        securityManager.setCacheManager(ehCacheManager());
+        securityManager.setSessionManager(sessionManager);
 
-        //设置自定义cacheManager
-        securityManager.setCacheManager(redisCacheManager());
-        securityManager.setRealm(customRealm());
+        // 设置cookie管理
+        securityManager.setRememberMeManager(rememberMeManager());
+
         return securityManager;
     }
 
-    @Bean
-    public CustomRealm customRealm() {
-        //自定义realm 实现AuthorizingRealm
-        CustomRealm customRealm = new CustomRealm();
-        //设置加密
-        customRealm.setCredentialsMatcher(hashedCredentialsMatcher());
-        return customRealm;
-
-    }
-
-    @Bean
-    public SessionManager sessionManager() {
-        //新建自定义sessionManager 实现DefaultSessionManager
-        CustomSessionManager customSessionManager = new CustomSessionManager();
-
-        //设置自定义session持久化
-        customSessionManager.setSessionDAO(redisSessionDAO());
-        //设置session过期时间  默认30分钟  单位是毫秒
-        customSessionManager.setGlobalSessionTimeout(180000);
-        return customSessionManager;
-    }
-
-    @Bean
-    public HashedCredentialsMatcher hashedCredentialsMatcher(){
-        HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher();
-        //设置散列算法 ：这里设置的MD5
-        credentialsMatcher.setHashAlgorithmName("MD5");
-        //设置多重加密算法 ：这里设置的是1次加密(md5(xxx))
-        credentialsMatcher.setHashIterations(1);
-        return credentialsMatcher;
-    }
-
-
     /**
-     * 配置RedisManager
-     * @return
+     * shiro缓存管理器。需要添加到securityManager中
+     * @return cacheManager
      */
-    public RedisManager getRedisManager(){
-
-        RedisManager redisManager = new RedisManager();
-        redisManager.setPort(6379);
-        return redisManager;
+    @Bean
+    public EhCacheManager ehCacheManager(){
+        EhCacheManager cacheManager = new EhCacheManager();
+        cacheManager.setCacheManagerConfigFile("classpath:ehcache.xml");
+        return cacheManager;
     }
 
     /**
-     * 实例化cache
-     * @return
+     * Cookie对象
+     * @return simpleCookie
      */
-    public RedisCacheManager redisCacheManager(){
-        RedisCacheManager redisCacheManager = new RedisCacheManager();
-
-        //设置缓存key过期时间，默认单位是S
-        redisCacheManager.setExpire(20);
-        redisCacheManager.setRedisManager(getRedisManager());
-        return redisCacheManager;
+    private SimpleCookie rememberMeCookie() {
+        SimpleCookie simpleCookie = new SimpleCookie("rememberMe");
+        // 记住时间，单位秒，默认15天
+        simpleCookie.setMaxAge(60 * 60 * 24 * 15);
+        return simpleCookie;
     }
 
-
     /**
-     * 自定义session持久化
-     * @return
+     * cookie管理对象;
+     * @return cookieRememberMeManager
      */
-    public RedisSessionDAO redisSessionDAO(){
-        RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
-        redisSessionDAO.setRedisManager(getRedisManager());
-        //设置sessionid 生成器
-        redisSessionDAO.setSessionIdGenerator(new CustomSessionIdGenerator());
-        //设置持久化超时时间  默认和下面这句话时间设置一样   customSessionManager.setGlobalSessionTimeout(200000);
-        return redisSessionDAO;
+    private CookieRememberMeManager rememberMeManager() {
+        CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
+        cookieRememberMeManager.setCookie(rememberMeCookie());
+        // rememberMe cookie加密的密钥 建议每个项目都不一样 默认AES算法 密钥长度(128 256 512 位)
+        cookieRememberMeManager.setCipherKey(Base64.decode("2AvVhdsgUs0FSA3SDFAdag=="));
+        return cookieRememberMeManager;
     }
 
+    @Bean("shiroFilter")
+    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
+        ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
+        shiroFilter.setSecurityManager(securityManager);
 
-    /**
-     * 管理shiro一些bean的生命周期 即bean初始化 与销毁
-     * @return
-     */
-    @Bean
+        /*重要，设置自定义拦截器，当访问某些自定义url时，使用这个filter进行验证*/
+        Map<String, Filter> filters = new LinkedHashMap<>();
+        // 如果map里面key值为authc,表示所有名为authc的过滤条件使用这个自定义的filter
+        // map里面key值为LoginFilter,表示所有名为LoginFilter的过滤条件使用这个自定义的filter，具体见下方
+        filters.put("myFilter", new LoginFilter());
+        shiroFilter.setFilters(filters);
+
+        shiroFilter.setLoginUrl("/login");
+//        shiroFilter.setSuccessUrl("/sys/index");
+        shiroFilter.setUnauthorizedUrl("/403");
+
+        Map<String, String> filterMap = new LinkedHashMap<>();
+        filterMap.put("/static/**", "anon");
+        filterMap.put("/login/**", "anon");
+//        filterMap.put("/logout", "logout");   // 暂不使用Shiro自带的登出
+        filterMap.put("/druid/**", "anon");
+        filterMap.put("/captcha.jpg", "anon");
+//        filterMap.put("/", "user");
+
+        filterMap.put("/**", "myFilter,authc");
+        shiroFilter.setFilterChainDefinitionMap(filterMap);
+
+        return shiroFilter;
+    }
+
+    @Bean("lifecycleBeanPostProcessor")
     public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
         return new LifecycleBeanPostProcessor();
     }
 
-
-    /**
-     * 开启shiro注解的使用(shiro的注解 例如 @RequiresGuest)
-     * @return
-     */
     @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
-        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
-        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager());
-        return authorizationAttributeSourceAdvisor;
+    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
+        DefaultAdvisorAutoProxyCreator proxyCreator = new DefaultAdvisorAutoProxyCreator();
+        proxyCreator.setProxyTargetClass(true);
+        return proxyCreator;
     }
 
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
+        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
+        advisor.setSecurityManager(securityManager);
+        return advisor;
+    }
 
     /**
-     * 用来扫描上下文寻找所有的Advistor(通知器), 将符合条件的Advisor应用到切入点的Bean中，需要在LifecycleBeanPostProcessor创建后才可以创建
-     * @return
+     * 开启shiro标签
      */
     @Bean
-    @DependsOn("lifecycleBeanPostProcessor")
-    public DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator(){
-        DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator=new DefaultAdvisorAutoProxyCreator();
-        defaultAdvisorAutoProxyCreator.setUsePrefix(true);
-        return defaultAdvisorAutoProxyCreator;
+    public ShiroDialect shiroDialect() {
+        return new ShiroDialect();
     }
+
 }

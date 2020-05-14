@@ -1,41 +1,50 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/controller/admin/api/FileController.java
-package cn.tsxygfy.beyond.controller.admin.api;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-front/src/main/java/com/java2nb/novel/controller/FileController.java
+package com.java2nb.novel.controller;
 
-import cn.tsxygfy.beyond.exception.FileUploadException;
-import cn.tsxygfy.beyond.model.dto.FileInfo;
-import cn.tsxygfy.beyond.service.FileUploadService;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
+import com.java2nb.novel.core.cache.CacheService;
+import com.java2nb.novel.core.utils.RandomValidateCodeUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.controller.admin.api
- * @since 2020-03-20 17:40:38
+ * @author 11797
  */
-@RestController
-@RequestMapping("api/admin/upload")
+@Controller
+@RequestMapping("file")
+@Slf4j
+@RequiredArgsConstructor
 public class FileController {
 
-    @Autowired
-    private FileUploadService fileUploadService;
+    private final CacheService cacheService;
 
-    @ApiOperation("上传附件图片")
-    @PostMapping
-    public FileInfo upload(@RequestParam MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new FileUploadException("Upload file is empty.");
+    /**
+     * 生成验证码
+     */
+    @GetMapping(value = "getVerify")
+    public void getVerify(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            //设置相应类型,告诉浏览器输出的内容为图片
+            response.setContentType("image/jpeg");
+            //设置响应头信息，告诉浏览器不要缓存此内容
+            response.setHeader("Pragma", "No-cache");
+            response.setHeader("Cache-Control", "no-cache");
+            response.setDateHeader("Expire", 0);
+            RandomValidateCodeUtil randomValidateCode = new RandomValidateCodeUtil();
+            //输出验证码图片方法
+            randomValidateCode.getRandcode(cacheService, response);
+        } catch (Exception e) {
+            log.error("获取验证码失败>>>> ", e);
         }
-        return fileUploadService.uploadFile(file);
     }
+
+
 }

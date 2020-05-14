@@ -1,6 +1,6 @@
-1
-https://raw.githubusercontent.com/dahilu/BeautyOverview/master/app/src/androidTest/java/com/example/beautyoverview/ExampleInstrumentedTest.java
-package com.example.beautyoverview;
+9
+https://raw.githubusercontent.com/TrillGates/TaobaoUnion/master/app/src/androidTest/java/com/sunofbeaches/taobaounion/ExampleInstrumentedTest.java
+package com.sunofbeaches.taobaounion;
 
 import android.content.Context;
 
@@ -24,6 +24,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.example.beautyoverview", appContext.getPackageName());
+        assertEquals("com.sunofbeaches.taobaounion",appContext.getPackageName());
     }
 }

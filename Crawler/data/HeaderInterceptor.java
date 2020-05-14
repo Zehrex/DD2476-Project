@@ -1,30 +1,37 @@
-1
-https://raw.githubusercontent.com/pengfeigao/AgoraCallApi/master/call-plugin-api/src/main/java/com/basetools/net/interceptor/HeaderInterceptor.java
-package com.basetools.net.interceptor;
+15
+https://raw.githubusercontent.com/Florizt/RxMVVM/master/rxmvvmlib/src/main/java/com/rx/rxmvvmlib/http/HeaderInterceptor.java
+package com.rx.rxmvvmlib.http;
 
-import android.text.TextUtils;
-import com.basetools.CallKit;
+
+import com.rx.rxmvvmlib.util.LanguageUtil;
+import com.rx.rxmvvmlib.util.SystemUtils;
+import com.rx.rxmvvmlib.util.UIUtils;
+
 import java.io.IOException;
+import java.util.UUID;
+
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class HeaderInterceptor implements Interceptor {
+/**
+ * Created by wuwei
+ * 2018/1/12
+ * 佛祖保佑       永无BUG
+ */
 
+public class HeaderInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
-        // 追加设置header信息
-        final Request originalRequest = chain.request();
-        if (originalRequest.body() == null || originalRequest.header("Content-Encoding") != null) {
-            return chain.proceed(originalRequest);
-        }
-
-        final String token = CallKit.getInstance().getToken();
-        Request request = originalRequest
+        Request request = chain.request()
                 .newBuilder()
-                .addHeader("token", TextUtils.isEmpty(token) ? "" : token)
-                .addHeader("domain", CallKit.getInstance().getBaseUrl())
-                .addHeader("timestamp", String.valueOf(System.currentTimeMillis()))
+                .addHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8")
+                .addHeader("req-id", UUID.randomUUID().toString())
+                .addHeader("app-ver", SystemUtils.getVersion())
+                .addHeader("os", "0")
+                .addHeader("token", UUID.randomUUID().toString())
+                .addHeader("uid",  UUID.randomUUID().toString())
+                .addHeader("lang", LanguageUtil.isZh(UIUtils.getContext()) ? "zh_cn" : "en")
                 .build();
         return chain.proceed(request);
     }

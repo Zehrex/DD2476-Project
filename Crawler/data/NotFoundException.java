@@ -1,31 +1,13 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/exception/NotFoundException.java
-package cn.tsxygfy.beyond.exception;
+14
+https://raw.githubusercontent.com/fawad1997/SpringWebAPI/master/src/main/java/com/restfulspring/apiexample/exception/NotFoundException.java
+package com.restfulspring.apiexample.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.exception
- * @since 2020-02-21 15:00:55
- */
-public class NotFoundException extends BaseException {
-
-    public NotFoundException(String message) {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class NotFoundException extends RuntimeException {
+    public NotFoundException(String message){
         super(message);
-    }
-
-    public NotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    @Override
-    public HttpStatus getStatus() {
-        return HttpStatus.NOT_FOUND;
     }
 }

@@ -1,115 +1,78 @@
-10
-https://raw.githubusercontent.com/373675032/Molihub/master/src/controller/LabelController.java
-package controller;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_base/src/main/java/com/tensquare/base/controller/LabelController.java
+package com.tensquare.base.controller;
 
-import com.alibaba.fastjson.JSON;
-import domain.Label;
-import domain.User;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.tensquare.base.pojo.Label;
+import com.tensquare.base.service.LabelService;
+import entity.PageResult;
+import entity.Result;
+import entity.StatusCode;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 文章标签的控制器
- * @User MOTI
- * @Time 2019/8/6 20:35
+ * @author 李聪
+ * @date 2020/2/16 17:35
  */
-@Controller
-public class LabelController extends BaseController {
 
-    /**
-     * 获得我的所有标签
-     * @throws IOException
-     */
-    @RequestMapping("/getMyAllLabels")
-    public void getMyAllLabels()  throws IOException {
-        User user = (User) session.getAttribute("onlineUser");
-        List<String> list = ls.getAllLabelsByUserId(user.getUser_id());
-        // 解决response返回的数据中文乱码问题
-        response.setContentType("text/html;charset=UTF-8");
-        // 使用工具类JSON将集合转为json字符串,方便前端调取
-        String result = JSON.toJSONString(list);
-        // 将转换好的json字符串返回给前端进行渲染
-        response.getWriter().write(result);
+@RestController
+@CrossOrigin
+@RequestMapping("/label")
+public class LabelController {
+    @Autowired
+    private LabelService labelService;
+
+    @Autowired
+    private HttpServletRequest request;
+
+   /* @Value("${ip}")
+    private String ip;*/
+
+    @RequestMapping(method = RequestMethod.GET)
+    public Result findAll() {
+        //获取头信息
+       /* System.out.println("ip为："+ ip);*/
+        String header = request.getHeader("Authorization");
+        System.out.println(header);
+        return new Result(true,StatusCode.OK,"查询成功",labelService.findAll());
     }
 
-    /**
-     * 获得我的所有标签和标签对应的文章数
-     * @throws IOException
-     */
-    @RequestMapping("/getMyAllLabelsAndArticleCount")
-    public void getMyAllLabelsAndArticleCount() throws IOException {
-        User user = (User) session.getAttribute("onlineUser");
-        List<String> list = ls.getAllLabelsByUserId(user.getUser_id());
-        Map<String,Integer> map = new LinkedHashMap<>();
-        for (String tag:list
-             ) {
-            int num = ls.getTagArticleCount(tag,user.getUser_id());
-            map.put(tag,num);
-        }
-        // 解决response返回的数据中文乱码问题
-        response.setContentType("text/html;charset=UTF-8");
-        // 使用工具类JSON将集合转为json字符串,方便前端调取
-        String string = JSON.toJSONString(map);
-        // 将转换好的json字符串返回给前端进行渲染
-        response.getWriter().write(string);
+    @RequestMapping(value = "/{labelId}",method = RequestMethod.GET)
+    public Result findById(@PathVariable("labelId")String labelId) {
+       /* System.out.println("2222222222");*/
+        return new Result(true,StatusCode.OK,"查询成功",labelService.findById(labelId));
+    }
+    @RequestMapping(method = RequestMethod.POST)
+    public Result save(@RequestBody Label label) {
+        labelService.save(label);
+        return new Result(true,StatusCode.OK,"添加成功");
+    }
+    @RequestMapping(value = "/{labelId}",method = RequestMethod.PUT)
+    public Result update(@PathVariable String labelId, @RequestBody Label label) {
+        label.setId(labelId);
+        labelService.update(label);
+        return new Result(true,StatusCode.OK,"更新成功");
+    }
+    @RequestMapping(value = "/{labelId}",method = RequestMethod.DELETE)
+    public Result deleteById(@PathVariable String labelId) {
+        labelService.deleteById(labelId);
+        return new Result(true,StatusCode.OK,"删除成功");
     }
 
-    /**
-     * 添加标签
-     * @param name
-     * @throws IOException
-     */
-    @RequestMapping("/addLabel")
-    public void addLabel(String name) throws IOException {
-        User user = (User) session.getAttribute("onlineUser");
-        response.setContentType("text/html;charset=UTF-8");
-        if(!isExist(name,user.getUser_id())){
-            ls.addLabel(name,user.getUser_id());
-            response.getWriter().write("yes");
-        }else{
-            response.getWriter().write("no");
-        }
+    @RequestMapping(value = "/search",method = RequestMethod.POST)
+    public Result findSearch(@RequestBody Label label) {
+        List<Label> list = labelService.findSearch(label);
+        return new Result(true,StatusCode.OK,"查询成功",list);
     }
-
-    /**
-     * 删除标签
-     * @param name
-     */
-    @RequestMapping("/deleteLabel")
-    public void deleteLabel(String name){
-        User user = (User) session.getAttribute("onlineUser");
-        ls.deleteLabel(name,user.getUser_id());
+    //分页查询
+    @RequestMapping(value = "/search/{page}/{size}",method = RequestMethod.POST)
+    public Result pageQuery(@RequestBody Label label,@PathVariable int page,@PathVariable int size) {
+        Page<Label> pageData = labelService.pageQuery(label,page,size);
+        return new Result(true,StatusCode.OK,"查询成功",new PageResult<Label>(pageData.getTotalElements(),pageData.getContent()));
     }
-
-    /**
-     * 重命名标签
-     * @param oldLabel
-     * @param newLabel
-     */
-    @RequestMapping("/updateLabel")
-    public void updateLabel(String oldLabel,String newLabel){
-        User user = (User) session.getAttribute("onlineUser");
-        ls.updateLabel(oldLabel,newLabel,user.getUser_id());
-    }
-
-    /**
-     * 判断标签是否已经存在
-     * @param name
-     * @param user_id
-     * @return
-     */
-    public boolean isExist(String name,int user_id){
-        Label label = ls.getLabel(name,user_id);
-        if(label == null){
-            return false;
-        }
-        return true;
-    }
-
 }

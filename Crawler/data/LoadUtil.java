@@ -1,204 +1,79 @@
-23
-https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/executor/engine/datax/datax-core/src/main/java/com/alibaba/datax/core/util/container/LoadUtil.java
-package com.alibaba.datax.core.util.container;
+151
+https://raw.githubusercontent.com/fordes123/Subtitles-View/master/src/main/java/org/fordes/subview/util/LoadUtil.java
+package org.fordes.subview.util;
 
-import com.alibaba.datax.common.constant.PluginType;
-import com.alibaba.datax.common.exception.DataXException;
-import com.alibaba.datax.common.plugin.AbstractJobPlugin;
-import com.alibaba.datax.common.plugin.AbstractPlugin;
-import com.alibaba.datax.common.plugin.AbstractTaskPlugin;
-import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.datax.core.taskgroup.runner.AbstractRunner;
-import com.alibaba.datax.core.taskgroup.runner.ReaderRunner;
-import com.alibaba.datax.core.taskgroup.runner.WriterRunner;
-import com.alibaba.datax.core.util.FrameworkErrorCode;
-import org.apache.commons.lang3.StringUtils;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import org.fordes.subview.controller.LoadPanelControl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
 
-/**
- * Created by jingxing on 14-8-24.
- * <p/>
- * 插件加载器，大体上分reader、transformer（还未实现）和writer三中插件类型，
- * reader和writer在执行时又可能出现Job和Task两种运行时（加载的类不同）
- */
 public class LoadUtil {
-    private static final String pluginTypeNameFormat = "plugin.%s.%s";
+    public Stage stage=new Stage();
+    private LoadPanelControl loadPanelControl;
 
-    private LoadUtil() {
-    }
-
-    private enum ContainerType {
-        Job("Job"), Task("Task");
-        private String type;
-
-        private ContainerType(String type) {
-            this.type = type;
-        }
-
-        public String value() {
-            return type;
-        }
+    public void load(Stage top, Boolean mode,Task work,Task last,String titles) throws IOException {
+        init(mode);
+        
+        stage.initOwner(top);
+        stage.setX(top.getX()+top.getWidth()/2-300);
+        stage.setY(top.getY()+top.getHeight()/2-63);
+        stage.show();
+        
+        loadPanelControl.initialization(top,mode,work,last,titles);
     }
 
     /**
-     * 所有插件配置放置在pluginRegisterCenter中，为区别reader、transformer和writer，还能区别
-     * 具体pluginName，故使用pluginType.pluginName作为key放置在该map中
+     * @param mode ,颜色模式
+     * @param top ,归属窗口
      */
-    private static Configuration pluginRegisterCenter;
-
-    /**
-     * jarLoader的缓冲
-     */
-    private static Map<String, JarLoader> jarLoaderCenter = new HashMap<String, JarLoader>();
-
-    /**
-     * 设置pluginConfigs，方便后面插件来获取
-     *
-     * @param pluginConfigs
-     */
-    public static void bind(Configuration pluginConfigs) {
-        pluginRegisterCenter = pluginConfigs;
-    }
-
-    private static String generatePluginKey(PluginType pluginType,
-                                            String pluginName) {
-        return String.format(pluginTypeNameFormat, pluginType.toString(),
-                pluginName);
-    }
-
-    private static Configuration getPluginConf(PluginType pluginType,
-                                               String pluginName) {
-        Configuration pluginConf = pluginRegisterCenter
-                .getConfiguration(generatePluginKey(pluginType, pluginName));
-
-        if (null == pluginConf) {
-            throw DataXException.asDataXException(
-                    FrameworkErrorCode.PLUGIN_INSTALL_ERROR,
-                    String.format("DataX不能找到插件[%s]的配置.",
-                            pluginName));
-        }
-
-        return pluginConf;
+    public void load(Stage top, Boolean mode, File audio) throws IOException {
+        init(mode);
+        
+        stage.initOwner(top);
+        stage.setX(top.getX()+top.getWidth()/2-300);
+        stage.setY(top.getY()+top.getHeight()/2-63);
+        stage.show();
+        
+        loadPanelControl.initialization(top,mode,audio);
     }
 
     /**
-     * 加载JobPlugin，reader、writer都可能要加载
-     *
-     * @param pluginType
-     * @param pluginName
-     * @return
+     * 设置加载窗体样式
+     * @param mode 主题模式
      */
-    public static AbstractJobPlugin loadJobPlugin(PluginType pluginType,
-                                                  String pluginName) {
-        Class<? extends AbstractPlugin> clazz = LoadUtil.loadPluginClass(
-                pluginType, pluginName, ContainerType.Job);
+    private void init(Boolean mode) throws IOException {
 
-        try {
-            AbstractJobPlugin jobPlugin = (AbstractJobPlugin) clazz
-                    .newInstance();
-            jobPlugin.setPluginConf(getPluginConf(pluginType, pluginName));
-            return jobPlugin;
-        } catch (Exception e) {
-            throw DataXException.asDataXException(
-                    FrameworkErrorCode.RUNTIME_ERROR,
-                    String.format("DataX找到plugin[%s]的Job配置.",
-                            pluginName), e);
-        }
-    }
+        FXMLLoader fxmlLoader=new FXMLLoader(getClass().getClassLoader().getResource("from/LoadPanel.fxml"));
+        Parent root = fxmlLoader.load();
+        Scene scene = new Scene(root);
+        scene.setFill(Color.TRANSPARENT);
+        stage.initStyle(StageStyle.TRANSPARENT);
+        stage.setAlwaysOnTop(true);
+        stage.setScene(scene);
+        if(!mode)
+            stage.getScene().getStylesheets().add(getClass().getClassLoader().getResource("css/mainStyle_Light.css").toString());
+        else
+            stage.getScene().getStylesheets().add(getClass().getClassLoader().getResource("css/mainStyle_Dark.css").toString());
+        loadPanelControl=fxmlLoader.getController();   
 
-    /**
-     * 加载taskPlugin，reader、writer都可能加载
-     *
-     * @param pluginType
-     * @param pluginName
-     * @return
-     */
-    public static AbstractTaskPlugin loadTaskPlugin(PluginType pluginType,
-                                                    String pluginName) {
-        Class<? extends AbstractPlugin> clazz = LoadUtil.loadPluginClass(
-                pluginType, pluginName, ContainerType.Task);
-
-        try {
-            AbstractTaskPlugin taskPlugin = (AbstractTaskPlugin) clazz
-                    .newInstance();
-            taskPlugin.setPluginConf(getPluginConf(pluginType, pluginName));
-            return taskPlugin;
-        } catch (Exception e) {
-            throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR,
-                    String.format("DataX不能找plugin[%s]的Task配置.",
-                            pluginName), e);
-        }
-    }
-
-    /**
-     * 根据插件类型、名字和执行时taskGroupId加载对应运行器
-     *
-     * @param pluginType
-     * @param pluginName
-     * @return
-     */
-    public static AbstractRunner loadPluginRunner(PluginType pluginType, String pluginName) {
-        AbstractTaskPlugin taskPlugin = LoadUtil.loadTaskPlugin(pluginType,
-                pluginName);
-
-        switch (pluginType) {
-            case READER:
-                return new ReaderRunner(taskPlugin);
-            case WRITER:
-                return new WriterRunner(taskPlugin);
-            default:
-                throw DataXException.asDataXException(
-                        FrameworkErrorCode.RUNTIME_ERROR,
-                        String.format("插件[%s]的类型必须是[reader]或[writer]!",
-                                pluginName));
-        }
-    }
-
-    /**
-     * 反射出具体plugin实例
-     *
-     * @param pluginType
-     * @param pluginName
-     * @param pluginRunType
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private static synchronized Class<? extends AbstractPlugin> loadPluginClass(
-            PluginType pluginType, String pluginName,
-            ContainerType pluginRunType) {
-        Configuration pluginConf = getPluginConf(pluginType, pluginName);
-        JarLoader jarLoader = LoadUtil.getJarLoader(pluginType, pluginName);
-        try {
-            return (Class<? extends AbstractPlugin>) jarLoader
-                    .loadClass(pluginConf.getString("class") + "$"
-                            + pluginRunType.value());
-        } catch (Exception e) {
-            throw DataXException.asDataXException(FrameworkErrorCode.RUNTIME_ERROR, e);
-        }
-    }
-
-    public static synchronized JarLoader getJarLoader(PluginType pluginType,
-                                                      String pluginName) {
-        Configuration pluginConf = getPluginConf(pluginType, pluginName);
-
-        JarLoader jarLoader = jarLoaderCenter.get(generatePluginKey(pluginType,
-                pluginName));
-        if (null == jarLoader) {
-            String pluginPath = pluginConf.getString("path");
-            if (StringUtils.isBlank(pluginPath)) {
-                throw DataXException.asDataXException(
-                        FrameworkErrorCode.RUNTIME_ERROR,
-                        String.format(
-                                "%s插件[%s]路径非法!",
-                                pluginType, pluginName));
-            }
-            jarLoader = new JarLoader(new String[]{pluginPath});
-            jarLoaderCenter.put(generatePluginKey(pluginType, pluginName),
-                    jarLoader);
-        }
-
-        return jarLoader;
     }
 }

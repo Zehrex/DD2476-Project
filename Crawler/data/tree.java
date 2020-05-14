@@ -1,53 +1,153 @@
-2
-https://raw.githubusercontent.com/sciuridae564/PcrTool/tick/src/main/java/cn/sciuridae/DB/bean/tree.java
-package cn.sciuridae.DB.bean;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-admin/src/main/java/com/java2nb/common/domain/Tree.java
+package com.java2nb.common.domain;
 
-//说是树表其实是把正在出刀的人都集中在这里了
-public class tree {
-    private String userId;
-    private String date;
-    private boolean isTree;//真正挂树的人在这里
-    private int no;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-    public String getUserId() {
-        return userId;
-    }
+import com.alibaba.fastjson.JSON;
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+/**
+ * tree TODO <br>
+ * 
+ * @author xiongxy
+ * 
+ */
+public class Tree<T> {
+	/**
+	 * 节点ID
+	 */
+	private String id;
+	/**
+	 * 显示节点文本
+	 */
+	private String text;
+	/**
+	 * 节点状态，open closed
+	 */
+	private Map<String, Object> state;
+	/**
+	 * 节点是否被选中 true false
+	 */
+	private boolean checked = false;
+	/**
+	 * 节点属性
+	 */
+	private Map<String, Object> attributes;
 
-    public String getDate() {
-        return date;
-    }
+	/**
+	 * 节点的子节点
+	 */
+	private List<Tree<T>> children = new ArrayList<Tree<T>>();
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+	/**
+	 * 父ID
+	 */
+	private String parentId;
+	/**
+	 * 是否有父节点
+	 */
+	private boolean hasParent = false;
+	/**
+	 * 是否有子节点
+	 */
+	private boolean hasChildren = false;
 
-    public boolean isTree() {
-        return isTree;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setTree(boolean tree) {
-        isTree = tree;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public int getNo() {
-        return no;
-    }
+	public String getText() {
+		return text;
+	}
 
-    public void setNo(int no) {
-        this.no = no;
-    }
+	public void setText(String text) {
+		this.text = text;
+	}
 
-    @Override
-    public String toString() {
-        return "tree{" +
-                "userId='" + userId + '\'' +
-                ", date='" + date + '\'' +
-                ", isTree=" + isTree +
-                ", no=" + no +
-                '}';
-    }
+	public Map<String, Object> getState() {
+		return state;
+	}
+
+	public void setState(Map<String, Object> state) {
+		this.state = state;
+	}
+
+	public boolean isChecked() {
+		return checked;
+	}
+
+	public void setChecked(boolean checked) {
+		this.checked = checked;
+	}
+
+	public Map<String, Object> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, Object> attributes) {
+		this.attributes = attributes;
+	}
+
+	public List<Tree<T>> getChildren() {
+		return children;
+	}
+
+	public void setChildren(List<Tree<T>> children) {
+		this.children = children;
+	}
+
+	public boolean isHasParent() {
+		return hasParent;
+	}
+
+	public void setHasParent(boolean isParent) {
+		this.hasParent = isParent;
+	}
+
+	public boolean isHasChildren() {
+		return hasChildren;
+	}
+
+	public void setChildren(boolean isChildren) {
+		this.hasChildren = isChildren;
+	}
+
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
+
+	public Tree(String id, String text, Map<String, Object> state, boolean checked, Map<String, Object> attributes,
+			List<Tree<T>> children, boolean isParent, boolean isChildren, String parentID) {
+		super();
+		this.id = id;
+		this.text = text;
+		this.state = state;
+		this.checked = checked;
+		this.attributes = attributes;
+		this.children = children;
+		this.hasParent = isParent;
+		this.hasChildren = isChildren;
+		this.parentId = parentID;
+	}
+
+	public Tree() {
+		super();
+	}
+
+	@Override
+	public String toString() {
+
+		return JSON.toJSONString(this);
+	}
+
 }

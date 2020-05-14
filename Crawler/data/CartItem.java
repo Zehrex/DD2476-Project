@@ -1,75 +1,93 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/domain/jpetstore/CartItem.java
+10
+https://raw.githubusercontent.com/NearbyShops/Nearby-Shops-Android-app/master/app/src/main/java/org/nearbyshops/enduserappnew/Model/ModelCartOrder/CartItem.java
+package org.nearbyshops.enduserappnew.Model.ModelCartOrder;
+
+import org.nearbyshops.enduserappnew.Model.Item;
+
 /**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Created by sumeet on 30/5/16.
  */
-package org.apache.ibatis.domain.jpetstore;
+public class CartItem{
 
-import java.io.Serializable;
-import java.math.BigDecimal;
+    private int cartID;
+    private int itemID;
 
-public class CartItem implements Serializable {
+    private Cart cart;
+    private Item item;
 
-  private static final long serialVersionUID = 1L;
+    private double itemQuantity;
+    private int rt_availableItemQuantity;
+    private double rt_itemPrice;
+    private String rt_quantityUnit;
 
-  private Item item;
-  private int quantity;
-  private boolean inStock;
-  private BigDecimal total;
 
-  public boolean isInStock() {
-    return inStock;
-  }
 
-  public void setInStock(boolean inStock) {
-    this.inStock = inStock;
-  }
 
-  public BigDecimal getTotal() {
-    return total;
-  }
 
-  public Item getItem() {
-    return item;
-  }
 
-  public void setItem(Item item) {
-    this.item = item;
-    calculateTotal();
-  }
 
-  public int getQuantity() {
-    return quantity;
-  }
-
-  public void setQuantity(int quantity) {
-    this.quantity = quantity;
-    calculateTotal();
-  }
-
-  public void incrementQuantity() {
-    quantity++;
-    calculateTotal();
-  }
-
-  private void calculateTotal() {
-    if (item != null && item.getListPrice() != null) {
-      total = item.getListPrice().multiply(new BigDecimal(quantity));
-    } else {
-      total = null;
+    public int getRt_availableItemQuantity() {
+        return rt_availableItemQuantity;
     }
-  }
 
+    public void setRt_availableItemQuantity(int rt_availableItemQuantity) {
+        this.rt_availableItemQuantity = rt_availableItemQuantity;
+    }
+
+    public double getRt_itemPrice() {
+        return rt_itemPrice;
+    }
+
+    public void setRt_itemPrice(double rt_itemPrice) {
+        this.rt_itemPrice = rt_itemPrice;
+    }
+
+    public String getRt_quantityUnit() {
+        return rt_quantityUnit;
+    }
+
+    public void setRt_quantityUnit(String rt_quantityUnit) {
+        this.rt_quantityUnit = rt_quantityUnit;
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public int getCartID() {
+        return cartID;
+    }
+
+    public void setCartID(int cartID) {
+        this.cartID = cartID;
+    }
+
+    public int getItemID() {
+        return itemID;
+    }
+
+    public void setItemID(int itemID) {
+        this.itemID = itemID;
+    }
+
+
+    public double getItemQuantity() {
+        return itemQuantity;
+    }
+
+    public void setItemQuantity(double itemQuantity) {
+        this.itemQuantity = itemQuantity;
+    }
 }

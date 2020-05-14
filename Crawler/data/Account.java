@@ -1,62 +1,32 @@
-1
-https://raw.githubusercontent.com/zakariaelattar/Cannon-Bank/master/src/main/java/org/cannonbank/core/Entities/Account.java
-package org.cannonbank.core.Entities;
+11
+https://raw.githubusercontent.com/yfelvis/mtcc/master/mtcc-demo/mtcc-demo-account/src/main/java/com/hyf/mtcc/demo/account/bean/Account.java
+package com.hyf.mtcc.demo.account.bean;
 
-
-import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
-
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Entity
+@TableName(value = "tbl_account")
+public class Account implements Serializable {
 
-public class Account {
+    private static final long serialVersionUID = -7931798047739220560L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId
+    private String id;
 
-    private long id_Account;
-    private long account_number;
+    private String username;
 
-    private Client client;
+    private BigDecimal balance;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Category_Account type;
+    private BigDecimal freezeAmount;
 
-    private String bic;
-    private String iban;
-    private double balance;
-    private Date creation_date;
-    private int is_suspended;
+    private Date createTime;
 
-    @OneToMany(
-            mappedBy = "accounts",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Credit_Card> credit_cardList = new ArrayList<>();
-
-    @OneToMany(
-            mappedBy = "accounts",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Transaction> transactionList = new ArrayList<>();
-
-    @OneToMany(
-            mappedBy = "accounts",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Checkbook> checkbookList = new ArrayList<>();
-
+    private Date updateTime;
 
 }

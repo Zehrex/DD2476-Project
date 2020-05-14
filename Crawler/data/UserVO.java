@@ -1,56 +1,48 @@
-1
-https://raw.githubusercontent.com/ryewen/quickbuy/master/src/main/java/com/loststars/quickbuy/controller/viewobject/UserVO.java
-package com.loststars.quickbuy.controller.viewobject;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-admin/src/main/java/com/java2nb/system/vo/UserVO.java
+package com.java2nb.system.vo;
 
+import com.java2nb.system.domain.UserDO;
+
+/**
+ * @author xiongxy
+ * @date 2019-09-25 15:09:21
+ */
 public class UserVO {
-    
-    private Integer id;
+    /**
+     * 更新的用户对象
+     */
+    private UserDO userDO = new UserDO();
+    /**
+     * 旧密码
+     */
+    private String pwdOld;
+    /**
+     * 新密码
+     */
+    private String pwdNew;
 
-    private String name;
-
-    private Byte gender;
-
-    private Integer age;
-
-    private String telphone;
-
-    public Integer getId() {
-        return id;
+    public UserDO getUserDO() {
+        return userDO;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setUserDO(UserDO userDO) {
+        this.userDO = userDO;
     }
 
-    public String getName() {
-        return name;
+    public String getPwdOld() {
+        return pwdOld;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPwdOld(String pwdOld) {
+        this.pwdOld = pwdOld;
     }
 
-    public Byte getGender() {
-        return gender;
+    public String getPwdNew() {
+        return pwdNew;
     }
 
-    public void setGender(Byte gender) {
-        this.gender = gender;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getTelphone() {
-        return telphone;
-    }
-
-    public void setTelphone(String telphone) {
-        this.telphone = telphone;
+    public void setPwdNew(String pwdNew) {
+        this.pwdNew = pwdNew;
     }
 }

@@ -1,201 +1,75 @@
-2
-https://raw.githubusercontent.com/Heemooo/Bored/master/src/main/java/com/bored/core/Loader.java
-package com.bored.core;
+10
+https://raw.githubusercontent.com/GuntherRademacher/rr/master/src/main/java/de/bottlecaps/fatjar/Loader.java
+package de.bottlecaps.fatjar;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.StrUtil;
-import com.bored.Bored;
-import com.bored.model.Category;
-import com.bored.model.PageFile;
-import com.bored.model.Pagination;
-import com.bored.model.Tag;
-import com.bored.util.PaginationUtil;
-import com.bored.util.PathUtil;
-import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.security.CodeSource;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
-@Slf4j
-public class Loader {
+public class Loader
+{
+  public static final String FATJAR_MAIN_CLASS = "FatJar-Main-Class";
+  public static final String FATJAR_JARS = "FatJar-Jars";
+  public final static String FATJAR_PROTOCOL = "fatjar";
 
-    private static final String TEXT_HTML = "text/html;charset=utf-8";
+  public static void main(String[] args) throws Exception
+  {
+    ClassLoader jarClassLoader = Loader.class.getClassLoader();
+    URL.setURLStreamHandlerFactory(protocol ->
+    {
+      return ! FATJAR_PROTOCOL.equals(protocol) ? null :
+        new URLStreamHandler()
+        {
+          @Override
+          protected URLConnection openConnection(URL url) throws IOException
+          {
+            return new URLConnection(url)
+            {
+              @Override
+              public void connect() throws IOException
+              {
+              }
 
-    public static void start() {
-        new StaticLoader().statics().pages().tags().categories().archive().list()._404();
+              @Override
+              public InputStream getInputStream() throws IOException
+              {
+                return Objects.requireNonNull(jarClassLoader.getResourceAsStream(url.getPath()), "failed to load " + url);
+              }
+            };
+          }
+        };
+    });
+
+    String classPath = Loader.class.getResource(Loader.class.getSimpleName() + ".class").toString();
+    if (! classPath.startsWith("jar"))
+      throw new RuntimeException("not loaded from jar - cannot find manifest");
+    String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 2) + JarFile.MANIFEST_NAME;
+    InputStream manifestStream = new URL(manifestPath).openStream();
+    Attributes mainAttributes = new Manifest(manifestStream).getMainAttributes();
+    String jars = Objects.requireNonNull(mainAttributes.getValue(FATJAR_JARS), "missing manifest attribute: " + FATJAR_JARS);
+    CodeSource jarCodeSource = Objects.requireNonNull(Loader.class.getProtectionDomain().getCodeSource(), "failed to identify jar file");
+    List<URL> urls = new ArrayList<>(Collections.singletonList(jarCodeSource.getLocation()));
+    for (String jarResource : jars.split(" "))
+      urls.add(new URL(FATJAR_PROTOCOL + ":" + jarResource));
+    try (URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]), jarClassLoader.getParent()))
+    {
+      Thread.currentThread().setContextClassLoader(urlClassLoader);
+      String mainClass = Objects.requireNonNull(mainAttributes.getValue(FATJAR_MAIN_CLASS), "missing manifest attribute: " + FATJAR_MAIN_CLASS);
+      urlClassLoader
+          .loadClass(mainClass)
+          .getMethod("main", String[].class)
+          .invoke(null, (Object) args);
     }
-
-    private static class StaticLoader {
-
-        private PageLoader statics() {
-            var root = PathUtil.convertCorrectPath(Bored.env().getThemePath());
-            var path = PathUtil.convertCorrectPath(Bored.env().getStaticPath());
-            var files = FileUtil.loopFiles(path);
-            for (File file : files) {
-                var uri = PathUtil.convertCorrectUrl(StrUtil.removePrefix(file.getPath(), root));
-                var fullFilePath = Bored.env().getOutputPath() + uri;
-                var url = URL.builder().filePath(file.getPath()).uri(uri).contentType(contentType(file.getName(), file.getPath()))
-                        .context(null).fullFilePath(fullFilePath).build();
-                Container.put(uri, url);
-                log.info("Mapping static resource {}", uri);
-            }
-            return new PageLoader();
-        }
-
-        private static String contentType(String fileName, String filePath) {
-            if (StrUtil.endWith(fileName, ".css")) {
-                return "text/css; charset=utf-8";
-            }
-            if (StrUtil.endWith(fileName, ".js")) {
-                return "application/javascript; charset=utf-8";
-            }
-            String contentType = FileUtil.getMimeType(filePath);
-            if (StrUtil.isEmpty(contentType)) {
-                return "application/octet-stream";
-            }
-            return contentType;
-        }
-    }
-
-    private static class PageLoader {
-        private TagLoader pages() {
-            var env = Bored.env();
-            var files = FileUtil.loopFiles(env.getPagePath());
-            List<Page> pages = new ArrayList<>();
-            for (File file : files) {
-                var pageFile = new PageFile(file);
-                var page = pageFile.toPage();
-                var url = pageFile.pageToURL(page);
-                Container.put(url.uri, url);
-                /*不加载根目录下的md文件到list列表中*/
-                if (StrUtil.count(url.uri, "/") > 1) {
-                    pages.add(page);
-                }
-                log.info("Mapping page {}", url.uri);
-            }
-            env.setPages(pages.stream().sorted(Comparator.comparing(Page::getDate).reversed()).collect(Collectors.toList()));
-            for (int i = 0, len = env.getPages().size(); i < len; i++) {
-                if (i < (len - 1)) env.getPages().get(i).setNext(env.getPages().get(i + 1));
-                if (i > 0) env.getPages().get(i).setPrev(env.getPages().get(i - 1));
-            }
-            return new TagLoader();
-        }
-    }
-
-    private static class TagLoader {
-        private CategoryLoader tags() {
-            List<Tag> tagList = new ArrayList<>();
-            Bored.env().getPages().parallelStream().forEach(page -> Optional.of(page.getTags()).ifPresent(strings -> strings.parallelStream().forEach(tagName -> {
-                var uri = "/tag/" + tagName + Bored.env().getSiteConfig().getURLSuffix();
-                var tag = new Tag(tagName, uri);
-                tag.getPages().add(page);
-                tagList.add(tag);
-            })));
-            List<Tag> tags = new ArrayList<>();
-            tagList.stream().collect(Collectors.groupingBy(Tag::getUrl)).forEach((url, list) -> list.stream().reduce((t1, t2) -> {
-                t1.getPages().addAll(t2.getPages());
-                return t1;
-            }).ifPresent(tags::add));
-            tags.parallelStream().forEach(tag -> {
-                var url = tag.toURL();
-                Container.put(url.uri, url);
-                log.info("Mapping tag {} {}", tag.getName(), url.uri);
-            });
-            var uri = "/tags" + Bored.env().getSiteConfig().getURLSuffix();
-            var context = Context.builder().title("标签列表").type("base").layout("tags").url(uri).build();
-            var url = URL.builder().uri(uri)
-                    .fullFilePath(Bored.env().getOutputPath() + "/tags.html")
-                    .context(context)
-                    .contentType(TEXT_HTML).build().add("tags", tags);
-            Bored.env().setTags(tags);
-            Container.put(uri, url);
-            log.info("Mapping tags {}", uri);
-            return new CategoryLoader();
-        }
-    }
-
-    private static class CategoryLoader {
-        private ArchiveLoader categories() {
-            List<Category> categoryList = new ArrayList<>();
-            Bored.env().getPages().parallelStream().forEach(page -> Optional.of(page.getCategories()).ifPresent(strings -> strings.parallelStream().forEach(categoryName -> {
-                var uri = "/tag/" + categoryName + Bored.env().getSiteConfig().getURLSuffix();
-                var tag = new Category(categoryName, uri);
-                tag.getPages().add(page);
-                categoryList.add(tag);
-            })));
-            List<Category> categories = new ArrayList<>();
-            categoryList.stream().collect(Collectors.groupingBy(Category::getUrl)).forEach((url, list) -> list.stream().reduce((t1, t2) -> {
-                t1.getPages().addAll(t2.getPages());
-                return t1;
-            }).ifPresent(categories::add));
-            categories.parallelStream().forEach(tag -> {
-                var url = tag.toURL();
-                Container.put(url.uri, url);
-                log.info("Mapping category {} {}", tag.getName(), url.uri);
-            });
-            var uri = "/categories" + Bored.env().getSiteConfig().getURLSuffix();
-            var context = Context.builder().title("分类列表").type("base").layout("categories").url(uri).build();
-            var url = URL.builder().uri(uri)
-                    .fullFilePath(Bored.env().getOutputPath() + "/categories.html")
-                    .context(context)
-                    .contentType(TEXT_HTML).build().add("categories", categories);
-            Bored.env().setCategories(categories);
-            Container.put(uri, url);
-            log.info("Mapping categories {}", uri);
-            return new ArchiveLoader();
-        }
-    }
-
-    private static class ArchiveLoader {
-        private ListLoader archive() {
-            var uri = "/archive/posts" + Bored.env().getSiteConfig().getURLSuffix();
-            var context = Context.builder().title("归档:Posts").type("post").layout("archive").url(uri).build();
-            var url = URL.builder().uri(uri).context(context).contentType(TEXT_HTML).fullFilePath(Bored.env().getOutputPath() + "/archive/posts.html").build()
-                    .add("pages", Bored.env().getPages());
-            Container.put(uri, url);
-            log.info("Mapping archive {}", uri);
-            return new ListLoader();
-        }
-    }
-
-    private static class ListLoader {
-        private _404Loader list() {
-            var paginationMap = PaginationUtil.loadPagination("post/list.html");
-            paginationMap.forEach(pagination -> {
-                var ctx = Context.builder().title("文章列表").type("post").layout("list").url(pagination.getUri()).build();
-                var page = URL.builder().uri(pagination.getUri()).context(ctx).contentType(TEXT_HTML)
-                        .fullFilePath(Bored.env().getOutputPath() + "/page/" + pagination.getCurrent() + ".html").build()
-                        .add("pages", Bored.env().getPages())
-                        .add("pagination", pagination);
-                Container.put(pagination.getUri(), page);
-                log.info("Mapping archive {}", pagination.getUri());
-            });
-            loadIndex(paginationMap.get(0));
-            return new _404Loader();
-        }
-
-        private static void loadIndex(Pagination pagination) {
-            var uri = "/index" + Bored.env().getSiteConfig().getURLSuffix();
-            var context = Context.builder().title("首页").layout("index").url(uri).build();
-            var url = URL.builder().uri(uri).context(context).fullFilePath(Bored.env().getOutputPath() + "/index.html").contentType(TEXT_HTML).build()
-                    .add("pages", Bored.env().getPages())
-                    .add("pagination", pagination);
-            Container.put(uri, url);
-            log.info("Mapping archive {}", uri);
-        }
-    }
-
-    private static class _404Loader {
-        private void _404() {
-            var uri = "/404" + Bored.env().getSiteConfig().getURLSuffix();
-            var context = Context.builder().title("404").layout("404").url(uri).build();
-            var url = URL.builder().uri(uri).context(context).fullFilePath(Bored.env().getOutputPath() + "/404.html").contentType(TEXT_HTML).build();
-            Container.put(uri, url);
-            log.info("Mapping 404 {}", uri);
-        }
-    }
+  }
 }

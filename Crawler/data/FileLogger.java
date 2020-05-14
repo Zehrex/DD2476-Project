@@ -1,96 +1,194 @@
-2
-https://raw.githubusercontent.com/miricel/CO_Project/master/UPTBench/src/logging/FileLogger.java
-package logging;
+13
+https://raw.githubusercontent.com/CoboVault/cobo-vault-cold/master/app/src/main/java/com/cobo/cold/logging/FileLogger.java
+/*
+ * Copyright (c) 2020 Cobo
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * in the file COPYING.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+package com.cobo.cold.logging;
 
-public class FileLogger implements ILogger{
-	
-private PrintWriter printWriter;
-	
-	public FileLogger(String filePath) {
+import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
+
+import com.cobo.cold.update.utils.Storage;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+public class FileLogger {
+    private static final String TAG = "Vault.FileLogger";
+    private static final String DATE_FORMAT = "yyyyMMddHHmmssSSS";
+    private static final long LOG_PERSIST_LIMIT = 20;
+    private static final String LOG_PATTERN = "^(main|system|crash)\\.(\\d+)\\.log$";
+
+    public static void init(Context context) {
+        File logDir = getLogDir(context);
+        long logSequence = getLogSequence(context);
+        File coboLog = new File(logDir, "main." + logSequence + ".log");
+        File sysLog = new File(logDir, "system." + logSequence + ".log");
+        File crashLog = new File(logDir, "crash." + logSequence + ".log");
+
         try {
-        	
-			printWriter = new PrintWriter(filePath);
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
+            Runtime.getRuntime().exec("logcat -c");
+            Runtime.getRuntime().exec("logcat -f " + coboLog + " -b main *:I");
+            Runtime.getRuntime().exec("logcat -f " + sysLog + " -b system *:E");
+            Runtime.getRuntime().exec("logcat -f " + crashLog + " -b crash");
+            int pid = android.os.Process.myPid();
+            Log.i(TAG, "Package: " + context.getPackageName() + " Pid: " + pid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	@Override
-	public void write(long x) {
-		// TODO Auto-generated method stub
-		printWriter.print(x);
-		
-	}
+    public static boolean exportLogfiles(Context context) {
+        Storage storage = Storage.createByEnvironment(context);
+        if (storage == null) {
+            Log.e(TAG, "failed to export log files, removable storage not found");
+            return false;
+        }
+        File removableStorage = storage.getExternalDir();
+        if (removableStorage == null) {
+            Log.e(TAG, "failed to export log files, removable storage not found");
+            return false;
+        }
+        Log.i(TAG, "export log files: " + removableStorage);
+        File exportFile = new File(removableStorage, "logs-" + getTimestamp() + ".zip");
+        return compressLogs(getLogDir(context), exportFile);
+    }
 
-	@Override
-	public void write(String s) {
-		// TODO Auto-generated method stub
-		printWriter.print(s);
-	}
+    public static void purgeLogs(Context context) {
+        long logSequence = getLogSequence(context);
+        File logDir = getLogDir(context);
+        File[] files = logDir.listFiles();
+        if (files != null) {
+            Pattern pattern = Pattern.compile(LOG_PATTERN);
+            for (File f : files) {
+                Matcher matcher = pattern.matcher(f.getName());
+                if (matcher.matches()) {
+                    try {
+                        long seq = Long.parseLong(matcher.group(2));
+                        if (seq < logSequence - LOG_PERSIST_LIMIT) {
+                            f.delete();
+                        }
+                    } catch (SecurityException | NumberFormatException e) {
+                        Log.e(TAG, "failed to delete log file: " + e.toString());
+                    }
+                }
+            }
+        }
+    }
 
-	@Override
-	public void write(Object... params) {
-		// TODO Auto-generated method stub
-		for(Object o: params) 
-			if(o instanceof String)
-				write((String)o + " ");
-			else
-				write((long)o);
-	}
+    public static void purgeOldLogs(Context context) {
+        File logDir = getLogDir(context);
+        File[] files = logDir.listFiles();
+        if (files != null) {
+            Pattern pattern = Pattern.compile("^(\\d{17})_(main|system|crash)\\.log$");
+            for (File f : files) {
+                Matcher matcher = pattern.matcher(f.getName());
+                if (matcher.matches()) {
+                    try {
+                        f.delete();
+                    } catch (SecurityException e) {
+                        Log.e(TAG, "failed to delete log file: " + e.toString());
+                    }
+                }
+            }
+        }
+    }
 
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		printWriter.close();
-		
-	}
-	
-	public double convert(long value, TimeUnit unit) {
+    private static File getLogDir(Context context) {
+        File storage = context.getExternalCacheDir();
+        File logDir = new File(storage + "/logs");
+        if (!logDir.exists()) {
+            logDir.mkdir();
+        }
+        Log.d(TAG, logDir.getAbsolutePath());
+        return logDir;
+    }
 
-		double val = 0.0;
-		
-		switch(unit) {
-	      case Nano:
-	    	  val = value;
-	    	  break;
-	      case Micro:
-	    	  val = value / 1000.0;
-	    	  break;
-	      case Milli:
-	    	  val = value / 1000000.0;
-	    	  break;
-	      case Sec:
-	    	  val = value / 1000000000.0 ;
-	    	  break;
-		}
-		
-		return val;
-	}
+    private static long getLogSequence(Context context) {
+        long maxSequence = -1;
+        File logDir = getLogDir(context);
+        File[] files = logDir.listFiles();
+        if (files != null) {
+            Pattern pattern = Pattern.compile("^(main|system|crash)\\.(\\d+)\\.log$");
+            for (File f : files) {
+                Matcher matcher = pattern.matcher(f.getName());
+                if (matcher.matches()) {
+                    try {
+                        long seq = Long.parseLong(matcher.group(2));
+                        maxSequence = Math.max(seq, maxSequence);
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+        }
+        return maxSequence + 1;
+    }
 
-	@Override
-	public void writeTime(long value, TimeUnit unit) {
-		// TODO Auto-generated method stub
-		printWriter.print(convert(value,unit));
-		printWriter.print(" ");
-		printWriter.print(unit);
-		printWriter.print("\n");
-		
-	}
+    private static String getTimestamp() {
+        DateFormat formatter = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
+        return formatter.format(new Date());
+    }
 
-	@Override
-	public void writeTime(String string, long value, TimeUnit unit) {
-		// TODO Auto-generated method stub
-		
-		printWriter.print(string+" ");
-		printWriter.print(convert(value,unit));
-		printWriter.print(" ");
-		printWriter.print(unit);
-		printWriter.print("\n");
-		
-	}
+    private static File getRemovableExternalStorage(Context context) {
+        File[] dirs = context.getExternalFilesDirs(null);
+        for (File dir : dirs) {
+            if (dir != null && dir.isDirectory() && Environment.isExternalStorageRemovable(dir)) {
+                return dir;
+            }
+        }
+        return null;
+    }
 
+    private static boolean compressLogs(File dir, File outputFile) {
+        Log.d(TAG, dir.getAbsolutePath());
+        Log.d(TAG, outputFile.getAbsolutePath());
+        try {
+            FileOutputStream fos = new FileOutputStream(outputFile);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    byte[] buffer = new byte[1024];
+                    FileInputStream fis = new FileInputStream(f);
+                    zos.putNextEntry(new ZipEntry(f.getName()));
+                    int length;
+                    while ((length = fis.read(buffer)) > 0) {
+                        zos.write(buffer, 0, length);
+                    }
+                    zos.closeEntry();
+                    fis.close();
+                }
+            }
+            zos.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -1,123 +1,59 @@
-4
-https://raw.githubusercontent.com/kemusiro/jr100-emulator-v2/master/src/jp/asamomiji/emulator/Program.java
-/**
- * JR-100 Emulator Version 2
- *
- * Copyright (c) 2006-2020 Kenichi Miyata
- *
- * This software is released under the the MIT license
- * http://opensource.org/licenses/mit-license.php
- */
-package jp.asamomiji.emulator;
+14
+https://raw.githubusercontent.com/mjtb49/LattiCG/master/src/randomreverser/reversal/Program.java
+package randomreverser.reversal;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Objects;
+import randomreverser.reversal.calltype.CallType;
+import randomreverser.reversal.constraint.Constraint;
+import randomreverser.reversal.instruction.Instruction;
+import randomreverser.util.LCG;
 
-/*
- * 実行中のプログラムの属性を定義する。
- */
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class Program {
-    private MemorySystem ms = null;
-    private String name = "";
-    private String comment = "";
-    private boolean basicArea = false;
-    private ArrayList<AddressRegion> regions = new ArrayList<>();
-    private File file = null;
 
-    public Program(MemorySystem ms) {
-        this.ms = ms;
+    private final LCG lcg;
+    private final List<CallType<?>> calls;
+    private final List<Constraint<?>> constraints;
+    private final Map<Constraint<?>, Integer> constraintIndices = new HashMap<>();
+    private final List<Instruction> instructions;
+
+    protected Program(LCG lcg, List<CallType<?>> calls, List<Constraint<?>> constraints, List<Instruction> instructions) {
+        this.lcg = lcg;
+        this.calls = calls;
+        this.constraints = constraints;
+        this.instructions = instructions;
+        for (int i = 0; i < constraints.size(); i++) {
+            constraintIndices.put(constraints.get(i), i);
+        }
     }
 
-    public MemorySystem getMemorySystem() {
-        return ms;
+    public static ProgramBuilder builder(LCG lcg) {
+        return new ProgramBuilder(lcg);
     }
 
-    /**
-     * プログラム名を設定する。
-     * nullを指定した場合は""(空文字)が設定される。
-     *
-     * @param name プログラム名
-     */
-    public void setName(String name) {
-        this.name = Objects.toString(name, "");
+    public ProgramInstance start() {
+        return new ProgramInstance(this);
     }
 
-    /**
-     * プログラム名を取得する。
-     * このメソッドの呼び出しはnullになることはない。プログラム名が無い場合は長さ0の文字列を返す。
-     *
-     * @return プログラム名
-     */
-    public String getName() {
-        return name;
+    public LCG getLcg() {
+        return lcg;
     }
 
-    public void setBasicArea(boolean value) {
-        this.basicArea = value;
+    public List<CallType<?>> getCalls() {
+        return calls;
     }
 
-    public boolean hasBasicArea() {
-        return basicArea;
+    public List<Constraint<?>> getConstraints() {
+        return constraints;
     }
 
-    public void addAddressRegion(int start, int end) {
-        regions.add(new AddressRegion(start, end));
+    public int getConstraintIndex(Constraint<?> constraint) {
+        return constraintIndices.get(constraint);
     }
 
-    public void addAddressRegion(int start, int end, String comment) {
-        regions.add(new AddressRegion(start, end, comment));
+    public List<Instruction> getInstructions() {
+        return instructions;
     }
-
-    public void addAddressRegion(AddressRegion a) {
-        regions.add(a);
-    }
-
-    /**
-     * プログラムに対するコメントを設定する。
-     * nullを指定した場合は""(空文字)が設定される。
-     *
-     * @param name プログラム名
-     */
-    public void setComment(String comment) {
-        this.comment = Objects.toString(comment, "");
-    }
-
-    /**
-     * プログラムのコメントを取得する。
-     * このメソッドの呼び出しはnullになることはない。
-     *
-     * @return プログラム名
-     */
-    public String getComment() {
-        return comment;
-    }
-
-    public ArrayList<AddressRegion> getAllAddressRegions() {
-        return regions;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getName());
-        sb.append("(");
-        sb.append(getComment());
-        sb.append(") ");
-        sb.append("hasBasic=");
-        sb.append(basicArea);
-        sb.append(", file=");
-        sb.append(file.getAbsolutePath());
-        sb.append(", ");
-        sb.append(regions.toString());
-        return sb.toString();
-    }
-
 }

@@ -1,41 +1,27 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/submitted/not_null_column/Base.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-package org.apache.ibatis.submitted.not_null_column;
+9
+https://raw.githubusercontent.com/jerryygit/zrDSL-flink/master/src/test/java/instrument/Base.java
+package instrument;
 
-import java.util.Date;
+import java.lang.management.ManagementFactory;
 
-public abstract class Base {
-  private int tempIntField;
-  private Date tempDateField;
+public class Base {
+    public static void main(String[] args) {
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String s = name.split("@")[0];
+        //打印当前Pid
+        System.out.println("pid:"+s);
+        while (true) {
+            try {
+                Thread.sleep(5000L);
+            } catch (Exception e) {
+                break;
+            }
+            process();
+        }
+    }
 
-  public int getTempIntField() {
-    return tempIntField;
-  }
-
-  public void setTempIntField(int tempIntField) {
-    this.tempIntField = tempIntField;
-  }
-
-  public Date getTempDateField() {
-    return tempDateField;
-  }
-
-  public void setTempDateField(Date tempDateField) {
-    this.tempDateField = tempDateField;
-  }
+    public static void process() {
+        System.out.println("process");
+    }
 }
+

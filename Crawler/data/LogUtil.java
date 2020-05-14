@@ -1,37 +1,18 @@
-2
-https://raw.githubusercontent.com/Aivacom/JLYAudio-android/master/app/src/main/java/com/mediaroom/utils/LogUtil.java
-package com.mediaroom.utils;
+9
+https://raw.githubusercontent.com/TrillGates/TaobaoUnion/master/refreshlibrary/src/main/java/com/lcodecore/tkrefreshlayout/utils/LogUtil.java
+package com.lcodecore.tkrefreshlayout.utils;
+
+import android.util.Log;
 
 /**
- * 日志类
- *
- * @author Aslan chenhengfei@yy.com
- * @date 2020/1/3
+ * Created by lcodecore on 2017/4/1.
  */
-public final class LogUtil {
 
-    public static void i(String tag, String log) {
-//        Log.i(tag, log);
-        tv.athena.klog.api.KLog.i(tag, log);
-    }
+public class LogUtil {
+    private static final boolean DEBUG = false;
 
-    public static void w(String tag, String log) {
-//        Log.w(tag, log);
-        tv.athena.klog.api.KLog.w(tag, log);
-    }
-
-    public static void e(String tag, String log) {
-//        Log.e(tag, log);
-        tv.athena.klog.api.KLog.e(tag, log);
-    }
-
-    public static void d(String tag, String log) {
-//        Log.d(tag, log);
-        tv.athena.klog.api.KLog.d(tag, log);
-    }
-
-    public static void v(String tag, String log) {
-//        Log.v(tag, log);
-        tv.athena.klog.api.KLog.v(tag, log);
+    public static void i(String msg) {
+        if (!DEBUG) return;
+        Log.i("TwinklingRefreshLayout", msg);
     }
 }

@@ -1,65 +1,152 @@
-2
-https://raw.githubusercontent.com/sciuridae564/PcrTool/tick/src/main/java/cn/sciuridae/DB/bean/Group.java
-package cn.sciuridae.DB.bean;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/model/user/Group.java
+package ru.bgcrm.model.user;
 
-public class Group {
-    private int id;//主键
-    private String groupid;
-    private String groupName;
-    private String groupMasterQQ;
-    private String createDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-    public Group(int id, String groupid, String groupName, String groupMasterQQ, String createDate) {
-        this.id = id;
-        this.groupid = groupid;
-        this.groupName = groupName;
-        this.groupMasterQQ = groupMasterQQ;
-        this.createDate = createDate;
+import ru.bgcrm.cache.UserCache;
+import ru.bgcrm.model.IdTitle;
+import ru.bgcrm.model.TitleWithPath;
+import ru.bgcrm.util.ParameterMap;
+import ru.bgcrm.util.Preferences;
+
+public class Group extends IdTitle implements TitleWithPath, Cloneable {
+    private int archive;
+    private int parentId;
+    private int childCount;
+    private String comment;
+    private String config;
+    private ParameterMap configMap = new Preferences();
+    private Set<Integer> queueIds = new HashSet<Integer>();
+    private List<Integer> permsetIds = new ArrayList<Integer>();
+
+    public String getConfig() {
+        return config;
     }
 
-    public Group() {
+    public void setConfig(String config) {
+        this.config = config;
+        this.configMap = new Preferences(config);
     }
 
-    public String getGroupid() {
-        return groupid;
+    public ParameterMap getConfigMap() {
+        return configMap;
     }
 
-    public void setGroupid(String groupid) {
-        this.groupid = groupid;
+    public int getArchive() {
+        return archive;
     }
 
-    public String getGroupName() {
-        return groupName;
+    public void setArchive(int archive) {
+        this.archive = archive;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public String getComment() {
+        return comment;
     }
 
-    public String getGroupMasterQQ() {
-        return groupMasterQQ;
+    public int getParentId() {
+        return parentId;
     }
 
-    public void setGroupMasterQQ(String groupMasterQQ) {
-        this.groupMasterQQ = groupMasterQQ;
+    public void setParentId(int parentId) {
+        this.parentId = parentId;
     }
 
-    public String getCreateDate() {
-        return createDate;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
-    public void setCreateDate(String createDate) {
-        this.createDate = createDate;
+    public List<Integer> getPermsetIds() {
+        return permsetIds;
     }
 
-    @Override
-    public String toString() {
-        return "Group{" +
-                "id=" + id +
-                ", groupid='" + groupid + '\'' +
-                ", groupName='" + groupName + '\'' +
-                ", groupMasterQQ='" + groupMasterQQ + '\'' +
-                ", createDate='" + createDate + '\'' +
-                '}';
+    public void setPermsetIds(List<Integer> permsetIds) {
+        this.permsetIds = permsetIds;
+    }
+
+    public Set<Integer> getQueueIds() {
+        return queueIds;
+    }
+
+    public void setQueueIds(Set<Integer> queueIds) {
+        this.queueIds = queueIds;
+    }
+
+    public int getChildCount() {
+        return childCount;
+    }
+
+    public void setChildCount(int childCount) {
+        this.childCount = childCount;
+    }
+
+    public String getTitleWithPath() {
+        return UserCache.getUserGroupWithPath(UserCache.getUserGroupMap(), id, false);
+    }
+
+    /** Посмотреть, где в JSP вызывается и удалить. **/
+    @Deprecated
+    public String getTitleWithPathId() {
+        return UserCache.getUserGroupWithPath(UserCache.getUserGroupMap(), id, true);
+    }
+
+    public Set<Integer> getChildSet() {
+        Set<Integer> resultSet = new HashSet<Integer>();
+
+        for (Group group : UserCache.getUserGroupChildSet(id)) {
+            resultSet.add(group.getId());
+        }
+
+        return resultSet;
+    }
+
+    public Set<Group> getChildGroupSet() {
+        return UserCache.getUserGroupChildSet(id);
+    }
+
+    public boolean isAllowExecutorsSet() {
+        return configMap.getBoolean("allowExecutorsSet", true);
+    }
+
+    public boolean isChildOf(int groupId) {
+        Set<Group> resultSet = UserCache.getUserGroupChildFullSet(groupId);
+
+        return resultSet.contains(this);
+    }
+
+    public Set<Integer> getParentGroupTreeSet() {
+        int parent = parentId;
+        Set<Integer> resultSet = new HashSet<Integer>();
+
+        while (parent > 0) {
+            resultSet.add(parent);
+            parent = UserCache.getUserGroup(parent).getParentId();
+        }
+
+        return resultSet;
+    }
+
+    public List<Group> getPath() {
+        return UserCache.getGroupPath(id);
+    }
+
+    public Group clone() {
+        Group result = new Group();
+
+        result.setId(id);
+        result.setParentId(parentId);
+        result.setTitle(title);
+        result.setArchive(archive);
+        result.setChildCount(childCount);
+        result.setComment(comment);
+        result.setConfig(config);
+        result.setQueueIds(queueIds);
+        result.setPermsetIds(permsetIds);
+
+        return result;
     }
 }

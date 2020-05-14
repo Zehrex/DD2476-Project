@@ -1,30 +1,28 @@
-2
-https://raw.githubusercontent.com/aiqfome/aiqInput/master/app/src/main/java/com/aiqfome/aiqandroid/Country.java
-package com.aiqfome.aiqandroid;
+14
+https://raw.githubusercontent.com/fawad1997/SpringWebAPI/master/src/main/java/com/restfulspring/apiexample/entity/Country.java
+package com.restfulspring.apiexample.entity;
 
-import android.graphics.drawable.Drawable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+import javax.persistence.*;
+import java.util.List;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Country {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "countryId")
+    private int countryId;
+    private String countryName;
 
-    private Drawable icon;
-    private String idd;
-    private String name;
-
-    public Country(Drawable icon, String idd, String name) {
-        this.icon = icon;
-        this.idd = idd;
-        this.name = name;
-    }
-
-    public Drawable getIcon() {
-        return icon;
-    }
-
-    public String getIdd() {
-        return idd;
-    }
-
-    public String getName() {
-        return name;
-    }
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "cc_fk",referencedColumnName = "countryId")
+    private List<City> cities;
 }

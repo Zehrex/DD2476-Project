@@ -1,58 +1,14 @@
-10
-https://raw.githubusercontent.com/373675032/Molihub/master/src/dao/LabelDao.java
-package dao;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_base/src/main/java/com/tensquare/base/dao/LabelDao.java
+package com.tensquare.base.dao;
 
-import domain.Label;
-
-import java.util.List;
+import com.tensquare.base.pojo.Label;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
- * 文章标签持久层接口
- * @User MOTI
- * @Time 2019/8/6 20:15
+ * @author 李聪
+ * @date 2020/2/16 17:48
  */
-public interface LabelDao {
-
-    /**
-     * 根据用户ID获得该用户的所有个性标签
-     * @param userId
-     * @return
-     */
-    List<Label> getAllLabelsByUserId(int userId);
-
-    /**
-     * 为用户添加标签
-     * @param label
-     * @param user_id
-     */
-    void addLabel(String label,int user_id);
-
-    /**
-     * 为用户删除标签
-     * @param label
-     * @param user_id
-     */
-    void deleteLabel(String label,int user_id);
-
-    /**
-     * 更新标签名
-     * @param oldLabel
-     * @param newLabel
-     * @param user_id
-     */
-    void updateLabel(String oldLabel,String newLabel,int user_id);
-
-    /**
-     * 查找标签
-     * @param label
-     * @param user_id
-     */
-    Label getLabel(String label,int user_id);
-
-    /**
-     * 获得文章的标签
-     * @param article_id
-     * @return
-     */
-    String getArticleLabel(int article_id);
+public interface LabelDao extends JpaRepository<Label,String>, JpaSpecificationExecutor<Label> {
 }

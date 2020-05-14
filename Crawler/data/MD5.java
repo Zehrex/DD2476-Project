@@ -1,130 +1,77 @@
-1
-https://raw.githubusercontent.com/LeonRain/wangwang/master/wangwang/src/main/java/com/baidu/translate/demo/MD5.java
-package com.baidu.translate.demo;
+9
+https://raw.githubusercontent.com/idanapp/IdanPlusPlus/master/app/src/main/java/com/example/idan/plusplus/Classes/MD5.java
+package com.example.idan.plusplus.Classes;
+
+import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * MD5编码相关的类
- * 
- * @author BaiDu wangjingtao
- * 
- */
 public class MD5 {
-    // 首先初始化一个字符数组，用来存放每个16进制字符
-    private static final char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-            'e', 'f' };
+    private static final String TAG = "MD5";
 
-    /**
-     * 获得一个字符串的MD5值
-     * 
-     * @param input 输入的字符串
-     * @return 输入字符串的MD5值
-     * 
-     */
-    public static String md5(String input) {
-        if (input == null)
-            return null;
+    public static boolean checkMD5(String md5, File updateFile) {
+        if (TextUtils.isEmpty(md5) || updateFile == null) {
+            Log.e(TAG, "MD5 string empty or updateFile null");
+            return false;
+        }
 
+        String calculatedDigest = calculateMD5(updateFile);
+        if (calculatedDigest == null) {
+            Log.e(TAG, "calculatedDigest null");
+            return false;
+        }
+
+        Log.v(TAG, "Calculated digest: " + calculatedDigest);
+        Log.v(TAG, "Provided digest: " + md5);
+
+        return calculatedDigest.equalsIgnoreCase(md5);
+    }
+
+    public static String calculateMD5(File updateFile) {
+        MessageDigest digest;
         try {
-            // 拿到一个MD5转换器（如果想要SHA1参数换成”SHA1”）
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            // 输入的字符串转换成字节数组
-            byte[] inputByteArray = null;
-			try {
-				inputByteArray = input.getBytes("utf-8");
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            // inputByteArray是输入字符串转换得到的字节数组
-            messageDigest.update(inputByteArray);
-            // 转换并返回结果，也是字节数组，包含16个元素
-            byte[] resultByteArray = messageDigest.digest();
-            // 字符数组转换成字符串返回
-            return byteArrayToHex(resultByteArray);
+            digest = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Exception while getting digest", e);
             return null;
         }
-    }
 
-    /**
-     * 获取文件的MD5值
-     * 
-     * @param file
-     * @return
-     */
-    public static String md5(File file) {
+        InputStream is;
         try {
-            if (!file.isFile()) {
-                System.err.println("文件" + file.getAbsolutePath() + "不存在或者不是文件");
-                return null;
-            }
-
-            FileInputStream in = new FileInputStream(file);
-
-            String result = md5(in);
-
-            in.close();
-
-            return result;
-
+            is = new FileInputStream(updateFile);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Exception while getting FileInputStream", e);
+            return null;
         }
 
-        return null;
-    }
-
-    public static String md5(InputStream in) {
-
+        byte[] buffer = new byte[8192];
+        int read;
         try {
-            MessageDigest messagedigest = MessageDigest.getInstance("MD5");
-
-            byte[] buffer = new byte[1024];
-            int read = 0;
-            while ((read = in.read(buffer)) != -1) {
-                messagedigest.update(buffer, 0, read);
+            while ((read = is.read(buffer)) > 0) {
+                digest.update(buffer, 0, read);
             }
-
-            in.close();
-
-            String result = byteArrayToHex(messagedigest.digest());
-
-            return result;
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            byte[] md5sum = digest.digest();
+            BigInteger bigInt = new BigInteger(1, md5sum);
+            String output = bigInt.toString(16);
+            // Fill to 32 chars
+            output = String.format("%32s", output).replace(' ', '0');
+            return output;
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Unable to process file for MD5", e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Exception on closing MD5 input stream", e);
+            }
         }
-
-        return null;
     }
-
-    private static String byteArrayToHex(byte[] byteArray) {
-        // new一个字符数组，这个就是用来组成结果字符串的（解释一下：一个byte是八位二进制，也就是2位十六进制字符（2的8次方等于16的2次方））
-        char[] resultCharArray = new char[byteArray.length * 2];
-        // 遍历字节数组，通过位运算（位运算效率高），转换成字符放到字符数组中去
-        int index = 0;
-        for (byte b : byteArray) {
-            resultCharArray[index++] = hexDigits[b >>> 4 & 0xf];
-            resultCharArray[index++] = hexDigits[b & 0xf];
-        }
-
-        // 字符数组组合成字符串返回
-        return new String(resultCharArray);
-
-    }
-
 }

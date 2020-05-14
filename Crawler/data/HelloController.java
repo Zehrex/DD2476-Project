@@ -1,42 +1,14 @@
-2
-https://raw.githubusercontent.com/sciuridae564/PcrTool/tick/src/main/java/cn/sciuridae/SpringBoot/Controller/HelloController.java
-package cn.sciuridae.SpringBoot.Controller;
+14
+https://raw.githubusercontent.com/fawad1997/SpringWebAPI/master/src/main/java/com/restfulspring/apiexample/controller/HelloController.java
+package com.restfulspring.apiexample.controller;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-
-
-@Controller
+@RestController
 public class HelloController {
-    @ResponseBody
-    @RequestMapping("/hello")
-    public String Hello() {
-        return "hello";
+    @RequestMapping(value = "/")
+    public String sayHello(){
+        return "Hello World!";
     }
-
-    @RequestMapping("/test")
-    public String success(Map<String, Object> map) {
-        map.put("hello", "nihao");
-        map.put("numberlist", Arrays.asList("one", "two", "three"));
-        map.put("tips", "hahaha");
-        return "test";
-    }
-
-    @RequestMapping("/dosome")
-    public String dosome(String username, String password) {
-
-        return "test";
-    }
-
-
 }

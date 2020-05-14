@@ -1,9 +1,11 @@
-1
-https://raw.githubusercontent.com/enriquedevs/java11/master/TestModularApp/src/mymodule/com/app/main/Main.java
-package com.app.main;
+11
+https://raw.githubusercontent.com/afsalashyana/Covid19-Desktop-Widget/master/src/main/java/com/genuinecoder/Main.java
+package com.genuinecoder;
+
+import com.genuinecoder.gui.Launch;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello Modular");
+        Launch.main(args);
     }
 }

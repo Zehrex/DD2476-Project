@@ -1,17 +1,12 @@
-6
-https://raw.githubusercontent.com/HouariZegai/JavaTutorials/master/JDBCWorkshop/src/main/java/com/houarizegai/jdbcworkshop/dao/EmployeeDao.java
-package com.houarizegai.jdbcworkshop.dao;
-
-import com.houarizegai.jdbcworkshop.model.Employee;
+8
+https://raw.githubusercontent.com/nataraz123/Spring/master/IOCProj39-LayeredApp-NestedBeanFactory/src/main/java/com/nt/dao/EmployeeDAO.java
+package com.nt.dao;
 
 import java.util.List;
 
-public interface EmployeeDao {
-    List<Employee> findAll();
+import com.nt.bo.EmployeeBO;
 
-    Employee findById(int id);
+public interface EmployeeDAO {
+	public  List<EmployeeBO>  getEmpsByDesgs(String desg1,String desg2)throws Exception;
 
-    void save(Employee employee);
-
-    void deleteById(int id);
 }

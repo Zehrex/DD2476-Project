@@ -1,19 +1,12 @@
-1
-https://raw.githubusercontent.com/aadeeshjain/User-Registration-Login-SpringBoot/master/UserRegistration1/src/main/java/io/aadeesh/repo/UserRepository.java
-package io.aadeesh.repo;
+14
+https://raw.githubusercontent.com/fawad1997/SpringWebAPI/master/src/main/java/com/restfulspring/apiexample/repository/UserRepository.java
+package com.restfulspring.apiexample.repository;
 
-import java.util.List;
+import com.restfulspring.apiexample.entity.ApplicationUser;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-import io.aadeesh.model.User;
-
-public interface UserRepository extends JpaRepository<User, Integer> {
-	
-	@Query("from User where user_email=?1")
-	public List<User> findByEMAIL(String email);
-	
-	@Query("from User where user_email=?1 and user_pass=?2")
-	public User findByUsernamePassword(String username,String password);
-
+@Repository
+public interface UserRepository extends JpaRepository<ApplicationUser, Integer> {
+    ApplicationUser findByUsername(String username);
 }

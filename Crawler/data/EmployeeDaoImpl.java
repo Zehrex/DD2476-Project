@@ -1,120 +1,100 @@
-6
-https://raw.githubusercontent.com/HouariZegai/JavaTutorials/master/JDBCWorkshop/src/main/java/com/houarizegai/jdbcworkshop/dao/EmployeeDaoImpl.java
-package com.houarizegai.jdbcworkshop.dao;
+8
+https://raw.githubusercontent.com/nataraz123/Spring/master/IOCProj39-LayeredApp-NestedBeanFactory/src/main/java/com/nt/dao/EmployeeDAOImpl.java
+package com.nt.dao;
 
-import com.houarizegai.jdbcworkshop.model.Employee;
-import com.houarizegai.jdbcworkshop.model.EmployeeBuilder;
-
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.sql.Connection;
 
-public class EmployeeDaoImpl implements EmployeeDao {
-    public List<Employee> findAll() {
-        Connection con = DBConnection.getConnection();
-        if(con == null) {
-            return null;
-        }
+import javax.sql.DataSource;
 
-        List<Employee> employees = new LinkedList<>();
+import com.nt.bo.EmployeeBO;
 
-        String sql = "SELECT id, name, gender, salary FROM employee;";
-        try {
-            PreparedStatement prest = con.prepareStatement(sql);
-            ResultSet rs = prest.executeQuery();
-            while(rs.next()) {
-                Employee employee = new EmployeeBuilder()
-                        .id(rs.getInt("id"))
-                        .name(rs.getString("name"))
-                        .gender(rs.getBoolean("gender"))
-                        .salary(rs.getDouble("salary"))
-                        .build();
 
-                employees.add(employee);
-            }
+public final class EmployeeDAOImpl implements EmployeeDAO {
+	private static final String  GET_EMPS_BY_DESGS="SELECT EMPNO,ENAME,JOB,SAL,DEPTNO,MGR FROM EMP WHERE JOB IN(?,?)";
+	private DataSource ds;
+	
 
-        } catch(SQLException se) {
-            se.printStackTrace();
-        }
+	public EmployeeDAOImpl(DataSource ds) {
+		
+		this.ds = ds;
+	}
 
-        return employees;
-    }
 
-    public Employee findById(int id) {
-        Connection con = DBConnection.getConnection();
-        if(con == null)
-            return null;
+	@Override
+	public List<EmployeeBO> getEmpsByDesgs(String desg1, String desg2) throws Exception {
+		Connection con=null;
+		PreparedStatement ps=null;
+		ResultSet  rs=null;
+		List<EmployeeBO> listBO=null;
+		EmployeeBO bo=null;
+		try {
+			//get Pooled JDBC con object
+			con=ds.getConnection();
+			//create PreparedStatement object
+			ps=con.prepareStatement(GET_EMPS_BY_DESGS);
+			//set query param values
+			ps.setString(1,desg1);
+			ps.setString(2,desg2);
+			//execute the query
+			rs=ps.executeQuery();
+			//copy RS records  to Listof BO objects
+			listBO=new ArrayList();
+			while(rs.next()) {
+				//copy each record of RS to BO class object
+				bo=new EmployeeBO();
+				bo.setEmpNo(rs.getInt(1));
+				bo.setEname(rs.getString(2));
+				bo.setJob(rs.getString(3));
+				bo.setSal(rs.getFloat(4));
+				bo.setDeptNo(rs.getInt(5));
+				bo.setMgr(rs.getInt(6));
+				//add each BO class object to listBO
+				listBO.add(bo);
+			}//while
+			
+		}//try
+		/*catch(SQLException se) {
+			se.printStackTrace();
+			throw se;  //exceptio rethrowing...
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			throw e;
+		}*/
+		finally {
+			//close jdbc objs
+			try {
+				if(rs!=null)
+					rs.close();
+			}
+			catch(SQLException se) {
+				se.printStackTrace();
+			}
+			
+			try {
+				if(ps!=null)
+					ps.close();
+			}
+			catch(SQLException se) {
+				se.printStackTrace();
+			}
+			
+			try {
+				if(con!=null)
+					con.close();
+			}
+			catch(SQLException se) {
+				se.printStackTrace();
+			}
+		}//finally
+	   
+		
+		return listBO;
+	}//method
 
-        String sql = "SELECT id, name, gender, salary FROM employee WHERE id=?;";
-        try {
-            PreparedStatement prest = con.prepareStatement(sql);
-            prest.setInt(1, id);
-            ResultSet rs = prest.executeQuery();
-            if(rs.next()) {
-                return new EmployeeBuilder()
-                        .id(rs.getInt("id"))
-                        .name(rs.getString("name"))
-                        .gender(rs.getBoolean("gender"))
-                        .salary(rs.getDouble("salary"))
-                        .build();
-            }
-
-        } catch(SQLException se) {
-            se.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public void save(Employee employee) {
-        Connection con = DBConnection.getConnection();
-        if(con == null)
-            return;
-
-        if(employee.getId() > 0) { // Update employee
-            String sql = "UPDATE employee SET name=?, gender=?, salary=? WHERE id=?;";
-            try {
-                PreparedStatement prest = con.prepareStatement(sql);
-                prest.setString(1, employee.getName());
-                prest.setBoolean(2, employee.isGender());
-                prest.setDouble(3, employee.getSalary());
-                prest.setInt(4, employee.getId());
-                prest.executeUpdate();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
-
-        } else { // Create new Employee
-            String sql = "INSERT INTO employee(name, gender, salary) VALUES(?, ?, ?);";
-            try {
-                PreparedStatement prest = con.prepareStatement(sql);
-                prest.setString(1, employee.getName());
-                prest.setBoolean(2, employee.isGender());
-                prest.setDouble(3, employee.getSalary());
-                prest.executeUpdate();
-            } catch(SQLException se) {
-                se.printStackTrace();
-            }
-        }
-
-    }
-
-    public void deleteById(int id) {
-        Connection con = DBConnection.getConnection();
-        if(con == null)
-            return;
-
-        String sql = "DELETE FROM employee WHERE id=?;";
-        try {
-            PreparedStatement prest = con.prepareStatement(sql);
-            prest.setInt(1, id);
-            prest.executeUpdate();
-        } catch(SQLException se) {
-            se.printStackTrace();
-        }
-    }
-}
+}//class

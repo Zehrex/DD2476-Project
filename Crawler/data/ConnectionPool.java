@@ -1,93 +1,89 @@
-7
-https://raw.githubusercontent.com/zeoio/fabric-toolkit/master/bcp-install-biz/src/main/java/com/cgb/bcpinstall/db/ConnectionPool.java
-/*
- *  Copyright CGB Corp All Rights Reserved.
- * 
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+23
+https://raw.githubusercontent.com/mrchengwenlong/NettyIM/master/im_lib/src/main/java/com/takiku/im_lib/internal/connection/ConnectionPool.java
+package com.takiku.im_lib.internal.connection;
+
+import com.takiku.im_lib.entity.base.Address;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * author:chengwl
+ * Description:
+ * Date:2020/4/11
  */
-package com.cgb.bcpinstall.db;
+public final class ConnectionPool {
 
-import com.cgb.bcpinstall.common.util.FileUtil;
-import com.cgb.bcpinstall.db.table.NodeDO;
-import com.cgb.bcpinstall.db.util.MapperUtil;
-import com.cgb.bcpinstall.db.util.object.Table;
-import org.h2.jdbcx.JdbcConnectionPool;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
-public class ConnectionPool {
-    private static ConnectionPool instance = null;
-    private JdbcConnectionPool jdbcConnectionPool = null;
 
-    private ConnectionPool() {
-        boolean needInit = false;
-        String dbFilePath = FileUtil.getUserDir() + "bcp-install";
-        if (!new File(dbFilePath + ".mv.db").exists()) {
-            needInit = true;
+    private  volatile ExecutorService workPool ;// 工作线程组，负责心跳
+    private   volatile   RealConnection realConnection;
+
+
+
+    public ConnectionPool(){
+
+    }
+
+
+    public void deduplicate(){
+        if (realConnection!=null){
+            realConnection.release(false);
+            realConnection=null;
         }
-        jdbcConnectionPool = JdbcConnectionPool.create("jdbc:h2:file:" + dbFilePath + ";database_to_upper=false;DB_CLOSE_ON_EXIT=FALSE", "sa", "");
-        jdbcConnectionPool.setMaxConnections(50);
-
-        if (needInit) {
+    }
+    public void put(RealConnection connection) {
+        assert (Thread.holdsLock(this));
+        realConnection=connection;
+    }
+    public void changeHeartbeatInterval(int heartbeatInterval){
+        if (realConnection==null||!realConnection.isHealth()){
             try {
-                initDb();
-            } catch (SQLException e) {
+                throw new Exception("changeHeartbeatInterval is failure,because connection broken");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        realConnection.addHeartbeatHandler(this,heartbeatInterval);
     }
 
-    private void initDb() throws SQLException {
-        Connection conn = null;
-        Statement stmt = null;
-        try {
-            conn = getConnection();
-            stmt = conn.createStatement();
 
-            Table table = MapperUtil.createMapper(NodeDO.class);
-            String sql = MapperUtil.createTableSql(table);
-            stmt.execute(sql);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            releaseConnection(conn, stmt, null);
+
+    /**
+     * 执行心跳任务
+     *
+     * @param r
+     */
+    public synchronized void execWorkTask(Runnable r) {
+        if (r==null){
+            return;
         }
+        if (workPool==null){
+            workPool= Executors.newFixedThreadPool(1);
+        }
+        workPool.execute(r);
     }
 
-    public static void releaseConnection(Connection conn, Statement stmt,
-                                         ResultSet rs) throws SQLException {
-        if (rs != null) {
-            rs.close();
+    public RealConnection get(Address address, StreamAllocation streamAllocation) {
+        if (realConnection!=null){
+            streamAllocation.acquire(realConnection);
         }
-        if (stmt != null) {
-            stmt.close();
-        }
-        if (conn != null) {
-            conn.close();
-        }
+        return realConnection;
     }
-
-    public static ConnectionPool getInstance() {
-        if (instance == null) {
-            instance = new ConnectionPool();
+    /**
+     * 释放work线程池
+     */
+    public synchronized void destroyWorkLoopGroup() {
+        if (workPool != null) {
+            try {
+                workPool.shutdownNow();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            } finally {
+                workPool = null;
+            }
         }
-        return instance;
-    }
-
-    public Connection getConnection() throws SQLException {
-        return jdbcConnectionPool.getConnection();
     }
 }

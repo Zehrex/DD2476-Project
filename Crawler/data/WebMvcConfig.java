@@ -1,31 +1,20 @@
-1
-https://raw.githubusercontent.com/miaoo92/xxl-job-mongo/master/src/main/java/com/avon/rga/controller/interceptor/WebMvcConfig.java
-package com.avon.rga.controller.interceptor;
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/common/config/WebMvcConfig.java
+package com.kalvin.kvf.common.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import javax.annotation.Resource;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * web mvc config
- *
- * @author xuxueli 2018-04-02 20:48:20
+ * @author Kalvin
  */
 @Configuration
-public class WebMvcConfig extends WebMvcConfigurerAdapter {
-
-    @Resource
-    private PermissionInterceptor permissionInterceptor;
-    @Resource
-    private CookieInterceptor cookieInterceptor;
+public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(permissionInterceptor).addPathPatterns("/**");
-        registry.addInterceptor(cookieInterceptor).addPathPatterns("/**");
-        super.addInterceptors(registry);
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/403").setViewName("/403");
+        registry.addViewController("/404").setViewName("/404");
     }
-
 }

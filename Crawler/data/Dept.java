@@ -1,40 +1,83 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/submitted/batch_test/Dept.java
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/modules/sys/entity/Dept.java
+package com.kalvin.kvf.modules.sys.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.kalvin.kvf.common.entity.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+import java.util.Date;
+
 /**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
+ * <p>
+ * 部门表
+ * </p>
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * @author Kalvin
+ * @since 2019-04-29
  */
-package org.apache.ibatis.submitted.batch_test;
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Accessors(chain = true)
+@TableName("sys_dept")
+public class Dept extends BaseEntity {
 
-public class Dept {
+private static final long serialVersionUID=1L;
 
-  private Integer id;
-  private String name;
+    /**
+     * 主键
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
 
-  public Integer getId() {
-    return id;
-  }
+    /**
+     * 上级部门ID，一级部门为0
+     */
+    private Long parentId;
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+    /**
+     * 部门名称
+     */
+    private String name;
 
-  public String getName() {
-    return name;
-  }
+    /**
+     * 类型。0：公司；1：部门；2:科室/小组
+     */
+    private Integer type;
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    /**
+     * 所在区域ID
+     */
+    private Long areaId;
+
+    /**
+     * 排序值。越小越靠前
+     */
+    private Integer sort;
+
+    /**
+     * 状态。0：正常；1：禁用
+     */
+    private Integer status;
+
+    /**
+     * 修改时间
+     */
+    private Date updateTime;
+
+    /**
+     * 创建人
+     */
+    private Long createBy;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+
 }

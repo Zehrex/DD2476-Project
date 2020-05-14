@@ -1,46 +1,61 @@
-4
-https://raw.githubusercontent.com/Nightnessss/web-homework/master/homework03/src/com/fehead/beans/UserBean.java
-package com.fehead.beans;
+14
+https://raw.githubusercontent.com/FanChael/MVVM/master/modules/module_login/src/main/java/com/hl/modules_login/model/bean/UserBean.java
+package com.hl.modules_login.model.bean;
 
-/**
- * @author Nightessss 2020/5/8 16:10
- */
+import com.hl.anotation.NotProguard;
+
+@NotProguard
 public class UserBean {
 
-    private String name;
-    private String password;
-    private String email;
+    /**
+     * admin : false
+     * chapterTops : []
+     * collectIds : []
+     * email :
+     * icon :
+     * id : 56087
+     * nickname : 小坑神周杰伦
+     * password :
+     * publicName : 小坑神周杰伦
+     * token :
+     * type : 0
+     * username : 小坑神周杰伦
+     */
 
-    public UserBean(String name, String password, String email) {
-        this.name = name;
-        this.password = password;
-        this.email = email;
+    private int id;
+    private String nickname;
+    private String publicName;
+    private String username;
+
+    public int getId() {
+        return id;
     }
 
-    public UserBean() {
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getNickname() {
+        return nickname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPublicName() {
+        return publicName;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPublicName(String publicName) {
+        this.publicName = publicName;
     }
 
-    public String getEmail() {
-        return email;
+    public String getUsername() {
+        return username;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

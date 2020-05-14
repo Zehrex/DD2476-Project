@@ -1,69 +1,53 @@
-2
-https://raw.githubusercontent.com/AndreaRiboni/Garden/master/src/flower_logic/Field.java
-package flower_logic;
-
-import com.sun.javafx.geom.Point2D;
-import flower_field.Drawer2D;
-import java.util.ArrayList;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/plugin/bgbilling/creator/Field.java
+package ru.bgcrm.plugin.bgbilling.creator;
 
 /**
- * the field class is a utility class, offering more options to work with
- * flowers than an arraylist, such as generating a random flower into the field
- * No validation needed
- *
- * @author Andrea Riboni
- */
-public class Field {
+import static ru.bgcrm.model.param.Parameter.*;
 
-    private final ArrayList<Flower> flowers;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-    /**
-     * Creates the field
-     */
-    public Field() {
-        flowers = new ArrayList<>();
-    }
+import org.apache.log4j.Logger;
 
-    /**
-     * Tries to plant the flower in its position
-     * If the position is busy, you won't be able to
-     * @param flower flower to plant
-     * @return true if the flower has been planted
-     */
-    public boolean plant(Flower flower) {
-        if (enoughSpace(flower.getPos())) {
-            flowers.add(flower);
-            System.out.println("planted");
-            return true;
-        }
-        return false;
-    }
+import ru.bgcrm.model.BGException;
+import ru.bgcrm.util.ParameterMap;
+import ru.bgcrm.util.Utils;
 
-    /**
-     * Creates a random flower and tries to plant it
-     * see the plant(Flower flower) function
-     * @return true if the flower has been planted
-     */
-    public boolean plantRandom() {
-        Flower flower = Flower.generateRandom();
-        return plant(flower);
-    }
 
-    /**
-     * Checks if there is enough space in the selected position
-     * @param pos position to check
-     * @return true if there is enough space to plant the flower
-     */
-    private boolean enoughSpace(Point2D pos) {
-        //the distance must be greater than the flower size
-        return flowers.stream().noneMatch((flower) -> (pos.distance(flower.getPos()) < Drawer2D.FLOWER_SIZE));
-    }
+ * Поле - набор параметров контрагента, участвующий в импорте.
+ * Набор вместо одного параметра в основном из-за адресного параметра, чтобы перечислять все возможные значения.
+ 
+class Field
+{
+	private static final Logger log = Logger.getLogger( Field.class );
+	
+	private static final Set<String> ALLOWED_PARAM_TYPES = new HashSet<String>( Arrays.asList( TYPE_ADDRESS, TYPE_TEXT, TYPE_PHONE, TYPE_DATE ) );
+	
+	// тип параметра
+	public final String type;
+	// код параметра
+	public final int id;
 
-    /**
-     * Gets the flower of the garden
-     * @return flowers
-     */
-    public ArrayList<Flower> getFlowers() {
-        return flowers;
-    }
+	public Field( ParameterMap params )
+	    throws BGException
+	{
+		this.type = params.get( "type" );
+		this.id =  Utils.parseInt( params.get( "id" ) );
+		
+		if( !ALLOWED_PARAM_TYPES.contains( type ) )
+		{
+			throw new BGException( "Unsupported key param type:" + type );
+		}
+		if( id <= 0 )
+		{
+			throw new BGException( "Not defined id." );
+		}
+		
+		log.info( "Field type: " + type + "; id: " + id );
+		
+		//if( idList.size() > 0 && type.equals( TYPE_ADDRESS ) )			
+	}
 }
+*/

@@ -1,39 +1,48 @@
 9
-https://raw.githubusercontent.com/guozaizai/myHttpSdkDemo/master/app/src/main/java/myapp/com/xm/myapplication/Api.java
-package myapp.com.xm.myapplication;
+https://raw.githubusercontent.com/TrillGates/TaobaoUnion/master/app/src/main/java/com/sunofbeaches/taobaounion/model/Api.java
+package com.sunofbeaches.taobaounion.model;
 
-import com.xm.httpapi.BaseApi.BaseApi;
-/**
- *
- */
+import com.sunofbeaches.taobaounion.model.domain.Categories;
+import com.sunofbeaches.taobaounion.model.domain.HomePagerContent;
+import com.sunofbeaches.taobaounion.model.domain.OnSellContent;
+import com.sunofbeaches.taobaounion.model.domain.SearchRecommend;
+import com.sunofbeaches.taobaounion.model.domain.SearchResult;
+import com.sunofbeaches.taobaounion.model.domain.SelectedContent;
+import com.sunofbeaches.taobaounion.model.domain.SelectedPageCategory;
+import com.sunofbeaches.taobaounion.model.domain.TicketParams;
+import com.sunofbeaches.taobaounion.model.domain.TicketResult;
 
-public class Api extends BaseApi {
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Query;
+import retrofit2.http.Url;
 
-    private ApiService service;
+public interface Api {
 
-    public Api() {
-        super(BuildConfig.URL);
-    }
+    @GET("discovery/categories")
+    Call<Categories> getCategories();
 
-    public static class ApiSingle {
-        private static Api api = new Api();
-    }
+    @GET
+    Call<HomePagerContent> getHomePageContent(@Url String url);
 
-    public static Api getInstance() {
-        return ApiSingle.api;
-    }
+    @POST("tpwd")
+    Call<TicketResult> getTicket(@Body TicketParams ticketParams);
 
-    public static ApiService getApi() {
-        return getInstance().getDefault();
-    }
+    @GET("recommend/categories")
+    Call<SelectedPageCategory> getSelectedPageCategories();
 
-    public void clearApiService() {
-        if (service != null) service = null;
-    }
+    @GET
+    Call<SelectedContent> getSelectedPageContent(@Url String url);
 
-    public ApiService getDefault() {
-        return service == null ? service = getRetrofit().create(ApiService.class) : service;
-    }
+    @GET
+    Call<OnSellContent> getOnSellPageContent(@Url String url);
 
+    @GET("search/recommend")
+    Call<SearchRecommend> getRecommendWords();
+
+    @GET("search")
+    Call<SearchResult> doSearch(@Query("page") int page,@Query("keyword") String keyword);
 
 }

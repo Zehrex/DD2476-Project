@@ -1,91 +1,45 @@
-23
-https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/common/src/main/java/com/webank/wedatasphere/exchangis/common/service/IBaseService.java
-/*
- *
- *  Copyright 2020 WeBank
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+9
+https://raw.githubusercontent.com/idanapp/IdanPlusPlus/master/app/src/main/java/com/example/idan/plusplus/V2/Services/Retrofit2Services/IBaseService.java
+package com.example.idan.plusplus.V2.Services.Retrofit2Services;
 
-package com.webank.wedatasphere.exchangis.common.service;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
-import com.webank.wedatasphere.exchangis.common.util.page.PageList;
-import com.webank.wedatasphere.exchangis.common.util.page.PageQuery;
+import io.reactivex.Observable;
+import me.toptas.rssconverter.RssFeed;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Url;
 
-import java.util.List;
+public interface IBaseService {
 
-/**
- * Created by devendeng on 2018/8/20.
- */
-public interface IBaseService<T> {
+    @GET
+    Observable<Response<ResponseBody>> getHtml(@Url String fullUrl);
 
-    /**
-     * Add
-     *
-     * @param t
-     * @return
-     */
-    boolean add(T t);
+    @POST
+    Observable<Response<ResponseBody>> postHtml(@Url String fullUrl, @Body RequestBody body);
 
-    /**s
-     * Delete batch(collection)
-     *
-     * @return
-     */
-    boolean delete(List<Object> ids);
+    @GET
+    Observable<Response<JsonObject>> getJsonObject(@Url String fullUrl);
 
-    /**
-     * Delete batch
-     *
-     * @param ids
-     */
-    boolean delete(String ids);
+    @GET
+    Observable<Response<JsonArray>> getJsonArray(@Url String fullUrl);
 
-    /**
-     * Update
-     *
-     * @param t
-     * @return
-     */
-    boolean update(T t);
+    @POST
+    Observable<Response<JsonObject>> postChannelJsonHtml(@Url String fullUrl, @Body RequestBody body);
 
-    /**
-     * Count
-     *
-     * @param pageQuery
-     * @return
-     */
-    long getCount(PageQuery pageQuery);
+    @POST
+    Observable<Response<JsonArray>> postJsonArray(@Url String ullUrl,@Body RequestBody body);
 
-    /**
-     * Select
-     *
-     * @param id
-     * @return
-     */
-    T get(Object id);
+    @POST
+    Observable<Response<JsonPrimitive>> postChannelJsonPremitiveHtml(@Url String fullUrl, @Body RequestBody body);
 
-    /**
-     * Find
-     *
-     * @return
-     */
-    PageList<T> findPage(PageQuery pageQuery);
+    @GET
+    Observable<Response<RssFeed>> getRssfeed(@Url String fullUrl);
 
-    /**
-     * Select all
-     *
-     * @return
-     */
-    List<T> selectAllList(PageQuery pageQuery);
 }

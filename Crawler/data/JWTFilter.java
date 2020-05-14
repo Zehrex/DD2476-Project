@@ -1,56 +1,52 @@
-2
-https://raw.githubusercontent.com/gardle/gardle-web/master/src/main/java/com/gardle/security/jwt/JWTFilter.java
-package com.gardle.security.jwt;
+14
+https://raw.githubusercontent.com/fawad1997/SpringWebAPI/master/src/main/java/com/restfulspring/apiexample/filters/JwtFilter.java
+package com.restfulspring.apiexample.filters;
 
-import org.springframework.security.core.Authentication;
+import com.restfulspring.apiexample.service.JwtUtilService;
+import com.restfulspring.apiexample.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * Filters incoming requests and installs a Spring Security principal if a header corresponding to a valid user is
- * found.
- */
-public class JWTFilter extends GenericFilterBean {
+@Component
+public class JwtFilter extends OncePerRequestFilter {
 
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-
-    public static final String AUTHORIZATION_TOKEN = "access_token";
-
-    private final TokenProvider tokenProvider;
-
-    public JWTFilter(TokenProvider tokenProvider) {
-        this.tokenProvider = tokenProvider;
-    }
+    @Autowired
+    private JwtUtilService jwtUtil;
+    @Autowired
+    private UserService userService;
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-        throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        String jwt = resolveToken(httpServletRequest);
-        if (StringUtils.hasText(jwt) && this.tokenProvider.validateToken(jwt)) {
-            Authentication authentication = this.tokenProvider.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+        String authorizationHeader = httpServletRequest.getHeader("Authorization");
+        //eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmYXdhZDE5OTciLCJleHAiOjE1ODcxNTA2NjgsImlhdCI6MTU4NzE0ODg2OH0.OEvx_a1nTW2vzH7ofuDXJHL8By_32_D3OIfycBoXykY
+        String token = null;
+        String username = null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+            token = authorizationHeader.substring(7);
+            username = jwtUtil.extractUsername(token);
         }
-        filterChain.doFilter(servletRequest, servletResponse);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userService.loadUserByUsername(username);
+            if (jwtUtil.validateToken(token, userDetails)) {
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authenticationToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(httpServletRequest)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
         }
-        String jwt = request.getParameter(AUTHORIZATION_TOKEN);
-        if (StringUtils.hasText(jwt)) {
-            return jwt;
-        }
-        return null;
+        filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 }

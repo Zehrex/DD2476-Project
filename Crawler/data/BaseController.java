@@ -1,38 +1,70 @@
-1
-https://raw.githubusercontent.com/ryewen/quickbuy/master/src/main/java/com/loststars/quickbuy/controller/BaseController.java
-package com.loststars.quickbuy.controller;
+18
+https://raw.githubusercontent.com/GZYangKui/openjfx-database/master/app/src/main/java/com/openjfx/database/app/BaseController.java
+package com.openjfx.database.app;
 
-import java.util.HashMap;
-import java.util.Map;
+import javafx.fxml.Initializable;
+import javafx.stage.Stage;
 
-import javax.servlet.http.HttpServletRequest;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+/**
+ * base controller
+ *
+ * @param <D> 传递数据类型
+ * @author yangkui
+ * @since 1.0
+ */
+public abstract class BaseController<D> implements Initializable {
+    /**
+     * 外部数据
+     */
+    protected D data;
+    /**
+     * stage引用
+     */
+    protected Stage stage;
+    /**
+     * ResourceBundle
+     */
+    protected ResourceBundle resourceBundle;
+    /**
+     * URL
+     */
+    protected URL location;
 
-import com.loststars.quickbuy.error.BusinessException;
-import com.loststars.quickbuy.error.EmBusinessError;
-import com.loststars.quickbuy.response.CommonReturnType;
+    /**
+     * 初始化fxml视图时调用
+     *
+     * @param location  location
+     * @param resources resources
+     */
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        this.resourceBundle = resources;
+        this.location = location;
+    }
 
-import org.springframework.http.HttpStatus;
+    /**
+     * 初始化controller
+     */
+    public void init() {
+        //todo override
+    }
 
-public class BaseController {
+    public D getData() {
+        return data;
+    }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public Object handerException(HttpServletRequest request, Exception ex) {
-        Map<String, Object> reponseData = new HashMap<>();
-        BusinessException businessException = null;
-        if (ex instanceof BusinessException) {
-            businessException = (BusinessException) ex;
-        } else {
-            businessException = new BusinessException(EmBusinessError.UNKNOW_ERROR);
-            ex.printStackTrace();
-        }
-        reponseData.put("errCode", businessException.getErrCode());
-        reponseData.put("errMsg", businessException.getErrMsg());
-        return CommonReturnType.createFail(reponseData);
+    public void setData(D data) {
+        this.data = data;
+    }
+
+    public Stage getStage() {
+        return stage;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }

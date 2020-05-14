@@ -1,31 +1,28 @@
-2
-https://raw.githubusercontent.com/jarryleo/GSYVideoPlayer/master/gsyVideoPlayer-java/src/main/java/com/shuyu/gsyvideoplayer/player/PlayerFactory.java
-package com.shuyu.gsyvideoplayer.player;
+38
+https://raw.githubusercontent.com/piyush6348/Design-Patterns/master/Flyweight%20Pattern/src/PlayerFactory.java
+import java.util.HashMap;
 
-/**
- * 播放内核工厂
- * Created by guoshuyu on 2018/5/21.
- */
 public class PlayerFactory {
+    private static HashMap<String, IPlayer> playerHashMap = new HashMap<>();
 
-    private static Class<? extends IPlayerManager> sPlayerManager;
+    private static final String TERRORIST_PLAYER_KEY = "terrorist";
+    private static final String COUNTER_TERRORIST_PLAYER_KEY = "counterTerrorist";
 
-    public static void setPlayManager(Class<? extends IPlayerManager> playManager) {
-        sPlayerManager = playManager;
+    public static IPlayer getTerroristPlayer() {
+        if (playerHashMap.containsKey(TERRORIST_PLAYER_KEY)) {
+            return playerHashMap.get(TERRORIST_PLAYER_KEY);
+        }
+        IPlayer terrorist = new Terrorist();
+        playerHashMap.put(TERRORIST_PLAYER_KEY, terrorist);
+        return terrorist;
     }
 
-    public static IPlayerManager getPlayManager() {
-        if (sPlayerManager == null) {
-            sPlayerManager = IjkPlayerManager.class;
+    public static IPlayer getCounterTerroristPlayer() {
+        if (playerHashMap.containsKey(COUNTER_TERRORIST_PLAYER_KEY)) {
+            return playerHashMap.get(COUNTER_TERRORIST_PLAYER_KEY);
         }
-        try {
-            return sPlayerManager.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
+        IPlayer counterTerrorist = new CounterTerrorist();
+        playerHashMap.put(COUNTER_TERRORIST_PLAYER_KEY, counterTerrorist);
+        return counterTerrorist;
     }
-
 }

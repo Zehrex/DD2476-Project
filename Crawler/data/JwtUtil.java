@@ -1,5 +1,5 @@
-2
-https://raw.githubusercontent.com/okhurley/oauth2/master/oauth2_common/src/main/java/util/JwtUtil.java
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_common/src/main/java/util/JwtUtil.java
 package util;
 
 import io.jsonwebtoken.Claims;
@@ -7,12 +7,14 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 /**
- * jwt
+ * Created by Administrator on 2018/4/11.
  */
+@Component
 @ConfigurationProperties("jwt.config")
 public class JwtUtil {
 

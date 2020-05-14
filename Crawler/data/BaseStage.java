@@ -1,87 +1,127 @@
-2
-https://raw.githubusercontent.com/jiangvin/webtank/master/websocket/src/main/java/com/integration/socket/stage/BaseStage.java
-package com.integration.socket.stage;
+18
+https://raw.githubusercontent.com/GZYangKui/openjfx-database/master/app/src/main/java/com/openjfx/database/app/BaseStage.java
+package com.openjfx.database.app;
 
-import com.integration.socket.model.MessageType;
-import com.integration.socket.model.bo.AmmoBo;
-import com.integration.socket.model.bo.TankBo;
-import com.integration.socket.model.dto.ItemDto;
-import com.integration.socket.model.dto.MessageDto;
-import com.integration.socket.service.MessageService;
+import com.openjfx.database.app.annotation.Layout;
+import com.openjfx.database.app.utils.AssetUtils;
+import com.openjfx.database.app.utils.DialogUtils;
+import com.openjfx.database.common.utils.StringUtils;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Objects;
+
+import static com.openjfx.database.app.utils.AssetUtils.getLocalImage;
+
 
 /**
- * @author 蒋文龙(Vin)
- * @description
- * @date 2020/5/3
+ * base stage
+ *
+ * @param <D> 传递参数类型
+ * @author yangkui
+ * @since 1.0
  */
-public abstract class BaseStage {
+public class BaseStage<D> extends Stage {
 
-    MessageService messageService;
+    protected Scene scene = null;
 
-    ConcurrentHashMap<String, TankBo> tankMap = new ConcurrentHashMap<>();
+    protected BaseController<D> controller;
 
-    List<AmmoBo> ammoBoList = new ArrayList<>();
-
-    BaseStage(MessageService messageService) {
-        this.messageService = messageService;
+    /**
+     * 不需要传递参数
+     */
+    public BaseStage() {
+        initController();
+        controller.init();
+        initStage();
     }
 
     /**
-     * 处理消息入口
-     * @param messageDto
-     * @param sendFrom
+     * 需要传递参数
+     *
+     * @param data 参数
      */
-    public abstract void processMessage(MessageDto messageDto, String sendFrom);
 
-    /**
-     * 每一帧的更新数据 （17ms 一帧，模拟1秒60帧刷新模式）
-     */
-    public abstract void update();
-
-
-    /**
-     * 用户离开时触发
-     * @param username 离开的用户名
-     */
-    public abstract void remove(String username);
-
-    /**
-     * 获取用户列表
-     * @return 用户列表
-     */
-    abstract List<String> getUserList();
-
-    /**
-     * 给房间所有用户发送消息
-     */
-    void sendRoomMessage(Object object, MessageType messageType) {
-        messageService.sendMessage(new MessageDto(object, messageType, getUserList()));
+    public BaseStage(D data) {
+        initController();
+        controller.setData(data);
+        controller.init();
+        initStage();
     }
 
-    void removeTankFromUserId(String userId) {
-        List<String> removeTankIds = new ArrayList<>();
-        for (Map.Entry<String, TankBo> kv : tankMap.entrySet()) {
-            if (kv.getValue().getUserId().equals(userId)) {
-                removeTankIds.add(kv.getKey());
-            }
+    /**
+     * 获取Layout注解
+     *
+     * @return 返回注解信息
+     */
+    private Layout getLayout() {
+        Layout layout = this.getClass().getAnnotation(Layout.class);
+        if (Objects.isNull(layout)) {
+            throw new RuntimeException("layout 不能为空");
         }
-        for (String tankId : removeTankIds) {
-            removeTankFromTankId(tankId);
-        }
+        return layout;
     }
 
-    void removeTankFromTankId(String tankId) {
-        if (!tankMap.containsKey(tankId)) {
+    /**
+     * 初始化controller
+     */
+    private void initController() {
+        Layout layout = this.getClass().getAnnotation(Layout.class);
+        if (Objects.isNull(layout)) {
+            throw new RuntimeException("layout 不能为空");
+        }
+        String path = "fxml/" + layout.layout();
+        URL url = ClassLoader.getSystemResource(path);
+        FXMLLoader loader = new FXMLLoader(url);
+        Parent root;
+        try {
+            root = loader.load();
+        } catch (IOException e) {
+            DialogUtils.showErrorDialog(e, "加载页面失败");
+            throw new RuntimeException(e);
+        }
+        scene = new Scene(root);
+        //添加全局样式
+        scene.getStylesheets().add("css/base.css");
+        controller = loader.getController();
+        controller.setStage(this);
+    }
+
+    /**
+     * 初始化stage
+     */
+    private void initStage() {
+        Layout layout = getLayout();
+
+        setScene(scene);
+        setWidth(layout.width());
+        setHeight(layout.height());
+        setMaximized(layout.maximized());
+        setResizable(layout.resizable());
+        if (StringUtils.isEmpty(getTitle())) {
+            setTitle(StringUtils.isEmpty(layout.title()) ? "DatabaseFX" : layout.title());
+        }
+        setAlwaysOnTop(layout.alwaysOnTop());
+
+        Image icon = getLocalImage(200, 200, layout.icon());
+
+        initStyle(layout.stageStyle());
+        setIconified(layout.iconified());
+
+        getIcons().add(icon);
+        initModality(layout.modality());
+        if (!layout.show()) {
             return;
         }
-
-        TankBo tank = tankMap.get(tankId);
-        tankMap.remove(tank.getTankId());
-        sendRoomMessage(ItemDto.convert(tank), MessageType.REMOVE_TANK);
+        if (layout.await()) {
+            showAndWait();
+        } else {
+            show();
+        }
     }
 }

@@ -1,5 +1,5 @@
-2
-https://raw.githubusercontent.com/okhurley/oauth2/master/oauth2_common/src/main/java/util/IdWorker.java
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_common/src/main/java/util/IdWorker.java
 package util;
 
 import java.lang.management.ManagementFactory;
@@ -22,6 +22,7 @@ import java.net.NetworkInterface;
  * <p>
  * 64位ID (42(毫秒)+5(机器ID)+5(业务编码)+12(重复累加))
  *
+ * @author Polim
  */
 public class IdWorker {
     // 时间起始标记点，作为基准，一般取系统的最近时间（一旦确定不能变动）
@@ -125,14 +126,14 @@ public class IdWorker {
         mpid.append(datacenterId);
         String name = ManagementFactory.getRuntimeMXBean().getName();
         if (!name.isEmpty()) {
-            /*
-             * GET jvmPid
-             */
+         /*
+          * GET jvmPid
+          */
             mpid.append(name.split("@")[0]);
         }
-        /*
-         * MAC + PID 的 hashcode 获取16个低位
-         */
+      /*
+       * MAC + PID 的 hashcode 获取16个低位
+       */
         return (mpid.toString().hashCode() & 0xffff) % (maxWorkerId + 1);
     }
 
@@ -160,15 +161,5 @@ public class IdWorker {
         return id;
     }
 
-
-    public static void main(String[] args) {
-
-        IdWorker idWorker=new IdWorker(0,0);
-
-        for(int i=0;i<10000;i++){
-            long nextId = idWorker.nextId();
-            System.out.println(nextId);
-        }
-    }
 
 }

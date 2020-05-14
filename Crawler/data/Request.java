@@ -1,46 +1,34 @@
-1
-https://raw.githubusercontent.com/zakariaelattar/Cannon-Bank/master/src/main/java/org/cannonbank/core/Entities/Request.java
-package org.cannonbank.core.Entities;
+10
+https://raw.githubusercontent.com/GuntherRademacher/rr/master/src/main/java/de/bottlecaps/webapp/Request.java
+package de.bottlecaps.webapp;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Enumeration;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public interface Request
+{
+  String getContextPath();
 
-import javax.persistence.*;
-import java.util.Date;
+  Collection<MultiPart> getParts() throws IOException;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+  MultiPart getPart(String partName) throws IOException;
 
-@Entity
-public class Request {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+  String getCharacterEncoding();
 
-    private long id_request;
+  Enumeration<String> getParameterNames();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Client client;
-     /**
-      *Type de la demande :
-      * - Carte de crédit
-      * - Carnet de chèque
-      * */
-    private String type;
+  String[] getParameterValues(String name);
 
-    /***
-     * Identifiant du type
-     * Clé étrangère
-     * « Category_CC »
-     * Ou
-     * « Category_CheckBook »
-     *
-     */
+  String getContentType();
 
-   // private Category category;
+  String getHeader(String name);
 
-    private Date date;
-    private int is_open;
+  Object getMethod();
+
+  Cookie[] getCookies();
+
+  String getPathInfo();
+
+  String getRequestURI();
 }

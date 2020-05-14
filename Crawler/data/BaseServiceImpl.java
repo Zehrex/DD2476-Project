@@ -1,44 +1,63 @@
-10
-https://raw.githubusercontent.com/373675032/Molihub/master/src/service/impl/BaseServiceImpl.java
-package service.impl;
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-server/src/main/java/io/geekidea/cloud/common/core/service/impl/BaseServiceImpl.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import dao.*;
-import domain.Article;
-import domain.ArticleToShow;
-import domain.Label;
-import domain.User;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.transaction.annotation.Transactional;
+package io.geekidea.cloud.common.core.service.impl;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.geekidea.cloud.common.core.service.BaseService;
+import io.geekidea.cloud.common.core.util.LambdaColumn;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
- * @User MOTI
- * @Time 2019/8/8 12:46
+ * 公共Service父类
+ *
+ * @author geekidea
+ * @date 2018-11-08
  */
-public class BaseServiceImpl {
-    protected static UserDao ud;
-    protected static ArticleDao ad;
-    protected static LabelDao ld;
-    protected static AdminDao adminDao;
-    protected static MessageDao md;
+public abstract class BaseServiceImpl<M extends BaseMapper<T>, T> extends ServiceImpl<M, T> implements BaseService<T> {
 
+    /**
+     * 实体类型
+     */
+    private Class<?> entityClass;
 
-    protected static Article article;
-    protected static ArticleToShow articleToShow;
-    protected static Label label;
-    protected static User user;
-
-
-    static {
-        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
-        ud = (UserDao) context.getBean("userDaoImpl");
-        ad = (ArticleDao) context.getBean("articleDaoImpl");
-        ld = (LabelDao) context.getBean("labelDaoImpl");
-        adminDao = (AdminDao) context.getBean("adminDaoImpl");
-        md = (MessageDao) context.getBean("messageDaoImpl");
-        article = (Article) context.getBean("article");
-        articleToShow = (ArticleToShow) context.getBean("articleToShow");
-        label = (Label) context.getBean("label");
-        user = (User) context.getBean("user");
+    {
+        Class<?> clazz = this.getClass();
+        Type type = clazz.getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            Type[] p = ((ParameterizedType) type).getActualTypeArguments();
+            this.entityClass = (Class<T>) p[1];
+        }
     }
+
+    /**
+     * 获取对应字段的数据表列名称
+     *
+     * @param func
+     * @return
+     */
+    public String getLambdaColumn(SFunction<T, ?> func) {
+        return new LambdaColumn<T>().get(func);
+    }
+
+
 }

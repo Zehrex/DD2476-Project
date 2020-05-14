@@ -1,50 +1,49 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/submitted/column_prefix/Phone.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-core/src/main/java/io/geekidea/cloud/common/core/validator/constraints/Phone.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-package org.apache.ibatis.submitted.column_prefix;
 
-public class Phone {
-  private Integer id;
+package io.geekidea.cloud.common.core.validator.constraints;
 
-  private String phone;
+import io.geekidea.cloud.common.core.validator.PhoneValidator;
 
-  private String areaCode;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-  public Integer getId() {
-    return id;
-  }
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+/**
+ * 自定义手机号码正则验证注解
+ *
+ * @author geekidea
+ * @date 2018-11-08
+ */
+@Documented
+@Constraint(validatedBy = {PhoneValidator.class})
+@Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
+@Retention(RUNTIME)
+public @interface Phone {
+    String message() default "请输入有效的手机号码";
 
-  public String getPhone() {
-    return phone;
-  }
+    Class<?>[] groups() default {};
 
-  public void setPhone(String phone) {
-    this.phone = phone;
-  }
+    Class<? extends Payload>[] payload() default {};
 
-  public String getAreaCode() {
-    return areaCode;
-  }
-
-  public void setAreaCode(String areaCode) {
-    this.areaCode = areaCode;
-  }
 }

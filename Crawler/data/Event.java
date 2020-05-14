@@ -1,23 +1,11 @@
-1
-https://raw.githubusercontent.com/harvestcore/ipmdroid/master/app/src/main/java/com/agm/ipmanager/events/Event.java
-package com.agm.ipmanager.events;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/event/Event.java
+package ru.bgcrm.event;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.io.Serializable;
 
-public class Event {
-    public EventType type;
-    public String message;
-    public String timestamp;
-
-    public Event(EventType type, String message) {
-        this.type = type;
-        this.message = message;
-
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.FRENCH);
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT+2"));
-        this.timestamp = sdf.format(new Date());
-    }
+public interface Event
+	extends Serializable
+{
+	public static final String KEY = "event";
 }

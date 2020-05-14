@@ -1,0 +1,24 @@
+16
+https://raw.githubusercontent.com/wmm1996528/unidbg_douyin10/master/src/main/java/com/github/unidbg/ios/struct/kernel/VprocMigLookupRequest.java
+package com.github.unidbg.ios.struct.kernel;
+
+import com.github.unidbg.pointer.UnicornStructure;
+import com.sun.jna.Pointer;
+
+import java.util.Collections;
+import java.util.List;
+
+public class VprocMigLookupRequest extends UnicornStructure {
+
+    public VprocMigLookupRequest(Pointer p) {
+        super(p);
+    }
+
+    public NDR_record NDR;
+
+    @Override
+    protected List<String> getFieldOrder() {
+        return Collections.singletonList("NDR");
+    }
+
+}

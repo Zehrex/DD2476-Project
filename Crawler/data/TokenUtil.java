@@ -1,59 +1,44 @@
-3
-https://raw.githubusercontent.com/harry-xqb/rent-house/master/src/main/java/com/harry/renthouse/util/TokenUtil.java
-package com.harry.renthouse.util;
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-core/src/main/java/io/geekidea/cloud/common/core/util/TokenUtil.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.UUID;
+package io.geekidea.cloud.common.core.util;
 
 /**
- * token工具类
- * @author Harry Xu
- * @date 2020/5/11 11:45
+ * @author geekidea
+ * @date 2018-11-08
  */
-@Component
 public class TokenUtil {
 
-    @Autowired
-    private RedisUtil redisUtil;
-
-    public static final int DEFAULT_TOKEN_EXPIRE_TIME = 60 * 60 * 2; // 2个小时
-
     /**
-     * 生成token
-     * @param username 用户名
-     * @return token
+     * @return
      */
-    public String generate(String username){
-        String token = UUID.randomUUID().toString().replace("-", "");
-        redisUtil.set(token, username, DEFAULT_TOKEN_EXPIRE_TIME);
+    public static String generateFirstLoginRestPwdToken() {
+        String token = "first-login-rest-pwd-token:" + UUIDUtil.getUuid();
         return token;
     }
 
     /**
-     * 刷新token
-     * @param token
+     * 生成验证码token
+     *
      * @return
      */
-    public Boolean refresh(String token){
-        boolean isSuccess = redisUtil.expire(token, DEFAULT_TOKEN_EXPIRE_TIME);
-        return isSuccess;
-    }
-
-    /**
-     * 判断token是否存在
-     * @param token
-     */
-    public Boolean hasToken(String token){
-        return redisUtil.hasKey(token);
-    }
-
-    /**
-     * 通过token获取用户名
-     * @param token
-     */
-    public String getUsername(String token){
-        return (String) redisUtil.get(token);
+    public static String generateVerificationCodeToken() {
+        String token = "verification-code-token:" + UUIDUtil.getUuid();
+        return token;
     }
 }

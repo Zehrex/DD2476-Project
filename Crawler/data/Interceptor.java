@@ -1,37 +1,39 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/main/java/org/apache/ibatis/plugin/Interceptor.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-package org.apache.ibatis.plugin;
+23
+https://raw.githubusercontent.com/mrchengwenlong/NettyIM/master/im_lib/src/main/java/com/takiku/im_lib/interceptor/Interceptor.java
+package com.takiku.im_lib.interceptor;
 
-import java.util.Properties;
+import androidx.annotation.Nullable;
 
-/**
- * @author Clinton Begin
- */
+import com.takiku.im_lib.call.Call;
+import com.takiku.im_lib.entity.base.Request;
+import com.takiku.im_lib.dispatcher.Connection;
+import com.takiku.im_lib.entity.base.Response;
+import com.takiku.im_lib.exception.AuthException;
+import com.takiku.im_lib.exception.SendTimeoutException;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 public interface Interceptor {
 
-  Object intercept(Invocation invocation) throws Throwable;
+    Response intercept(Chain chain) throws IOException, InterruptedException, AuthException, SendTimeoutException;
+    interface Chain {
 
-  default Object plugin(Object target) {
-    return Plugin.wrap(target, this);
-  }
+        @Nullable
+        Connection connection();
 
-  default void setProperties(Properties properties) {
-    // NOP
-  }
+        int connectTimeoutMillis();
 
+        Chain withConnectTimeout(int timeout, TimeUnit unit);
+
+        int sendTimeoutMillis();
+
+        Chain withSendTimeoutMillis(int timeout, TimeUnit unit);
+
+        Request request();
+
+        Response proceed(Request request) throws IOException, InterruptedException, AuthException, SendTimeoutException;
+
+        Call call();
+    }
 }

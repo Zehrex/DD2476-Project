@@ -1,23 +1,36 @@
-2
-https://raw.githubusercontent.com/AlirezaAZ/SimpleChatroom/master/src/Message/Status/Status.java
-package Message.Status;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/plugin/bgbilling/ws/contract/status/Status.java
+
+package ru.bgcrm.plugin.bgbilling.ws.contract.status;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 
 /**
- * List of status codes.
+ * <p>Java class for status complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="status">
+ *   &lt;complexContent>
+ *     &lt;extension base="{http://common.bitel.ru}idTitle">
+ *       &lt;sequence>
+ *       &lt;/sequence>
+ *     &lt;/extension>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
  */
-public class Status {
-    public static final String SENDING_PRIVATE_MESSAGE_WAS_SUCCESSFUL = "200";
-    public static final String HANDSHAKE_ACCEPTED = "201";
-    public static final String LIST_PASSED = "202";
-    public static final String READY_TO_GET_FILE = "203";
-    public static final String LOG_OUT = "301";
-    public static final String USER_LOGOUT = "302";
-    public static final String HANDSHAKE_REJECTED = "400";
-    public static final String FILE_UPLOADING_REJECTED = "401";
-    public static final String FILE_DOWNLOADING_REJECTED = "402";
-    public static final String SENDING_PRIVATE_MESSAGE_WAS_NOT_SUCCESSFUL = "403";
-    public static final String FILE_REMOVED = "404";
-    public static final String SERVER_ERROR = "500";
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "status")
+public class Status
+    extends IdTitle
+{
 
 
 }

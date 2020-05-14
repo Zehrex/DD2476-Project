@@ -1,14 +1,15 @@
-2
-https://raw.githubusercontent.com/gavin-yyj/vhr-/master/security-jwt/src/main/java/com/yyj/security/common/utis/JwtTokenUtil.java
-package com.yyj.security.common.utis;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-front/src/main/java/com/java2nb/novel/core/utils/JwtTokenUtil.java
+package com.java2nb.novel.core.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java2nb.novel.core.bean.UserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -16,19 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JwtToken生成的工具类
- * JWT token的格式：header.payload.signature
- * header的格式（算法、token的类型）：
- * {"alg": "HS512","typ": "JWT"}
- * payload的格式（用户名、创建时间、生成时间）：
- * {"sub":"wang","created":1489079981393,"exp":1489684781}
- * signature的生成算法：
- * HMACSHA512(base64UrlEncode(header) + "." +base64UrlEncode(payload),secret)
- * Created by macro on 2018/4/26.
+ * @author 11797
  */
 @Component
+@Slf4j
 public class JwtTokenUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenUtil.class);
+
     private static final String CLAIM_KEY_USERNAME = "sub";
     private static final String CLAIM_KEY_CREATED = "created";
     @Value("${jwt.secret}")
@@ -58,7 +52,7 @@ public class JwtTokenUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (Exception e) {
-            LOGGER.info("JWT格式验证失败:{}",token);
+            log.info("JWT格式验证失败:{}",token);
         }
         return claims;
     }
@@ -71,29 +65,23 @@ public class JwtTokenUtil {
     }
 
     /**
-     * 从token中获取登录用户名
+     * 从token中获取用户信息
      */
-    public String getUserNameFromToken(String token) {
-        String username;
+    public UserDetails getUserDetailsFromToken(String token) {
+        if(isTokenExpired(token)){
+            return null;
+        }
+        UserDetails userDetail;
         try {
             Claims claims = getClaimsFromToken(token);
-            username =  claims.getSubject();
+             userDetail = new ObjectMapper().readValue(claims.getSubject(),UserDetails.class);
         } catch (Exception e) {
-            username = null;
+            log.error(e.getMessage(),e);
+            userDetail = null;
         }
-        return username;
+        return userDetail;
     }
 
-    /**
-     * 验证token是否还有效
-     *
-     * @param token       客户端传入的token
-     * @param userDetails 从数据库中查询出来的用户信息
-     */
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = getUserNameFromToken(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-    }
 
     /**
      * 判断token是否已经失效
@@ -114,9 +102,10 @@ public class JwtTokenUtil {
     /**
      * 根据用户信息生成token
      */
+    @SneakyThrows
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
+        Map<String, Object> claims = new HashMap<>(2);
+        claims.put(CLAIM_KEY_USERNAME, new ObjectMapper().writeValueAsString(userDetails));
         claims.put(CLAIM_KEY_CREATED, new Date());
         return generateToken(claims);
     }
@@ -136,4 +125,6 @@ public class JwtTokenUtil {
         claims.put(CLAIM_KEY_CREATED, new Date());
         return generateToken(claims);
     }
+
+
 }

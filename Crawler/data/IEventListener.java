@@ -1,6 +1,7 @@
-2
-https://raw.githubusercontent.com/billsonnn/nitro-java/master/core/src/main/java/com/nitro/core/events/IEventListener.java
-package com.nitro.core.events;
+13
+https://raw.githubusercontent.com/wix-incubator/rn-contact-tracing/master/lib/android/src/main/java/com/wix/specialble/listeners/IEventListener.java
+package com.wix.specialble.listeners;
 
 public interface IEventListener {
+    void onEvent(String event, Object data);
 }

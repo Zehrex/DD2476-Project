@@ -1,177 +1,163 @@
-1
-https://raw.githubusercontent.com/niufuwei/block_chian/master/Stock/base/src/main/java/com/hjq/base/BaseFragment.java
-package com.hjq.base;
+9
+https://raw.githubusercontent.com/TrillGates/TaobaoUnion/master/app/src/main/java/com/sunofbeaches/taobaounion/base/BaseFragment.java
+package com.sunofbeaches.taobaounion.base;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
-import androidx.annotation.IdRes;
+import com.sunofbeaches.taobaounion.R;
+import com.sunofbeaches.taobaounion.utils.LogUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.Unbinder;
 
-import com.hjq.base.action.ClickAction;
-import com.hjq.base.action.ContextAction;
-import com.hjq.base.action.BundleAction;
-import com.hjq.base.action.HandlerAction;
+public abstract class BaseFragment extends Fragment {
 
-import java.util.Random;
+    private State currentState = State.NONE;
+    private View mLoadingView;
+    private View mSuccessView;
+    private View mErrorView;
+    private View mEmptyView;
 
-/**
- *    author : Android 轮子哥
- *    github : https://github.com/getActivity/AndroidProject
- *    time   : 2018/10/18
- *    desc   : Fragment 基类
- */
-public abstract class BaseFragment<A extends BaseActivity>
-        extends Fragment implements ContextAction, HandlerAction, ClickAction, BundleAction {
+    public enum State {
+        NONE,LOADING,SUCCESS,ERROR,EMPTY
+    }
 
-    /** Activity 对象 */
-    private A mActivity;
-    /** 根布局 */
-    private View mRootView;
-    /** 是否初始化过 */
-    private boolean mInitialize;
+    private Unbinder mBind;
+    private FrameLayout mBaseContainer;
 
-    @SuppressWarnings("unchecked")
+    @OnClick(R.id.network_error_tips)
+    public void retry() {
+        //点击了重新加载内容
+        LogUtils.d(this,"on retry...");
+        onRetryClick();
+    }
+
+    /**
+     * 如果子fragment需要知道网络错误以后的点击，那覆盖些方法即可
+     */
+    protected void onRetryClick() {
+
+    }
+
+    @Nullable
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        // 获得全局的 Activity
-        mActivity = (A) requireActivity();
+    public View onCreateView(@NonNull LayoutInflater inflater,@Nullable ViewGroup
+            container,@Nullable Bundle savedInstanceState) {
+        View rootView = loadRootView(inflater,container);
+        mBaseContainer = rootView.findViewById(R.id.base_container);
+        loadStatesView(inflater,container);
+        mBind = ButterKnife.bind(this,rootView);
+        initView(rootView);
+        initListener();
+        initPresenter();
+        loadData();
+        return rootView;
+    }
+
+    /**
+     * 如果子类需要去设置相关的事件，覆盖此方法
+     */
+    protected void initListener() {
+
+    }
+
+    protected View loadRootView(LayoutInflater inflater,ViewGroup container) {
+        return inflater.inflate(R.layout.base_fragment_layout,container,false);
+    }
+
+    /**
+     * 加载各种状态的View
+     *
+     * @param inflater
+     * @param container
+     */
+    private void loadStatesView(LayoutInflater inflater,ViewGroup container) {
+        //成功的view
+        mSuccessView = loadSuccessView(inflater,container);
+        mBaseContainer.addView(mSuccessView);
+        //Loading的View
+        mLoadingView = loadLoadingView(inflater,container);
+        mBaseContainer.addView(mLoadingView);
+        //错误页面
+        mErrorView = loadErrorView(inflater,container);
+        mBaseContainer.addView(mErrorView);
+        //内容为空的页面
+        mEmptyView = loadEmptyView(inflater,container);
+        mBaseContainer.addView(mEmptyView);
+        setUpState(State.NONE);
+    }
+
+    protected View loadErrorView(LayoutInflater inflater,ViewGroup container) {
+        return inflater.inflate(R.layout.fragment_error,container,false);
+    }
+
+
+    protected View loadEmptyView(LayoutInflater inflater,ViewGroup container) {
+        return inflater.inflate(R.layout.fragment_empty,container,false);
+    }
+
+
+    /**
+     * 子类通过这个方法来切换状态页面即可
+     *
+     * @param state
+     */
+    public void setUpState(State state) {
+        this.currentState = state;
+        mSuccessView.setVisibility(currentState == State.SUCCESS ? View.VISIBLE : View.GONE);
+        mLoadingView.setVisibility(currentState == State.LOADING ? View.VISIBLE : View.GONE);
+        mErrorView.setVisibility(currentState == State.ERROR ? View.VISIBLE : View.GONE);
+        mEmptyView.setVisibility(currentState == State.EMPTY ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * 加Loading界面
+     *
+     * @param inflater
+     * @param container
+     * @return
+     */
+    protected View loadLoadingView(LayoutInflater inflater,ViewGroup container) {
+        return inflater.inflate(R.layout.fragment_loading,container,false);
+    }
+
+    protected void initView(View rootView) {
+
     }
 
     @Override
-    public void onDetach() {
-        removeCallbacks();
-        mActivity = null;
-        super.onDetach();
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (mRootView == null && getLayoutId() > 0) {
-            mRootView = inflater.inflate(getLayoutId(), null);
+    public void onDestroyView() {
+        super.onDestroyView();
+        if(mBind != null) {
+            mBind.unbind();
         }
-
-        ViewGroup parent = (ViewGroup) mRootView.getParent();
-        if (parent != null) {
-            parent.removeView(mRootView);
-        }
-
-        return mRootView;
+        release();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (!mInitialize) {
-            mInitialize = true;
-            initFragment();
-        }
+    protected void release() {
+        //释放资源
     }
 
-    @NonNull
-    @Override
-    public View getView() {
-        return mRootView;
+    protected void initPresenter() {
+        //创建Presenter
     }
 
-    /**
-     * 获取绑定的 Activity，防止出现 getActivity 为空
-     */
-    public A getAttachActivity() {
-        return mActivity;
+    protected void loadData() {
+        //加载数据
     }
 
-    protected void initFragment() {
-        initView();
-        initData();
+    protected View loadSuccessView(LayoutInflater inflater,ViewGroup container) {
+        int resId = getRootViewResId();
+        return inflater.inflate(resId,container,false);
     }
 
-    /**
-     * 获取布局 ID
-     */
-    protected abstract int getLayoutId();
-
-    /**
-     * 初始化控件
-     */
-    protected abstract void initView();
-
-    /**
-     * 初始化数据
-     */
-    protected abstract void initData();
-
-    /**
-     * 根据资源 id 获取一个 View 对象
-     */
-    @Override
-    public <V extends View> V findViewById(@IdRes int id) {
-        return mRootView.findViewById(id);
-    }
-
-    @Override
-    public Bundle getBundle() {
-        return getArguments();
-    }
-
-    /**
-     * startActivityForResult 方法优化
-     */
-
-    private BaseActivity.OnActivityCallback mActivityCallback;
-    private int mActivityRequestCode;
-
-    public void startActivityForResult(Class<? extends Activity> clazz, BaseActivity.OnActivityCallback callback) {
-        startActivityForResult(new Intent(mActivity, clazz), null, callback);
-    }
-
-    public void startActivityForResult(Intent intent, BaseActivity.OnActivityCallback callback) {
-        startActivityForResult(intent, null, callback);
-    }
-
-    public void startActivityForResult(Intent intent, Bundle options, BaseActivity.OnActivityCallback callback) {
-        // 回调还没有结束，所以不能再次调用此方法，这个方法只适合一对一回调，其他需求请使用原生的方法实现
-        if (mActivityCallback == null) {
-            mActivityCallback = callback;
-            // 随机生成请求码，这个请求码在 0 - 255 之间
-            mActivityRequestCode = new Random().nextInt(255);
-            startActivityForResult(intent, mActivityRequestCode, options);
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (mActivityCallback != null && mActivityRequestCode == requestCode) {
-            mActivityCallback.onActivityResult(resultCode, data);
-            mActivityCallback = null;
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    /**
-     * 销毁当前 Fragment 所在的 Activity
-     */
-    public void finish() {
-        if (mActivity != null && !mActivity.isFinishing()) {
-            mActivity.finish();
-        }
-    }
-
-    /**
-     * Fragment 返回键被按下时回调
-     */
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // 默认不拦截按键事件，回传给 Activity
-        return false;
-    }
+    protected abstract int getRootViewResId();
 }

@@ -1,68 +1,56 @@
-8
-https://raw.githubusercontent.com/Cognifide/aem-stubs/master/core/src/main/java/com/cognifide/aem/stubs/core/script/Repository.java
-package com.cognifide.aem.stubs.core.script;
-
-import com.cognifide.aem.stubs.core.StubsException;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-
-/**
- * Script related AEM repository utilities.
+139
+https://raw.githubusercontent.com/DP-3T/dp3t-sdk-android/master-alpha/dp3t-sdk/sdk/src/main/java/org/dpppt/android/sdk/internal/backend/Repository.java
+/*
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
-public class Repository {
+package org.dpppt.android.sdk.internal.backend;
 
-  private final StubScript script;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.annotation.NonNull;
 
-  public Repository(StubScript script) {
-    this.script = script;
-  }
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
-  public Optional<InputStream> useStream(String path) {
-    return Optional.ofNullable(path)
-      .map(p -> {
-        if (p.startsWith("./")) {
-          return String.format("%s/%s/jcr:content", script.getDirPath(), StringUtils.removeStart(p, "./"));
-        } else if (!StringUtils.startsWith(p, "/")) {
-          return String.format("%s/%s/jcr:content", script.getRootPath(), p);
-        } else {
-          return String.format("%s/jcr:content", p);
-        }
-      })
-      .map(p -> script.getResourceResolver().getResource(p))
-      .map(r -> r.adaptTo(InputStream.class))
-      .map(BufferedInputStream::new);
-  }
+interface Repository {
 
-  public InputStream readStream(String path) {
-    return useStream(path)
-      .orElseThrow(() -> new StubsException(String.format("Cannot read repository file '%s' as stream!", path)));
-  }
+	default OkHttpClient.Builder getClientBuilder(@NonNull Context context) {
+		String versionName;
+		PackageManager manager = context.getPackageManager();
+		try {
+			PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
+			versionName = info.versionName;
+		} catch (PackageManager.NameNotFoundException e) {
+			versionName = "unknown";
+		}
 
-  public String readText(String path) {
-    return useStream(path).map(input -> {
-      try {
-        return IOUtils.toString(input, StandardCharsets.UTF_8);
-      } catch (IOException e) {
-        throw new StubsException(String.format("Cannot read repository file '%s' as text!", path), e);
-      }
-    }).orElseThrow(() -> new StubsException(String.format("Cannot read repository file '%s' as text!", path)));
-  }
+		String userAgent = context.getPackageName() + ";" + versionName + ";Android;" + Build.VERSION.SDK_INT;
 
-  public String getJson() {
-    return readText(script.getResourcePath("json"));
-  }
+		OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+		okHttpBuilder.addInterceptor(chain -> {
+			Request request = chain.request()
+					.newBuilder()
+					.header("User-Agent", userAgent)
+					.build();
+			return chain.proceed(request);
+		});
 
-  public String getXml() {
-    return readText(script.getResourcePath("xml"));
-  }
+		int cacheSize = 50 * 1024 * 1024; // 50 MB
+		Cache cache = new Cache(context.getCacheDir(), cacheSize);
+		okHttpBuilder.cache(cache);
 
-  public String getTxt() {
-    return readText(script.getResourcePath("txt"));
-  }
+		okHttpBuilder.certificatePinner(CertificatePinning.getCertificatePinner());
+
+		return okHttpBuilder;
+	}
+
 }

@@ -1,39 +1,21 @@
-1
-https://raw.githubusercontent.com/LeonRain/wangwang/master/wangwang/src/test/java/com/leon/wangwang/AppTest.java
-package com.leon.wangwang;
+8
+https://raw.githubusercontent.com/nataraz123/Spring/master/IOCProj62-LMI-FinalSolution/src/test/java/com/nt/test/AppTest.java
+package com.nt.test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * Unit test for simple App.
  */
 public class AppTest 
-    extends TestCase
 {
     /**
-     * Create the test case
-     *
-     * @param testName name of the test case
+     * Rigorous Test :-)
      */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
-
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
+    @Test
+    public void shouldAnswerWithTrue()
     {
         assertTrue( true );
     }

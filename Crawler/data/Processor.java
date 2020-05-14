@@ -1,36 +1,44 @@
-23
-https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/executor/engine/datax/datax-core/src/main/java/com/webank/wedatasphere/exchangis/datax/core/processor/Processor.java
-/*
- *
- *  Copyright 2020 WeBank
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/model/process/queue/Processor.java
+package ru.bgcrm.model.process.queue;
 
-package com.webank.wedatasphere.exchangis.datax.core.processor;
+import ru.bgcrm.model.Id;
+import ru.bgcrm.util.ParameterMap;
 
-import java.util.List;
+public class Processor extends Id {
+    private final String title;
+    private final String className;
+    private final String page;
+    private final String responseType;
+    private final ParameterMap configMap;
 
-/**
- * @author davidhua
- * 2019/8/21
- */
-public interface Processor<T>  {
-    /**
-     * process the column list
-     * @param columnData
-     * @exception
-     * @return
-     */
-     T process(List<Object> columnData) throws Exception;
+    public Processor(int id, ParameterMap config) {
+        this.id = id;
+        this.configMap = config;
+
+        title = config.get("title");
+        className = config.get("class");
+        page = config.get("page");
+        responseType = config.get("responseType");
+    }
+
+    public String getResponseType() {
+        return responseType;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public String getPage() {
+        return page;
+    }
+
+    public ParameterMap getConfigMap() {
+        return configMap;
+    }
 }

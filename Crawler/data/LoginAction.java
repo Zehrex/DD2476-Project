@@ -1,55 +1,41 @@
-2
-https://raw.githubusercontent.com/marcoseduardoss/mini-mvc/master/demos/001-crud-books-mvc-servlets-jstl-jpa/src/main/java/br/me/crudbooks/web/control/actions/LoginAction.java
-package br.me.crudbooks.web.control.actions;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/struts/action/LoginAction.java
+package ru.bgcrm.struts.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 
-import br.me.crudbooks.model.domain.entity.Usuario;
-import br.me.crudbooks.model.domain.services.AuthenticateService;
-import br.me.mvc.controle.acoes.Action;
+import ru.bgcrm.event.client.UrlOpenEvent;
+import ru.bgcrm.event.listener.LoginEventListener;
+import ru.bgcrm.model.user.User;
+import ru.bgcrm.struts.form.DynActionForm;
+import ru.bgcrm.util.Utils;
+import ru.bgcrm.util.sql.ConnectionSet;
+import ru.bgerp.i18n.Localization;
 
-/**
- * Classe de acesso a l�gica de neg�cio
- *
- * @author marcos.eduardo
- *
- */
-@SuppressWarnings("serial")
-public class LoginAction extends Action {
-
-	private AuthenticateService userService = new AuthenticateService();
-	
-    public String entrar(HttpServletRequest request, HttpServletResponse response) {
-        try {
-
-            String login = request.getParameter("login");
-			
-            String password = request.getParameter("senha");
-			
-			Usuario user = userService.execute(login, password);
-            
-			HttpSession session = request.getSession(true);
-            
-			session.setAttribute("usuario", user);
-
-            return "restrict/home.jsp";
-
-        } catch (Exception e) {
-            
-        	String msgStr = "Usuario nao autorizado. Login ou Senha invalidos.";
-            
-        	request.setAttribute("msg", msgStr);
-            
-        	return "index.jsp";
+public class LoginAction extends BaseAction {
+    
+    @Override
+    protected ActionForward unspecified(ActionMapping mapping, DynActionForm form, ConnectionSet conSet)
+            throws Exception {
+        //TODO: Когда будет сделано событие авторизации, сделать его слушателя в LoginEventListener.
+        User user = form.getUser();
+        if (user != null) {
+            String onLoginOpen = user.getConfigMap().getSok("on.login.open", "onLoginOpen");
+            for (String url : Utils.toList(onLoginOpen))
+                LoginEventListener.addOnLoginEvent(form.getUserId(), new UrlOpenEvent(url));
         }
-    }
+        
+        form.getHttpRequest().setAttribute("l", Localization.getLocalizer());
 
-    public String sair(HttpServletRequest request, HttpServletResponse response) {
-        
-        request.getSession().invalidate();
-        
-        return "index.jsp";
+        // вывод страницы авторизации если responseType=html
+        return data(conSet, mapping, form, FORWARD_DEFAULT);
     }
+    
+    public ActionForward logout(ActionMapping mapping, DynActionForm form, ConnectionSet conSet)
+            throws Exception {
+        form.getHttpRequest().getSession(true).invalidate();
+        return status(conSet, form);
+    }
+    
 }

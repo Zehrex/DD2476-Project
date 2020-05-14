@@ -1,47 +1,29 @@
-1
-https://raw.githubusercontent.com/Ankita2427/login-application/master/ankita-login-application/src/main/java/springboot/ankitaloginapplication/config/WebSecurityConfig.java
-package springboot.ankitaloginapplication.config;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_user/src/main/java/com/tensquare/user/config/WebSecurityConfig.java
+package com.tensquare.user.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+/**
+ * 安全配置类
+ */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true, proxyTargetClass = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //authorizeRequests()所有security全注解配置实现的开端，表示开始说明需要的权限
+        //需要的权限分为两部分：第一部分是拦截的路径，第二部分访问该路径需要的权限
+        //antMatchers表示拦截的路径。premitAll表示任何权限都可以访问，直接放行所有
+        //anyRequest()任何的请求，authenticated认证后才能访问
+         //.and().csrf().disable();固定写法，表示使csrf拦截失效
         http
                 .authorizeRequests()
-                    .antMatchers("/resources/**", "/registration").permitAll()
-                    .anyRequest().authenticated()
-                    .and()
-                .formLogin()
-                    .loginPage("/login")
-                    .permitAll()
-                    .and()
-                .logout()
-                    .permitAll();
-    }
-
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+                .antMatchers("/**").permitAll()
+                .anyRequest().authenticated()
+                .and().csrf().disable();
     }
 }

@@ -1,97 +1,62 @@
-3
-https://raw.githubusercontent.com/Silthus/sLimits/master/src/main/java/net/silthus/slib/config/DataMap.java
-package net.silthus.slib.config;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/plugin/bgbilling/ws/cerbercrypt/usercard/DataMap.java
 
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
+package ru.bgcrm.plugin.bgbilling.ws.cerbercrypt.usercard;
 
-import java.util.Map;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 
 /**
- * @author Silthus
+ * <p>Java class for dataMap complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="dataMap">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="data" type="{http://common.cerbercrypt.modules.bgbilling.bitel.ru/}list" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
  */
-public abstract class DataMap extends MemoryConfiguration {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "dataMap", namespace = "http://common.bitel.ru", propOrder = {
+    "data"
+})
+public class DataMap {
 
-    public DataMap(Map<?, ?> data) {
+    protected List data;
 
-        super();
-        if (data != null) {
-            convertMapsToSections(data, this);
-        }
-    }
-
-    public DataMap(ConfigurationSection data) {
-
-        super();
-        if (data != null) {
-            convertMapsToSections(data.getValues(true), this);
-        }
-    }
-
-    protected void convertMapsToSections(Map<?, ?> input, ConfigurationSection section) {
-
-        for (Map.Entry<?, ?> entry : input.entrySet()) {
-            // always lower case the keys
-            String key = entry.getKey().toString().toLowerCase();
-            Object value = entry.getValue();
-
-            if (value instanceof Map) {
-                ConfigurationSection subSection = section.getConfigurationSection(key);
-                if (subSection == null) subSection = section.createSection(key);
-                convertMapsToSections((Map<?, ?>) value, subSection);
-            } else if (value instanceof ConfigurationSection) {
-                ConfigurationSection subSection = section.getConfigurationSection(key);
-                if (subSection == null) subSection = section.createSection(key);
-                convertMapsToSections(((ConfigurationSection) value).getValues(true), subSection);
-            } else {
-                section.set(key, value);
-            }
-        }
+    /**
+     * Gets the value of the data property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link List }
+     *     
+     */
+    public List getData() {
+        return data;
     }
 
     /**
-     * Will merge the given map with this map. The given map will override values if defined. You also
-     * need to make sure that the sections match up with the defined keys.
-     *
-     * @param section to merge
+     * Sets the value of the data property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link List }
+     *     
      */
-    public void merge(ConfigurationSection section) {
-
-        // we want to merge so that this current map gets overriden
-        convertMapsToSections(section.getValues(true), this);
+    public void setData(List value) {
+        this.data = value;
     }
 
-    public ConfigurationSection getSafeConfigSection(String path) {
-
-        ConfigurationSection configurationSection = getConfigurationSection(path);
-        if (configurationSection == null) {
-            configurationSection = createSection(path);
-        }
-        return configurationSection;
-    }
-
-    @Override
-    public Object get(String path, Object def) {
-
-        if (!isSet(path)) {
-            set(path, def);
-            return def;
-        } else {
-            return super.get(path, def);
-        }
-    }
-
-    @Override
-    public boolean isSet(String path) {
-
-        Configuration root = getRoot();
-        if (root == null) {
-            return false;
-        }
-        if (root.options().copyDefaults()) {
-            return contains(path);
-        }
-        return super.get(path, null) != null;
-    }
 }

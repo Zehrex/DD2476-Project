@@ -1,74 +1,37 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/controller/admin/api/ArticleController.java
-package cn.tsxygfy.beyond.controller.admin.api;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_search/src/main/java/com/tensquare/search/controller/ArticleController.java
+package com.tensquare.search.controller;
 
-import cn.tsxygfy.beyond.model.dto.PageParam;
-import cn.tsxygfy.beyond.model.dto.PageResult;
-import cn.tsxygfy.beyond.model.po.Article;
-import cn.tsxygfy.beyond.model.po.Tag;
-import cn.tsxygfy.beyond.model.vo.ArticleTagsVO;
-import cn.tsxygfy.beyond.service.ArticleService;
-import io.swagger.annotations.ApiOperation;
+import com.tensquare.search.pojo.Article;
+import com.tensquare.search.service.ArticleService;
+import entity.PageResult;
+import entity.Result;
+import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.controller.admin
- * @since 2020-03-06 21:20:18
+ * @author 李聪
+ * @date 2020/2/17 21:47
  */
 @RestController
-@RequestMapping("/api/admin/articles")
+@RequestMapping("/article")
+@CrossOrigin
 public class ArticleController {
 
     @Autowired
     private ArticleService articleService;
 
-    @ApiOperation("分页查询全部文章")
-    @GetMapping
-    public PageResult getAll(PageParam pageParam) {
-        Assert.notNull(pageParam, "Page param must be not null.");
-        return articleService.fndAllWithTagsByPage(pageParam);
+    @RequestMapping(method = RequestMethod.POST)
+    public Result save(@RequestBody Article article) {
+        articleService.save(article);
+        return new Result(true, StatusCode.OK,"操作成功");
     }
 
-    @ApiOperation("根据文章id查对应的文章")
-    @GetMapping("{id:\\d+}")
-    public Article getById(@PathVariable Long id) {
-        return articleService.findArticleById(id);
+    @RequestMapping(value = "/{key}/{page}/{size}",method = RequestMethod.GET)
+    public Result findByKey(@PathVariable String key,@PathVariable int page,@PathVariable int size) {
+        Page<Article> pageData = articleService.findByKey(key,page,size);
+        return new Result(true,StatusCode.OK,"查询成功",new PageResult<Article>(pageData.getTotalElements(),pageData.getContent()));
     }
-
-    @ApiOperation("查询对应id文章下的所有标签")
-    @GetMapping("tags/{id:\\d+}")
-    public List<Tag> getTagsByArticleId(@PathVariable Long id) {
-        return articleService.getTags(id);
-    }
-
-    @ApiOperation("发布一个文章")
-    @PostMapping
-    public ArticleTagsVO createArticle(@RequestBody ArticleTagsVO articleTagsVO) {
-        Assert.isNull(articleTagsVO.getId(), "New article id must be empty");
-        return articleService.createOrUpdateArticle(articleTagsVO);
-    }
-
-    @ApiOperation("根据id修改文章")
-    @PutMapping("{id:\\d+}")
-    public ArticleTagsVO updateArticle(@PathVariable Long id, @RequestBody ArticleTagsVO articleTagsVO) {
-        articleTagsVO.setId(id);
-        return articleService.createOrUpdateArticle(articleTagsVO);
-    }
-
-    @ApiOperation("根据id删除文章")
-    @DeleteMapping("{id:\\d+}")
-    public void deleteArticle(@PathVariable Long id) {
-        articleService.deleteArticle(id);
-    }
-
 }

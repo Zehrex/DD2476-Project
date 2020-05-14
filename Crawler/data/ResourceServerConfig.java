@@ -1,37 +1,44 @@
-2
-https://raw.githubusercontent.com/bruinli28/stockmarket/master/cloud-user-service/src/main/java/com/iiht/stock/conf/ResourceServerConfig.java
-package com.iiht.stock.conf;
+47
+https://raw.githubusercontent.com/lenve/oauth2-samples/master/password/user-server/src/main/java/org/javaboy/oauth2/res/ResourceServerConfig.java
+package org.javaboy.oauth2.res;
 
-import javax.servlet.http.HttpServletResponse;
-
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
 /**
- * 资源服务配置
- * @ EnableResourceServer 启用资源服务
- * @ EnableWebSecurity 启用web安全
- * @ EnableGlobalMethodSecurity 启用全局方法安全注解，就可以在方法上使用注解来对请求进行过滤
+ * @作者 江南一点雨
+ * @微信公众号 江南一点雨
+ * @网站 http://www.itboyhub.com
+ * @国际站 http://www.javaboy.org
+ * @微信 a_java_boy
+ * @GitHub https://github.com/lenve
+ * @Gitee https://gitee.com/lenve
  */
 @Configuration
 @EnableResourceServer
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class ResourceServerConfig extends ResourceServerConfigurerAdapter{
+public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
+    @Bean
+    RemoteTokenServices tokenServices() {
+        RemoteTokenServices services = new RemoteTokenServices();
+        services.setCheckTokenEndpointUrl("http://localhost:8080/oauth/check_token");
+        services.setClientId("javaboy");
+        services.setClientSecret("123");
+        return services;
+    }
+    @Override
+    public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+        resources.resourceId("res1").tokenServices(tokenServices());
+    }
 
-	@Override
-	public void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable().exceptionHandling()
-			.authenticationEntryPoint((request, response, authException)-> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-			.and()
-			.authorizeRequests()
-			.anyRequest().authenticated()
-			.and()
-			.httpBasic();
-	}
-
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .antMatchers("/admin/**").hasRole("admin")
+                .anyRequest().authenticated();
+    }
 }

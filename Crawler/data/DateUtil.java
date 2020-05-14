@@ -1,71 +1,50 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/util/DateUtil.java
-package cn.tsxygfy.beyond.util;
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-core/src/main/java/io/geekidea/cloud/common/core/util/DateUtil.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.lang.NonNull;
+package io.geekidea.cloud.common.core.util;
 
+import io.geekidea.cloud.common.core.constant.DatePattern;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
- * <p>
- * Description:
- * </p>
- *
- * @author ruby woo
- * @version v1.0.0
- * @see cn.tsxygfy.beyond.util
- * @since 2020-03-17 21:44:43
+ * @author geekidea
+ * @date 2018-11-08
  */
 public class DateUtil {
 
-    private DateUtil() {
-    }
-
-    public static Date now() {
-        return new Date();
-    }
-
-    public static Date getDate(Long time) {
-        return new Date(time);
-    }
-
-    public static Long betweenDays(Date endDate, Date startDate) {
-        // 获取相差的天数
-        return (endDate.getTime() - startDate.getTime()) / (1000L * 3600L * 24L);
-    }
-
-    public static Date add(@NonNull Date date, long time, @NonNull TimeUnit timeUnit) {
-        Date result;
-        int timeIntValue;
-
-        if (time > Integer.MAX_VALUE) {
-            timeIntValue = Integer.MAX_VALUE;
-        } else {
-            timeIntValue = Long.valueOf(time).intValue();
+    public static String getDateString(Date date) {
+        if (date == null) {
+            return null;
         }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DatePattern.YYYY_MM_DD);
+        String dateString = simpleDateFormat.format(date);
+        return dateString;
+    }
 
-        switch (timeUnit) {
-            case DAYS:
-                result = DateUtils.addDays(date, timeIntValue);
-                break;
-            case HOURS:
-                result = DateUtils.addHours(date, timeIntValue);
-                break;
-            case MINUTES:
-                result = DateUtils.addMinutes(date, timeIntValue);
-                break;
-            case SECONDS:
-                result = DateUtils.addSeconds(date, timeIntValue);
-                break;
-            case MILLISECONDS:
-                result = DateUtils.addMilliseconds(date, timeIntValue);
-                break;
-            default:
-                result = date;
+    public static String getDateTimeString(Date date) {
+        if (date == null) {
+            return null;
         }
-        return result;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DatePattern.YYYY_MM_DD_HH_MM_SS);
+        String dateString = simpleDateFormat.format(date);
+        return dateString;
     }
 
 }

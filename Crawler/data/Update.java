@@ -1,49 +1,30 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/main/java/org/apache/ibatis/annotations/Update.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-core/src/main/java/io/geekidea/cloud/common/core/validator/groups/Update.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-package org.apache.ibatis.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package io.geekidea.cloud.common.core.validator.groups;
+
+import javax.validation.groups.Default;
 
 /**
- * The annotation that specify an SQL for updating record(s).
+ * Validator分组验证：修改
  *
- * <p><br>
- * <b>How to use:</b>
- * <pre>
- * public interface UserMapper {
- *   &#064;Update("UPDATE users SET name = #{name} WHERE id = #{id}")
- *   boolean update(User user);
- * }
- * </pre>
- * @author Clinton Begin
- */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Update {
-  /**
-   * Returns an SQL for updating record(s).
-   *
-   * @return an SQL for updating record(s)
-   */
-  String[] value();
+ * @author geekidea
+ * @date 2020/3/8
+ **/
+public interface Update extends Default {
 }

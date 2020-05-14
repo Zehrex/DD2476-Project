@@ -1,30 +1,31 @@
-1
-https://raw.githubusercontent.com/wangxingman/my_project/master/netty_game_app/netty_game_server/src/main/java/com/game/common/base/BaseService.java
-package com.game.common.base;
+22
+https://raw.githubusercontent.com/geekidea/spring-cloud-plus/master/scp-common/scp-common-server/src/main/java/io/geekidea/cloud/common/core/service/BaseService.java
+/*
+ * Copyright 2019-2029 geekidea(https://github.com/geekidea)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import com.game.core.message.AbstractNetMessage;
-import com.game.core.message.DataPacket;
-import com.game.core.message.Request;
-import com.game.entity.SdkUser;
-import com.game.entity.dto.Player;
+package io.geekidea.cloud.common.core.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
- * @Author: wx
- * @Date: 上午 11:25 2020/1/2 0002
- * @Desc:
- * @version:
+ * 公共Service接口
+ *
+ * @author geekidea
+ * @date 2018-11-08
  */
-public interface BaseService {
-
-    /**
-     * @Author: @
-     * @Desc: 反射进来
-     * @Date: 上午 11:18 2020/1/2 0002
-     * @Param
-     */
-   default void invokeMethod(short cmd, Request request, DataPacket dataPacket){
-
-   };
-
+public interface BaseService<T> extends IService<T> {
 
 }

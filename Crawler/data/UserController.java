@@ -1,174 +1,99 @@
-1
-https://raw.githubusercontent.com/miaoo92/xxl-job-mongo/master/src/main/java/com/avon/rga/controller/UserController.java
-package com.avon.rga.controller;
+9
+https://raw.githubusercontent.com/everest-engineering/lhotse/master/api/src/main/java/engineering/everest/lhotse/api/rest/controllers/UserController.java
+package engineering.everest.lhotse.api.rest.controllers;
 
-import com.avon.rga.controller.annotation.PermissionLimit;
-import com.avon.rga.core.model.XxlJobGroup;
-import com.avon.rga.core.model.XxlJobUser;
-import com.avon.rga.core.util.I18nUtil;
-import com.avon.rga.dao.XxlJobGroupService;
-import com.avon.rga.dao.XxlJobUserDao;
-import com.avon.rga.service.LoginService;
-import com.xxl.job.core.biz.model.ReturnT;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.util.DigestUtils;
-import org.springframework.util.StringUtils;
+import engineering.everest.lhotse.axon.common.domain.User;
+import engineering.everest.starterkit.filestorage.FileService;
+import engineering.everest.lhotse.users.services.UsersReadService;
+import engineering.everest.lhotse.users.services.UsersService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import engineering.everest.lhotse.api.rest.converters.DtoConverter;
+import engineering.everest.lhotse.api.rest.requests.UpdateUserRequest;
+import engineering.everest.lhotse.api.rest.responses.UserResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 
-/**
- * @author xuxueli 2019-05-04 16:39:50
- */
-@Controller
-@RequestMapping("/user")
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+
+@RestController
+@RequestMapping("/api/user")
+@Api(consumes = APPLICATION_JSON_VALUE, tags = "Users")
 public class UserController {
 
-    @Resource
-    private XxlJobUserDao xxlJobUserDao;
-    @Resource
-    private XxlJobGroupService xxlJobGroupDao;
+    private final DtoConverter dtoConverter;
+    private final UsersService usersService;
+    private final FileService fileService;
+    private final UsersReadService usersReadService;
 
-    @RequestMapping
-    @PermissionLimit(adminuser = true)
-    public String index(Model model) {
-
-        // 执行器列表
-        List<XxlJobGroup> groupList = xxlJobGroupDao.findAll();
-        model.addAttribute("groupList", groupList);
-
-        return "user/user.index";
+    @Autowired
+    public UserController(DtoConverter dtoConverter, UsersService usersService, FileService fileService,
+                          UsersReadService usersReadService) {
+        this.dtoConverter = dtoConverter;
+        this.usersService = usersService;
+        this.fileService = fileService;
+        this.usersReadService = usersReadService;
     }
 
-    @RequestMapping("/pageList")
-    @ResponseBody
-    @PermissionLimit(adminuser = true)
-    public Map<String, Object> pageList(@RequestParam(required = false, defaultValue = "0") int start,
-                                        @RequestParam(required = false, defaultValue = "10") int length,
-                                        String username, int role) {
-
-        // page list
-        List<XxlJobUser> list = xxlJobUserDao.pageList(start, length, username, role);
-        int list_count = xxlJobUserDao.pageListCount(start, length, username, role);
-
-        // package result
-        Map<String, Object> maps = new HashMap<String, Object>();
-        maps.put("recordsTotal", list_count);		// 总记录数
-        maps.put("recordsFiltered", list_count);	// 过滤后的总记录数
-        maps.put("data", list);  					// 分页列表
-        return maps;
+    @GetMapping
+    @ApiOperation(produces = APPLICATION_JSON_VALUE, value = "Get currently authenticated user information")
+    public UserResponse getUser(User user) {
+        return dtoConverter.convert(user);
     }
 
-    @RequestMapping("/add")
-    @ResponseBody
-    @PermissionLimit(adminuser = true)
-    public ReturnT<String> add(XxlJobUser xxlJobUser) {
-
-        // valid username
-        if (!StringUtils.hasText(xxlJobUser.getUsername())) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_please_input")+I18nUtil.getString("user_username") );
-        }
-        xxlJobUser.setUsername(xxlJobUser.getUsername().trim());
-        if (!(xxlJobUser.getUsername().length()>=4 && xxlJobUser.getUsername().length()<=20)) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_lengh_limit")+"[4-20]" );
-        }
-        // valid password
-        if (!StringUtils.hasText(xxlJobUser.getPassword())) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_please_input")+I18nUtil.getString("user_password") );
-        }
-        xxlJobUser.setPassword(xxlJobUser.getPassword().trim());
-        if (!(xxlJobUser.getPassword().length()>=4 && xxlJobUser.getPassword().length()<=20)) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_lengh_limit")+"[4-20]" );
-        }
-        // md5 password
-        xxlJobUser.setPassword(DigestUtils.md5DigestAsHex(xxlJobUser.getPassword().getBytes()));
-
-        // check repeat
-        XxlJobUser existUser = xxlJobUserDao.loadByUserName(xxlJobUser.getUsername());
-        if (existUser != null) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("user_username_repeat") );
-        }
-
-        // write
-        xxlJobUserDao.save(xxlJobUser);
-        return ReturnT.SUCCESS;
+    @PutMapping
+    @ApiOperation("Update currently authenticated user information")
+    public void updateUser(User user, @RequestBody UpdateUserRequest updateUserRequest) {
+        usersService.updateUser(user.getId(), user.getId(),
+                updateUserRequest.getEmail(), updateUserRequest.getDisplayName(), updateUserRequest.getPassword());
     }
 
-    @RequestMapping("/update")
-    @ResponseBody
-    @PermissionLimit(adminuser = true)
-    public ReturnT<String> update(HttpServletRequest request, XxlJobUser xxlJobUser) {
+    @PostMapping("/profile-photo")
+    public void uploadProfilePhoto(User requestingUser,
+                                   @RequestParam("file") MultipartFile uploadedFile) throws IOException {
+        var persistedFileId = fileService.transferToPermanentStore(uploadedFile.getOriginalFilename(), uploadedFile.getSize(),
+                uploadedFile.getInputStream());
+        usersService.storeProfilePhoto(requestingUser.getId(), persistedFileId);
+    }
 
-        // avoid opt login seft
-        XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
-        if (loginUser.getUsername().equals(xxlJobUser.getUsername())) {
-            return new ReturnT<String>(ReturnT.FAIL.getCode(), I18nUtil.getString("user_update_loginuser_limit"));
-        }
-
-        // valid password
-        if (StringUtils.hasText(xxlJobUser.getPassword())) {
-            xxlJobUser.setPassword(xxlJobUser.getPassword().trim());
-            if (!(xxlJobUser.getPassword().length()>=4 && xxlJobUser.getPassword().length()<=20)) {
-                return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_lengh_limit")+"[4-20]" );
+    @GetMapping("/profile-photo")
+    public ResponseEntity<StreamingResponseBody> streamProfilePhoto(User requestingUser) {
+        StreamingResponseBody streamingResponse = outputStream -> {
+            try (var inputStream = usersReadService.getProfilePhotoStream(requestingUser.getId())) {
+                inputStream.transferTo(outputStream);
             }
-            // md5 password
-            xxlJobUser.setPassword(DigestUtils.md5DigestAsHex(xxlJobUser.getPassword().getBytes()));
-        } else {
-            xxlJobUser.setPassword(null);
-        }
-
-        // write
-        xxlJobUserDao.update(xxlJobUser);
-        return ReturnT.SUCCESS;
+        };
+        return ResponseEntity.ok()
+                .contentType(APPLICATION_OCTET_STREAM)
+                .body(streamingResponse);
     }
 
-    @RequestMapping("/remove")
-    @ResponseBody
-    @PermissionLimit(adminuser = true)
-    public ReturnT<String> remove(HttpServletRequest request, int id) {
-
-        // avoid opt login seft
-        XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
-        if (loginUser.getId() == id) {
-            return new ReturnT<String>(ReturnT.FAIL.getCode(), I18nUtil.getString("user_update_loginuser_limit"));
-        }
-
-        xxlJobUserDao.delete(id);
-        return ReturnT.SUCCESS;
+    @GetMapping(
+            value = "/profile-photo/thumbnail",
+            produces = APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<StreamingResponseBody> streamProfilePhotoThumbnail(User requestingUser,
+                                                                             @RequestParam int width,
+                                                                             @RequestParam int height) {
+        StreamingResponseBody streamingResponse = outputStream -> {
+            try (var inputStream = usersReadService.getProfilePhotoThumbnailStream(requestingUser.getId(), width, height)) {
+                inputStream.transferTo(outputStream);
+            }
+        };
+        return ResponseEntity.ok()
+                .contentType(APPLICATION_OCTET_STREAM)
+                .body(streamingResponse);
     }
-
-    @RequestMapping("/updatePwd")
-    @ResponseBody
-    public ReturnT<String> updatePwd(HttpServletRequest request, String password){
-
-        // valid password
-        if (password==null || password.trim().length()==0){
-            return new ReturnT<String>(ReturnT.FAIL.getCode(), "密码不可为空");
-        }
-        password = password.trim();
-        if (!(password.length()>=4 && password.length()<=20)) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("system_lengh_limit")+"[4-20]" );
-        }
-
-        // md5 password
-        String md5Password = DigestUtils.md5DigestAsHex(password.getBytes());
-
-        // update pwd
-        XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
-
-        // do write
-        XxlJobUser existUser = xxlJobUserDao.loadByUserName(loginUser.getUsername());
-        existUser.setPassword(md5Password);
-        xxlJobUserDao.update(existUser);
-
-        return ReturnT.SUCCESS;
-    }
-
 }

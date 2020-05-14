@@ -1,15 +1,27 @@
-2
-https://raw.githubusercontent.com/WhiteFerrari666/Medication/develop/src/main/java/controller/TestController.java
-package controller;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_base/src/main/java/com/tensquare/base/controller/TestController.java
+package com.tensquare.base.controller;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-public class TestController {
+/**
+ * @author 李聪
+ * @date 2020/3/29 12:52
+ * 消息总线刷新配置
+ */
 
-    @RequestMapping("/")
-    public String home() {
-        return "Spring boot is working!";
+@RestController
+@RefreshScope
+public class TestController {
+    @Value("${sms.ip}")
+    private String ip;
+
+    @RequestMapping(value = "/ip",method = RequestMethod.GET)
+    public String ip() {
+        return ip;
     }
 }

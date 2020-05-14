@@ -1,192 +1,164 @@
-12
-https://raw.githubusercontent.com/Crystallinqq/Mercury-Client/master/src/main/java/fail/mercury/client/api/module/Module.java
-package fail.mercury.client.api.module;
+16
+https://raw.githubusercontent.com/wmm1996528/unidbg_douyin10/master/src/main/java/com/github/unidbg/Module.java
+package com.github.unidbg;
 
-import com.google.gson.JsonObject;
-import fail.mercury.client.Mercury;
-import fail.mercury.client.api.module.annotations.ModuleManifest;
-import fail.mercury.client.api.module.annotations.Replace;
-import fail.mercury.client.api.module.category.Category;
-import me.kix.lotus.property.AbstractProperty;
-import net.minecraft.client.Minecraft;
+import com.github.unidbg.linux.android.dvm.Hashable;
+import com.github.unidbg.memory.MemRegion;
+import com.github.unidbg.memory.SvcMemory;
+import com.github.unidbg.pointer.UnicornPointer;
+import com.github.unidbg.pointer.UnicornStructure;
+import unicorn.Unicorn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
-public class Module {
-    private String label;
-    private String[] alias;
-    private String fakelabel;
-    private String suffix;
-    private String description;
-    private int bind;
-    private boolean hidden;
-    private boolean enabled;
-    private boolean persistent;
-    private List<AbstractProperty> properties = new ArrayList<>();
-    private Category category;
-    public static Minecraft mc = Minecraft.getMinecraft();
+public abstract class Module {
 
-    public Module() {
-        if (getClass().isAnnotationPresent(Replace.class)) {
-            Replace replace = getClass().getAnnotation(Replace.class);
-            if (Mercury.INSTANCE.getModuleManager().find(replace.value()) != null) {
-                String name = Mercury.INSTANCE.getModuleManager().find(replace.value()).getLabel();
-                Mercury.INSTANCE.getModuleManager().exclude(name);
+    public final String name;
+    public final long base;
+    public final long size;
+    protected final Map<String, Module> neededLibraries;
+    private final List<MemRegion> regions;
 
-            }
-        }
-        if (getClass().isAnnotationPresent(ModuleManifest.class)) {
-            ModuleManifest moduleManifest = getClass().getAnnotation(ModuleManifest.class);
-            this.label = moduleManifest.label();
-            this.category = moduleManifest.category();
-            this.alias = moduleManifest.aliases();
-            this.fakelabel = moduleManifest.fakelabel();
-            this.hidden = moduleManifest.hidden();
-            this.description = moduleManifest.description();
-            this.persistent = moduleManifest.persistent();
-        }
+    public Module(String name, long base, long size, Map<String, Module> neededLibraries, List<MemRegion> regions) {
+        this.name = name;
+        this.base = base;
+        this.size = size;
+
+        this.neededLibraries = neededLibraries;
+        this.regions = regions;
     }
 
-
-    public void init() {
-        Mercury.INSTANCE.getPropertyManager().scan(this);
+    public final List<MemRegion> getRegions() {
+        return regions;
     }
 
-    public AbstractProperty find(String term) {
-        for (AbstractProperty property : properties) {
-            if (property.getLabel().equalsIgnoreCase(term)) {
-                return property;
+    public abstract Number[] callFunction(Emulator<?> emulator, long offset, Object... args);
+
+    public final Number[] callFunction(Emulator<?> emulator, String symbolName, Object... args) {
+        Symbol symbol = findSymbolByName(symbolName, false);
+        if (symbol == null) {
+            throw new IllegalStateException("find symbol failed: " + symbolName);
+        }
+        if (symbol.isUndef()) {
+            throw new IllegalStateException(symbolName + " is NOT defined");
+        }
+
+        return symbol.call(emulator, args);
+    }
+
+    public final Symbol findSymbolByName(String name) {
+        return findSymbolByName(name, true);
+    }
+
+    public abstract Symbol findSymbolByName(String name, boolean withDependencies);
+
+    public abstract Symbol findNearestSymbolByAddress(long addr);
+
+    protected final Symbol findDependencySymbolByName(String name) {
+        for (Module module : neededLibraries.values()) {
+            Symbol symbol = module.findSymbolByName(name, true);
+            if (symbol != null) {
+                return symbol;
             }
         }
         return null;
     }
 
-    public Category getCategory() {
-        return category;
+    private int referenceCount;
+
+    public void addReferenceCount() {
+        referenceCount++;
     }
 
-    public List<AbstractProperty> getProperties() {
-        return this.properties;
+    public int decrementReferenceCount() {
+        return --referenceCount;
     }
 
-    public String[] getAlias() {
-        return this.alias;
+    private boolean forceCallInit;
+
+    public boolean isForceCallInit() {
+        return forceCallInit;
     }
 
-    public String getLabel() {
-        return this.label;
+    @SuppressWarnings("unused")
+    public void setForceCallInit() {
+        this.forceCallInit = true;
     }
 
-    public String getFakeLabel() {
-        return this.fakelabel;
-    }
-
-    public void setFakeLabel(String fakelabel) {
-        this.fakelabel = fakelabel;
-    }
-
-    public void setSuffix(String suffix) {
-        this.suffix = suffix;
-    }
-
-    public String getSuffix() {
-        return  this.suffix;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public int getBind() {
-        return this.bind;
-    }
-
-    public void setBind(int bind) {
-        this.bind = bind;
-    }
-
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public boolean isPersistent() {
-        return this.persistent;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        if (enabled) {
-            Mercury.INSTANCE.getEventManager().registerListener(this);
-            onEnable();
-            onToggle();
-        } else {
-            Mercury.INSTANCE.getEventManager().deregisterListener(this);
-            onDisable();
-            onToggle();
+    public final void unload(Unicorn unicorn) {
+        for (MemRegion region : regions) {
+            unicorn.mem_unmap(region.begin, region.end - region.begin);
         }
     }
 
-    public boolean isHidden() {
-        return this.hidden;
+    public Collection<Module> getNeededLibraries() {
+        return neededLibraries.values();
     }
 
-    public void setHidden(boolean hidden) {
-        this.hidden = hidden;
+    public Module getDependencyModule(String name) {
+        return neededLibraries.get(name);
     }
 
-    public void onEnable() {
+    protected long entryPoint;
+
+    public void setEntryPoint(long entryPoint) {
+        this.entryPoint = entryPoint;
     }
 
-    public void onDisable() {
-    }
+    public  abstract int callEntry(Emulator<?> emulator, String... args);
 
-    public void onToggle() {
-    }
+    private UnicornPointer pathPointer;
 
-    public void toggle() {
-        setEnabled(!isEnabled());
-    }
+    public abstract String getPath();
 
-    public void save(JsonObject destination) {
-        if (Mercury.INSTANCE.getPropertyManager().getPropertiesFromObject(this) != null) {
-            Mercury.INSTANCE.getPropertyManager().getPropertiesFromObject(this).forEach(property -> destination.addProperty(property.getLabel(), property.getValue().toString()));
+    /**
+     * 注册符号
+     * @param symbolName 符号名称
+     * @param address 符号的内存地址
+     */
+    public abstract void registerSymbol(String symbolName, long address);
+
+    public final UnicornPointer createPathMemory(SvcMemory svcMemory) {
+        if (this.pathPointer == null) {
+            byte[] path = getPath().getBytes();
+            this.pathPointer = svcMemory.allocate(path.length + 1, "Module.path: " + getPath());
+            this.pathPointer.write(0, path, 0, path.length);
+            this.pathPointer.setByte(path.length, (byte) 0);
         }
-        destination.addProperty("Bind", getBind());
-
-        if (!this.isPersistent())
-            destination.addProperty("Enabled", isEnabled());
-
-        destination.addProperty("Hidden", isHidden());
-        destination.addProperty("FakeLabel", getFakeLabel());
+        return this.pathPointer;
     }
 
-
-    public void load(JsonObject source) {
-        source.entrySet().forEach(entry -> {
-            if (Mercury.INSTANCE.getPropertyManager().getPropertiesFromObject(this) != null) {
-                source.entrySet().forEach(entri -> Mercury.INSTANCE.getPropertyManager().getProperty(this, entri.getKey()).ifPresent(property -> property.setValue(entri.getValue().getAsString())));
+    public static Number[] emulateFunction(Emulator<?> emulator, long address, Object... args) {
+        List<Number> list = new ArrayList<>(args.length);
+        for (Object arg : args) {
+            if (arg instanceof String) {
+                list.add(new StringNumber((String) arg));
+            } else if(arg instanceof byte[]) {
+                list.add(new ByteArrayNumber((byte[]) arg));
+            } else if(arg instanceof UnicornPointer) {
+                UnicornPointer pointer = (UnicornPointer) arg;
+                list.add(new PointerNumber(pointer));
+            } else if(arg instanceof UnicornStructure) {
+                UnicornStructure structure = (UnicornStructure) arg;
+                list.add(new PointerNumber((UnicornPointer) structure.getPointer()));
+            } else if (arg instanceof Number) {
+                list.add((Number) arg);
+            } else if(arg instanceof Hashable) {
+                list.add(arg.hashCode()); // dvm object
+            } else if(arg == null) {
+                list.add(new PointerNumber(null)); // null
+            } else {
+                throw new IllegalStateException("Unsupported arg: " + arg);
             }
-            switch (entry.getKey()) {
-                case "Enabled":
-                    if (!this.isPersistent()) {
-                        if (entry.getValue().getAsBoolean()) {
-                            setEnabled(entry.getValue().getAsBoolean());
-                        }
-                    }
-                    break;
-                case "Hidden":
-                    if (entry.getValue().getAsBoolean()) {
-                        setHidden(entry.getValue().getAsBoolean());
-                    }
-                    break;
-                case "Bind":
-                    setBind(entry.getValue().getAsInt());
-                    break;
-                case "FakeLabel":
-                    setFakeLabel(entry.getValue().getAsString());
-                    break;
-            }
-        });
+        }
+        return emulator.eFunc(address, list.toArray(new Number[0]));
     }
+
+    public boolean isVirtual() {
+        return false;
+    }
+
 }

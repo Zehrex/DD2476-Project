@@ -1,0 +1,32 @@
+8
+https://raw.githubusercontent.com/nataraz123/Spring/master/IOCProj36-AutoWiring/src/main/java/com/nt/beans/TravelAgent.java
+package com.nt.beans;
+
+public class TravelAgent {
+			private TourPlan tp;
+			
+			public TravelAgent(TourPlan tp) {
+			  System.out.println("TravelAgent:: 1-param constructor");
+				this.tp = tp;
+			}
+
+			public TravelAgent() {
+				System.out.println("TravelAgent:: 0-param constructor");
+			}
+			
+		public void setTp(TourPlan tp) {
+			System.out.println("TravelAgent.setTp(-)");
+			this.tp = tp;
+		}
+		
+		
+		public  String  tourBudgeting() {
+			System.out.println("TravelAgent.tourBudgeting()");
+			//get Tourplaces count
+			int count=tp.getPlaces().length;
+			return tp.toString()+" places having budget "+(count*5000);
+			
+		}
+		
+
+}

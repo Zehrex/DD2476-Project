@@ -1,56 +1,25 @@
-23
-https://raw.githubusercontent.com/WeBankFinTech/Exchangis/master/modules/service/src/main/java/com/webank/wedatasphere/exchangis/SpringContext.java
-/*
- *
- *  Copyright 2020 WeBank
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+34
+https://raw.githubusercontent.com/lzj-github/registry/master/naming/src/main/java/cn/lzj/nacos/naming/boot/SpringContext.java
+package cn.lzj.nacos.naming.boot;
 
-package com.webank.wedatasphere.exchangis;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by devendeng on 2018/8/31.
- */
-@Component
-@Lazy(false)
+@Component("applicationContext")
 public class SpringContext implements ApplicationContextAware {
-    private static ApplicationContext applicationContext;
+
+    public  static ApplicationContext context;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        SpringContext.applicationContext = applicationContext;
+        context = applicationContext;
     }
 
-    public static ApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
-
-    public static Object getBean(String name) {
-        return getApplicationContext().getBean(name);
-    }
-
-    public static <T> T getBean(Class<T> clazz) {
-        return getApplicationContext().getBean(clazz);
-    }
-
-    public static <T> T getBean(String name, Class<T> clazz) {
-        return getApplicationContext().getBean(name, clazz);
+    public static ApplicationContext getAppContext() {
+        //拿到spring上下文容器，方便后面调用来拿取bean
+        return context;
     }
 }

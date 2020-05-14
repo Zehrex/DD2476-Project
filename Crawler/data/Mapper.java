@@ -1,28 +1,12 @@
-15
-https://raw.githubusercontent.com/zjjxxlgb/mybatis2sql/master/src/test/java/org/apache/ibatis/submitted/uuid_test/Mapper.java
-/**
- *    Copyright ${license.git.copyrightYears} the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
-package org.apache.ibatis.submitted.uuid_test;
+10
+https://raw.githubusercontent.com/pkxing/CodeGenerator/master/CodeGenerator/src/main/resources/template/dao/Mapper.java
+package ${package_mapper};
+import ${package_pojo}.${Table};
+import tk.mybatis.mapper.common.Mapper;
 
-import java.util.UUID;
-
-public interface Mapper {
-
-  User getUser(UUID id);
-
-  void insertUser(User user);
-
+/****
+ * @Author: PKXING
+ * @Description:${Table}的Dao
+ *****/
+public interface ${Table}Mapper extends Mapper<${Table}> {
 }

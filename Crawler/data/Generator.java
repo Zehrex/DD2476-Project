@@ -1,14 +1,8 @@
-2
-https://raw.githubusercontent.com/gavin-yyj/vhr-/master/swagger/src/main/java/com/macro/mall/tiny/mbg/Generator.java
-package com.macro.mall.tiny.mbg;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-common/src/main/java/com/java2nb/novel/core/utils/Generator.java
+package com.java2nb.novel.core.utils;
 
-/**
- * spring-boot-mybatis-generator
- *
- * @author 小杰哥
- * @date 2020/05/08
- */
-
+import lombok.SneakyThrows;
 import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.Configuration;
 import org.mybatis.generator.config.xml.ConfigurationParser;
@@ -19,22 +13,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 用于生产MBG的代码
- * Created by macro on 2018/4/26.
+ * 代码生成器
+ *
+ * @author 11797
  */
 public class Generator {
-    public static void main(String[] args) throws Exception {
+
+    @SneakyThrows
+    public static void main(String[] args) {
         //MBG 执行过程中的警告信息
-        List<String> warnings = new ArrayList<String>();
-        //当生成的代码重复时，覆盖原代码
-        boolean overwrite = true;
+        List<String> warnings = new ArrayList<>();
         //读取我们的 MBG 配置文件
-        InputStream is = Generator.class.getResourceAsStream("/generatorConfig.xml");
+        InputStream is = Generator.class.getResourceAsStream("/mybatis/generatorConfig.xml");
         ConfigurationParser cp = new ConfigurationParser(warnings);
         Configuration config = cp.parseConfiguration(is);
         is.close();
-
-        DefaultShellCallback callback = new DefaultShellCallback(overwrite);
+        //当生成的代码重复时，不要覆盖原代码
+        DefaultShellCallback callback = new DefaultShellCallback(false);
         //创建 MBG
         MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config, callback, warnings);
         //执行生成代码
@@ -45,4 +40,3 @@ public class Generator {
         }
     }
 }
-

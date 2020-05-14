@@ -1,17 +1,35 @@
-2
-https://raw.githubusercontent.com/bruinli28/stockmarket/master/cloud-user-service/src/main/java/com/iiht/stock/UserApplication.java
-package com.iiht.stock;
-
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_user/src/main/java/com/tensquare/user/UserApplication.java
+package com.tensquare.user;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import util.IdWorker;
+import util.JwtUtil;
 
 @SpringBootApplication
-@EnableResourceServer
-@EnableOAuth2Client
+@EnableEurekaClient
 public class UserApplication {
-	public static void main(String[] args)throws Exception{
+
+	public static void main(String[] args) {
 		SpringApplication.run(UserApplication.class, args);
 	}
+
+	@Bean
+	public IdWorker idWorker(){
+		return new IdWorker(1, 1);
+	}
+
+	@Bean
+    public BCryptPasswordEncoder encoder() {
+	    return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtUtil jwtUtil() {
+	    return new JwtUtil();
+    }
+	
 }

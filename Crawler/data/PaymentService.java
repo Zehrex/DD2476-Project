@@ -1,17 +1,11 @@
-1
-https://raw.githubusercontent.com/iMine141/springcloud-test/master/cloud-provider-paymeny8001/src/main/java/com/atguigu/springcloud/service/PaymentService.java
-package com.atguigu.springcloud.service;
+11
+https://raw.githubusercontent.com/yfelvis/mtcc/master/mtcc-demo/mtcc-demo-order/src/main/java/com/hyf/mtcc/demo/order/service/PaymentService.java
+package com.hyf.mtcc.demo.order.service;
 
-import com.atguigu.springcloud.entities.Payment;
-import org.apache.ibatis.annotations.Param;
+import com.hyf.mtcc.demo.order.request.PaymentOrderReq;
 
-/**
- * @auther zzyy
- * @create 2020-02-18 10:40
- */
-public interface PaymentService
-{
-    public int create(Payment payment);
+public interface PaymentService {
 
-    public Payment getPaymentById(@Param("id") Long id);
+    void payment(PaymentOrderReq req);
+
 }

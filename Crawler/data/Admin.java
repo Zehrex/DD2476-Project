@@ -1,52 +1,58 @@
-2
-https://raw.githubusercontent.com/984964551/JavassmDemo/master/src/main/java/wac/domain/Admin.java
-package wac.domain;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_user/src/main/java/com/tensquare/user/pojo/Admin.java
+package com.tensquare.user.pojo;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
+/**
+ * admin实体类
+ * @author Administrator
+ *
+ */
+@Entity
+@Table(name="tb_admin")
+public class Admin implements Serializable{
 
-public class Admin implements Serializable {
-    int id;
-    String username;
-    String password;
-    public Admin(){
+	@Id
+	private String id;//ID
 
-    }
-    public Admin(int id, String username, String password) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-    }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                '}';
-    }
+	
+	private String loginname;//登陆名称
+	private String password;//密码
+	private String state;//状态
 
-    public int getId() {
-        return id;
-    }
+	
+	public String getId() {		
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public String getLoginname() {		
+		return loginname;
+	}
+	public void setLoginname(String loginname) {
+		this.loginname = loginname;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public String getPassword() {		
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getState() {		
+		return state;
+	}
+	public void setState(String state) {
+		this.state = state;
+	}
 
-    public String getPassword() {
-        return password;
-    }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	
 }

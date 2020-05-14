@@ -1,6 +1,6 @@
-4
-https://raw.githubusercontent.com/ihoneymon/rest-template-of-spring/master/client/src/test/java/io/honeymon/study/resttemplate/client/ClientApplicationTests.java
-package io.honeymon.study.resttemplate.client;
+34
+https://raw.githubusercontent.com/lzj-github/registry/master/client/src/test/java/cn/lzj/nacos/client/ClientApplicationTests.java
+package cn.lzj.nacos.client;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

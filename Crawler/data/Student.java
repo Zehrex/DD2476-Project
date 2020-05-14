@@ -1,21 +1,40 @@
-1
-https://raw.githubusercontent.com/wanzicong/mybatis-study/master/src/main/java/com/mybatis/model/single/Student.java
-package com.mybatis.model.single;
+8
+https://raw.githubusercontent.com/nataraz123/Spring/master/IOCProj38-P-CNameSpaces/src/main/java/com/nt/beans/Student.java
+package com.nt.beans;
 
-import lombok.Data;
+import java.util.Date;
 
-/*单表操作*/
-@Data
 public class Student {
-    private String id;
-    private String name;
-    private String sex;
-    private String classid;
+	private int sno;
+	private String sname;
+	private String sadd;
+	private Course course;
+	private  Date  dob;
+	
+	public void setSno(int sno) {
+		this.sno = sno;
+	}
+	public void setSname(String sname) {
+		this.sname = sname;
+	}
+	public void setSadd(String sadd) {
+		this.sadd = sadd;
+	}
+	public void setCourse(Course course) {
+		this.course = course;
+	}
+	
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+	@Override
+	public String toString() {
+		return "Student [sno=" + sno + ", sname=" + sname + ", sadd=" + sadd + ", course=" + course + ", dob=" + dob
+				+ "]";
+	}
+	
+	
+	
+	
 
-    public Student(String id, String name, String sex, String classid) {
-        this.id = id;
-        this.name = name;
-        this.sex = sex;
-        this.classid = classid;
-    }
 }

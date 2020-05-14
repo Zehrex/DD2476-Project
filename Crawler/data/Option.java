@@ -1,77 +1,136 @@
-4
-https://raw.githubusercontent.com/abdalmoniem/Movie-App/master/base/src/main/java/butter/droid/base/adapters/models/Option.java
-/*
- * This file is part of Butter.
- *
- * Butter is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Butter is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Butter. If not, see <http://www.gnu.org/licenses/>.
- */
+11
+https://raw.githubusercontent.com/chris-albert/zio4j/master/src/main/java/io/lbert/Option.java
+package io.lbert;
 
-package butter.droid.base.adapters.models;
+import lombok.NonNull;
 
-import androidx.annotation.NonNull;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import butter.droid.base.utils.LocaleUtils;
+public interface Option<A> {
 
-public class Option implements Comparable<Option> {
-    private String name;
-    private String data;
-    private String path;
+  <B> Option<B> map(Function<A, B> func);
+  <B> Option<B> flatMap(Function<A, Option<B>> func);
+  A getOrElse(Supplier<A> other);
+  boolean isDefined();
+  default boolean isEmpty() {
+    return !isDefined();
+  }
+  <B> B fold(Function<A, B> someFunc, Supplier<B> noneFunc);
 
-    public Option(String n, String d, String p) {
-        name = n;
-        data = d;
-        path = p;
+  @SuppressWarnings("unchecked")
+  static <A> None<A> none() {
+    return (None<A>) None.NONE;
+  }
+
+  @NonNull
+  static <A> Some<A> some(A a) {
+    return new Some<>(a);
+  }
+
+  @SuppressWarnings("unchecked")
+  static <A> Option<A> of(A a) {
+    return a == null ? (Option<A>) none() : some(a);
+  }
+
+  class Some<A> implements Option<A> {
+
+    public final A value;
+
+    private Some(A a) {
+      this.value = a;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public <B> Option<B> map(Function<A, B> func) {
+      return new Some<>(func.apply(value));
     }
 
-    public String getData() {
-        return data;
+    @Override
+    public <B> Option<B> flatMap(Function<A, Option<B>> func) {
+      return func.apply(value);
     }
 
-    public String getPath() {
-        return path;
+    @Override
+    public A getOrElse(Supplier<A> other) {
+      return value;
+    }
+
+    @Override
+    public boolean isDefined() {
+      return true;
+    }
+
+    @Override
+    public <B> B fold(Function<A, B> someFunc, Supplier<B> noneFunc) {
+      return someFunc.apply(value);
+    }
+
+    @Override
+    public String toString() {
+      return "Some(" + value.toString() + ")";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+      if(o == this) {
+        return true;
+      }
 
-        Option option = (Option) o;
+      if(!(o instanceof Some)) {
+        return false;
+      }
 
-        return name != null ? name.equals(option.name) : option.name == null
-                && (data != null ? data.equals(option.data) : option.data == null
-                && (path != null ? path.equals(option.path) : option.path == null));
+      var some = (Some) o;
+      return some.value.equals(value);
+    }
+  }
 
+  class None<A> implements Option<A> {
+
+    private static final Option<?> NONE = new None<>();
+
+    private None() {}
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <B> Option<B> map(Function<A, B> func) {
+      return (Option<B>) NONE;
     }
 
     @Override
-    public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (data != null ? data.hashCode() : 0);
-        result = 31 * result + (path != null ? path.hashCode() : 0);
-        return result;
+    @SuppressWarnings("unchecked")
+    public <B> Option<B> flatMap(Function<A, Option<B>> func) {
+      return (Option<B>) NONE;
     }
 
     @Override
-    public int compareTo(@NonNull Option o) {
-        if (this.name != null)
-            return this.name.toLowerCase(LocaleUtils.getCurrent()).compareTo(o.getName().toLowerCase(LocaleUtils.getCurrent()));
-        else
-            throw new IllegalArgumentException();
+    public A getOrElse(Supplier<A> other) {
+      return other.get();
     }
+
+    @Override
+    public boolean isDefined() {
+      return false;
+    }
+
+    @Override
+    public <B> B fold(Function<A, B> someFunc, Supplier<B> noneFunc) {
+      return noneFunc.get();
+    }
+
+    @Override
+    public String toString() {
+      return "None";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if(o == this) {
+        return true;
+      }
+
+      return o instanceof None;
+    }
+  }
 }

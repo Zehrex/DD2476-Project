@@ -1,22 +1,56 @@
-1
-https://raw.githubusercontent.com/bkis/JMines/master/src/idh/java/jmines/ui/UiCallback.java
-package idh.java.jmines.ui;
+23
+https://raw.githubusercontent.com/mrchengwenlong/NettyIM/master/im_lib/src/main/java/com/takiku/im_lib/call/UICallback.java
+package com.takiku.im_lib.call;
 
-import idh.java.jmines.model.GameState;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+
+import com.google.protobuf.GeneratedMessageV3;
+import com.takiku.im_lib.entity.base.Response;
+
+import java.io.IOException;
 
 /**
- * This interface represents a (generic) UI callback
- * for interation with the MineSweeper game core
+ * author:chengwl
+ * Description: 在UI线程回调响应结果
+ * Date:2020/4/20
  */
-public interface UiCallback {
-	
-	/**
-	 * This is a callback method from the UI to the game core.
-	 * It receives two ints and returns the current GameState.
-	 * @param i1 first int value
-	 * @param i2 second int value
-	 * @return The current game state as GameState object
-	 */
-	public GameState call(int i1, int i2);
+public class UICallback<T extends GeneratedMessageV3> implements Callback {
 
+    private Handler mDeliveryHandler;
+    private OnResultListener onResultListener;
+
+    public UICallback(OnResultListener<T> onResultListener){
+        this.onResultListener=onResultListener;
+        this.mDeliveryHandler= new Handler(Looper.getMainLooper());
+    }
+    @Override
+    public void onFailure(Call call, IOException e) {
+        mDeliveryHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (onResultListener!=null)
+                onResultListener.onFailure(e);
+            }
+        });
+    }
+
+    @Override
+    public void onResponse(Call call, Response response) throws IOException {
+        mDeliveryHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (onResultListener!=null){
+                    if (response!=null&&response.code==Response.SUCCESS){
+                        onResultListener.onResponse(response.body);
+                    }
+                }
+            }
+        });
+    }
+    public interface OnResultListener<T extends GeneratedMessageV3> {
+        void onFailure(IOException e);
+        void onResponse(T t);
+    }
 }

@@ -1,257 +1,111 @@
-2
-https://raw.githubusercontent.com/okhurley/oauth2/master/oauth2_common/src/main/java/entity/Page.java
-package entity;
+12
+https://raw.githubusercontent.com/Pingvin235/bgerp/master/src/ru/bgcrm/plugin/bgbilling/ws/contract/status51/Page.java
 
-import java.io.Serializable;
-import java.util.List;
+package ru.bgcrm.plugin.bgbilling.ws.contract.status51;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
+
 
 /**
- * 分页对象
- * @param <T>
+ * <p>Java class for page complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="page">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *       &lt;/sequence>
+ *       &lt;attribute name="pageCount" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="pageIndex" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="pageSize" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="recordCount" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
  */
-public class Page <T> implements Serializable{
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "page", namespace = "http://common.bitel.ru")
+public class Page {
 
-	//当前默认为第一页
-	public static final Integer pageNum = 1;
-	//默认每页显示条件
-	public static final Integer pageSize = 20;
+    @XmlAttribute(name = "pageCount", required = true)
+    protected int pageCount;
+    @XmlAttribute(name = "pageIndex", required = true)
+    protected int pageIndex;
+    @XmlAttribute(name = "pageSize", required = true)
+    protected int pageSize;
+    @XmlAttribute(name = "recordCount", required = true)
+    protected int recordCount;
 
+    /**
+     * Gets the value of the pageCount property.
+     * 
+     */
+    public int getPageCount() {
+        return pageCount;
+    }
 
-	//判断当前页是否为空或是小于1
-	public static Integer cpn(Integer pageNum){
-		if(null == pageNum || pageNum < 1){
-			pageNum = 1;
-		}
-		return pageNum;
-	}
+    /**
+     * Sets the value of the pageCount property.
+     * 
+     */
+    public void setPageCount(int value) {
+        this.pageCount = value;
+    }
 
+    /**
+     * Gets the value of the pageIndex property.
+     * 
+     */
+    public int getPageIndex() {
+        return pageIndex;
+    }
 
-	// 页数（第几页）
-	private long currentpage;
+    /**
+     * Sets the value of the pageIndex property.
+     * 
+     */
+    public void setPageIndex(int value) {
+        this.pageIndex = value;
+    }
 
-	// 查询数据库里面对应的数据有多少条
-	private long total;// 从数据库查处的总记录数
+    /**
+     * Gets the value of the pageSize property.
+     * 
+     */
+    public int getPageSize() {
+        return pageSize;
+    }
 
-	// 每页显示多少分页标签
-	private int size;
+    /**
+     * Sets the value of the pageSize property.
+     * 
+     */
+    public void setPageSize(int value) {
+        this.pageSize = value;
+    }
 
-	// 下页
-	private int next;
-	
-	private List<T> list;
+    /**
+     * Gets the value of the recordCount property.
+     * 
+     */
+    public int getRecordCount() {
+        return recordCount;
+    }
 
-	// 最后一页
-	private int last;
-	
-	private int lpage;
-	
-	private int rpage;
-	
-	//从哪条开始查
-	private long start;
-	
-	//全局偏移量
-	public int offsize = 2;
-	
-	public Page() {
-		super();
-	}
+    /**
+     * Sets the value of the recordCount property.
+     * 
+     */
+    public void setRecordCount(int value) {
+        this.recordCount = value;
+    }
 
-	/****
-	 *
-	 * @param currentpage 当前页
-	 * @param total 总记录数
-	 * @param pagesize 每页显示多少条
-	 */
-	public void setCurrentpage(long currentpage,long total,long pagesize) {
-
-		//如果整除表示正好分N页，如果不能整除在N页的基础上+1页
-		int totalPages = (int) (total%pagesize==0? total/pagesize : (total/pagesize)+1);
-
-		//总页数
-		this.last = totalPages;
-
-		//判断当前页是否越界,如果越界，我们就查最后一页
-		if(currentpage>totalPages){
-			this.currentpage = totalPages;
-		}else{
-			this.currentpage=currentpage;
-		}
-
-		//计算起始页
-		this.start = (this.currentpage-1)*pagesize;
-	}
-  
-  /****
-	 * 初始化分页
-	 * @param total
-	 * @param currentpage
-	 * @param pagesize
-	 */
-	public void initPage(long total,int currentpage,int pagesize){
-		//总记录数
-		this.total = total;
-		//每页显示多少条
-		this.size=pagesize;
-
-		//计算当前页和数据库查询起始值以及总页数
-		setCurrentpage(currentpage, total, pagesize);
-
-		//分页计算
-		int leftcount =this.offsize,	//需要向上一页执行多少次
-				rightcount =this.offsize;
-
-		//起点页
-		this.lpage =currentpage;
-		//结束页
-		this.rpage =currentpage;
-
-		//2点判断
-		this.lpage = currentpage-leftcount;			//正常情况下的起点
-		this.rpage = currentpage+rightcount;		//正常情况下的终点
-
-		//页差=总页数和结束页的差
-		int topdiv = this.last-rpage;				//判断是否大于最大页数
-
-		/***
-		 * 起点页
-		 * 1、页差<0  起点页=起点页+页差值
-		 * 2、页差>=0 起点和终点判断
-		 */
-		this.lpage=topdiv<0? this.lpage+topdiv:this.lpage;
-
-		/***
-		 * 结束页
-		 * 1、起点页<=0   结束页=|起点页|+1
-		 * 2、起点页>0    结束页
-		 */
-		this.rpage=this.lpage<=0? this.rpage+(this.lpage*-1)+1: this.rpage;
-
-		/***
-		 * 当起点页<=0  让起点页为第一页
-		 * 否则不管
-		 */
-		this.lpage=this.lpage<=0? 1:this.lpage;
-
-		/***
-		 * 如果结束页>总页数   结束页=总页数
-		 * 否则不管
-		 */
-		this.rpage=this.rpage>last? this.last:this.rpage;
-	}
-  
-  /****
-	 *
-	 * @param total   总记录数
-	 * @param currentpage	当前页
-	 * @param pagesize	每页显示多少条
-	 */
-	public Page(long total,int currentpage,int pagesize) {
-		initPage(total,currentpage,pagesize);
-	}
-
-	//上一页
-	public long getUpper() {
-		return currentpage>1? currentpage-1: currentpage;
-	}
-
-	//总共有多少页，即末页
-	public void setLast(int last) {
-		this.last = (int) (total%size==0? total/size : (total/size)+1);
-	}
-
-	/****
-	 * 带有偏移量设置的分页
-	 * @param total
-	 * @param currentpage
-	 * @param pagesize
-	 * @param offsize
-	 */
-	public Page(long total,int currentpage,int pagesize,int offsize) {
-		this.offsize = offsize;
-		initPage(total, currentpage, pagesize);
-	}
-
-	public long getNext() {
-		return  currentpage<last? currentpage+1: last;
-	}
-
-	public void setNext(int next) {
-		this.next = next;
-	}
-
-	public long getCurrentpage() {
-		return currentpage;
-	}
-
-	public long getTotal() {
-		return total;
-	}
-
-	public void setTotal(long total) {
-		this.total = total;
-	}
-
-	public long getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
-
-	public long getLast() {
-		return last;
-	}
-
-	public long getLpage() {
-		return lpage;
-	}
-
-	public void setLpage(int lpage) {
-		this.lpage = lpage;
-	}
-
-	public long getRpage() {
-		return rpage;
-	}
-
-	public void setRpage(int rpage) {
-		this.rpage = rpage;
-	}
-
-	public long getStart() {
-		return start;
-	}
-
-	public void setStart(long start) {
-		this.start = start;
-	}
-
-	public void setCurrentpage(long currentpage) {
-		this.currentpage = currentpage;
-	}
-
-	/**
-	 * @return the list
-	 */
-	public List<T> getList() {
-		return list;
-	}
-
-	/**
-	 * @param list the list to set
-	 */
-	public void setList(List<T> list) {
-		this.list = list;
-	}
-
-	public static void main(String[] args) {
-			//总记录数
-			//当前页
-			//每页显示多少条
-			int cpage =17;
-			Page page = new Page(1001,cpage,50,7);
-			System.out.println("开始页:"+page.getLpage()+"__当前页："+page.getCurrentpage()+"__结束页"+page.getRpage()+"____总页数："+page.getLast());
-	}
 }

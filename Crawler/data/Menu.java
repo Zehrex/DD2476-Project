@@ -1,69 +1,96 @@
-1
-https://raw.githubusercontent.com/Bekzatiitu/Final_Bekzat_Bekarys_ishs1901/master/Final%20Bekzat%20Bekarys%20ishs1901/src/kenn/shi/Menu.java
-package kenn.shi;
+10
+https://raw.githubusercontent.com/IzzyPrime/Admin/master/src/main/java/com/kalvin/kvf/modules/sys/entity/Menu.java
+package com.kalvin.kvf.modules.sys.entity;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.kalvin.kvf.common.entity.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
-public class Menu extends Container {
-    protected JButton first;
-    protected JButton second;
-    protected JButton third;
-    protected JButton forth;
+import java.util.Date;
+import java.util.List;
 
-    public Menu(){
-        setSize(500,500);
-        setLayout(null);
-        first = new JButton("ADD WORKS");
-        first.setSize(300 , 30);
-        first.setLocation(100 , 100);
-        add(first);
-        first.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                Main.frame.showAddStudent();
-            }
-        });
+/**
+ * <p>
+ * 菜单表
+ * </p>
+ *
+ * @author Kalvin
+ * @since 2019-04-29
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Accessors(chain = true)
+@TableName("sys_menu")
+public class Menu extends BaseEntity {
 
-        second = new JButton("LIST FAVOURITES");
-        second.setSize(300 , 30);
-        second.setLocation(100 , 150);
-        add(second);
-        second.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                Main.frame.showListStudents();
-                Main.frame.results.refresh();
-                Main.frame.results.fillData();
-                PackageData pd = new PackageData("LIST");
-                Main.connect(pd);
-            }
-        });
+    private static final long serialVersionUID = 1L;
 
-        third = new JButton("RENAME");
-        third.setSize(300 , 30);
-        third.setLocation(100 , 200);
-        add(third);
-        third.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                Main.frame.showWelcome();
-            }
-        });
+    /**
+     * 主键
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
 
-        forth = new JButton("EXIT");
-        forth.setSize(300 , 30);
-        forth.setLocation(100 , 250);
-        add(forth);
-        forth.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                System.exit(0);
-            }
-        });
+    /**
+     * 父菜单ID，一级菜单为0
+     */
+    private Long parentId;
+
+    /**
+     * 菜单名称
+     */
+    private String name;
+
+    /**
+     * 菜单URL
+     */
+    private String url;
+
+    /**
+     * 授权标识(多个用逗号分隔，如：user:list,user:create)
+     */
+    private String permission;
+
+    /**
+     * 类型。0：模块；1：一级菜单；2：二级菜单；3：导航菜单
+     */
+    private Integer type;
+
+    /**
+     * 菜单图标
+     */
+    private String icon;
+
+    /**
+     * 状态。0：正常；1：禁用
+     */
+    private Integer status;
+
+    /**
+     * 排序值。越小越靠前
+     */
+    private Integer sort;
+
+    /**
+     * 创建人
+     */
+    private Long createBy;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 子级菜单列表
+     */
+    @TableField(exist = false)
+    private List<Menu> subMenus;
 
 
-    }
 }

@@ -1,166 +1,155 @@
-2
-https://raw.githubusercontent.com/aiqfome/aiqInput/master/aiqinput/src/main/java/com/aiqfome/aiqinput/textinput/TextInput.java
-package com.aiqfome.aiqinput.textinput;
+33
+https://raw.githubusercontent.com/jabo-bernardo/Kree-Java/master/src/dev/jabo/kree/ui/TextInput.java
+package dev.jabo.kree.ui;
 
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
-import android.text.method.DigitsKeyListener;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ImageView;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import dev.jabo.kree.Input;
+import dev.jabo.kree.Scene;
+import dev.jabo.kree.Sprite;
+import dev.jabo.kree.Vector2;
 
-import com.aiqfome.aiqinput.R;
-import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
+public class TextInput extends UserInterface {
+	
+	private Color backgroundColor = new Color(200, 200, 200);
+	private Color foregroundColor = Color.BLACK;
+	private Color selectedColor = new Color(225, 225, 225);
+	
+	private int charLimit = 14;
+	
+	private String value = "";
+	
+	private Rectangle collider;
+	
+	private boolean selected = false;
+	
+	private Font font = new Font("Arial", Font.BOLD, 16);
+	
+	private Sprite backgroundImage;
+	
+	public TextInput(Scene parentScene, Vector2 position, Vector2 scale) {
+		
+		transform.setPosition(position);
+		transform.setScale(scale);
+		
+		collider = new Rectangle(position.getX(), position.getY(), scale.getX(), scale.getY());
+		
+		AddToScene(parentScene);
+		
+	}
+	
+	char lastKey = '\u0000';
+	
+	int timeBeforeClear = 0;
+	@Override
+	public void Update() {
+		
+		collider.x = transform.getPosition().getX();
+		collider.y = transform.getPosition().getY();
+		collider.width = transform.getScale().getX();
+		collider.height = transform.getScale().getY();
+		
+		if(Input.leftMouseDown) {
+			if(collider.contains(new Point(Input.getMouse().getX(), Input.getMouse().getY()))) {
+				selected = true;
+			} else {
+				selected = false;
+			}
+		}
+		
+		timeBeforeClear++;
+		if(timeBeforeClear > 40) {
+			lastKey = '\u0000';
+			timeBeforeClear = 0;
+		}
+		
+		if(selected) {
+			if(Input.keyPressed) {
+				if(Input.lastKey == lastKey) {return;}
+				if(Input.lastKey == '') {
+					if(this.value.length() > 0) {
+						this.value =this. value.substring(0, value.length() - 1);
+						lastKey = Input.lastKey;
+					}
+					return;
+				}
+				if(this.value.length() < charLimit) {
+					this.value += Input.lastKey;
+					lastKey = Input.lastKey;
+				}
+			}
+		}
+		
+	}
 
-public class TextInput extends ConstraintLayout {
+	@Override
+	public void Render(Graphics g) {
+		if(backgroundImage == null) {
+			g.setColor(backgroundColor);
+			if(selected) {
+				g.setColor(selectedColor);
+			}
+			g.fillRect(transform.getPosition().getX(), transform.getPosition().getY(), transform.getScale().getX(), transform.getScale().getY());
+		} else {
+			g.drawImage(backgroundImage.getImage(), transform.getPosition().getX(), transform.getPosition().getY(), transform.getScale().getX(), transform.getScale().getY(), null);
+		}
+		g.setColor(foregroundColor);
+		g.setFont(font);
+		drawTextLineByLine(g);
+	}
+	
+	private void drawTextLineByLine(Graphics g) {
+		
+		String[] s = value.split(" ");
+		
+		int line = 1;
+		int col = 0;
+		
+		String last = "";
+		boolean endl = false;
+		
+		int curWidth = 0;
+		
+		for(String str : s) {
+			int width = g.getFontMetrics(font).stringWidth(last); 
+			curWidth += width + (col * 2);
+			if(curWidth > transform.getScale().getX()) {
+				endl = true;
+			}
+			if(endl) {
+				return;
+			}
+			last = str;
+			g.drawString(str, transform.getPosition().getX() + (curWidth) + ((transform.getScale().getY() - font.getSize()) / 2), transform.getPosition().getY() + font.getSize() * line + ((transform.getScale().getY() - font.getSize()) / 2));
+			col++;
+		}
+		
+	}
+	
+	public void setFont(Font font) {
+		this.font = font;
+	}
+	
+	public void limitCharacter(int limit) {
+		charLimit = limit;
+	}
+	
+	public void setColor(Color backgroundColor, Color foregroundColor, Color selectedColor) {
+		this.backgroundColor = backgroundColor;
+		this.foregroundColor = foregroundColor;
+		this.selectedColor = selectedColor;
+	}
+	
+	public String getValue() {
+		return value;
+	}
+	
+	public void setBackgroundImage(Sprite spr) {
+		this.backgroundImage = spr;
+	}
 
-    private static final String TAG = TextInput.class.getSimpleName();
-
-    private TextInputController controller;
-    
-    private MaterialCardView selector;
-    private TextInputEditText input;
-    private TextInputLayout inputLayout;
-    private ImageView icon;
-
-    public TextInput(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-
-        LayoutInflater inflater = LayoutInflater.from(context);
-        inflater.inflate(R.layout.text_input, this, true);
-
-        selector = findViewById(R.id.selector);
-        input = findViewById(R.id.et_input);
-        inputLayout = findViewById(R.id.input);
-        icon = findViewById(R.id.iv_selected_icon);
-
-        setupAttrs(context, attrs);
-        setOnClickListener(onClickListener());
-
-        TypedValue outValue = new TypedValue();
-        getContext().getTheme().resolveAttribute
-                (android.R.attr.selectableItemBackground, outValue, true);
-
-        getRootView().setBackgroundResource(outValue.resourceId);
-    }
-
-    private void setupAttrs(Context context, @Nullable AttributeSet attrs) {
-        if (attrs == null) return;
-
-        int defaultBackgroundColor = getResources().getColor(R.color.colorBackground);
-        selector.setCardBackgroundColor(defaultBackgroundColor);
-
-        TypedArray styledAttributes = context.obtainStyledAttributes(attrs, R.styleable.TextInput);
-
-        int attrsSize = styledAttributes.getIndexCount();
-
-        for (int i = 0; i < attrsSize; i++) {
-            int attr = styledAttributes.getIndex(i);
-
-            if (attr == R.styleable.TextInput_backgroundColor) {
-                if (styledAttributes.hasValue(attr)) {
-                    int backgroundColor = styledAttributes
-                            .getColor(attr, getResources().getColor(R.color.colorBackground));
-
-                    selector.setCardBackgroundColor(backgroundColor);
-                    input.setBackgroundColor(backgroundColor);
-                }
-
-            } else if (attr == R.styleable.TextInput_textAppearance) {
-                int textAppearance = styledAttributes.getResourceId(attr, -1);
-                input.setTextAppearance(context, textAppearance);
-
-            } else if (attr == R.styleable.TextInput_selectorDefaultIcon) {
-                if (styledAttributes.hasValue(attr)) {
-                    Drawable defaultIcon = styledAttributes.getDrawable(attr);
-                    icon.setImageDrawable(defaultIcon);
-                }
-
-            } else if (attr == R.styleable.TextInput_android_digits) {
-                if (styledAttributes.hasValue(attr)) {
-                    String digits = styledAttributes.getString(attr);
-
-                    if (digits != null)
-                        input.setKeyListener(DigitsKeyListener.getInstance(digits));
-                }
-
-            } else if (attr == R.styleable.TextInput_android_inputType) {
-                int inputType = styledAttributes
-                        .getInt(attr, EditorInfo.TYPE_TEXT_VARIATION_NORMAL);
-
-                input.setInputType(inputType);
-
-            } else if (attr == R.styleable.TextInput_android_selectAllOnFocus) {
-                boolean selectAllOnFocus = styledAttributes.getBoolean(attr, false);
-                input.setSelectAllOnFocus(selectAllOnFocus);
-
-            } else if (attr == R.styleable.TextInput_android_hint) {
-                if (styledAttributes.hasValue(attr)) {
-                    String hint = styledAttributes.getString(attr);
-                    if (hint != null) inputLayout.setHint(hint);
-                }
-
-            } else if (attr == R.styleable.TextInput_android_imeOptions) {
-                int imeOptions = styledAttributes.getInt(attr, 0);
-                input.setImeOptions(imeOptions);
-
-            } else if (attr == R.styleable.TextInput_android_text) {
-                if (styledAttributes.hasValue(attr)) {
-                    String text = styledAttributes.getString(attr);
-
-                    if (text != null) input.setText(text);
-                }
-
-            } else {
-                Log.d("aiqInput", "Unknown attribute for " + getClass().toString() + ": " + attr);
-            }
-        }
-
-        styledAttributes.recycle();
-    }
-
-    private OnClickListener onClickListener() {
-        return v -> {
-            if (controller != null) controller.show();
-            else Log.e(TAG, "no controller found, please setup TextInput Component!");
-        };
-    }
-
-    public void setup(TextInputController controller) {
-        controller.setTextInput(this);
-        this.controller = controller;
-    }
-
-    public void setSelectedItem(Drawable icon) {
-        this.icon.setImageDrawable(icon);
-    }
-
-    public TextInputController getController() {
-        return controller;
-    }
-
-    public MaterialCardView getSelector() {
-        return selector;
-    }
-
-    public TextInputEditText getInput() {
-        return input;
-    }
-
-    public TextInputLayout getInputLayout() {
-        return inputLayout;
-    }
-
-    public ImageView getIcon() {
-        return icon;
-    }
 }

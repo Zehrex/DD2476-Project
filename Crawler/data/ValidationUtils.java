@@ -1,92 +1,72 @@
-18
-https://raw.githubusercontent.com/WeBankFinTech/Schedulis/master/azkaban-jobtype/src/main/java/com/webank/wedatasphere/schedulis/jobtype/javautils/ValidationUtils.java
+125
+https://raw.githubusercontent.com/DP-3T/dp3t-sdk-backend/develop/dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/java/org/dpppt/backend/sdk/ws/util/ValidationUtils.java
 /*
- * Copyright 2020 WeBank
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: MPL-2.0
  */
+package org.dpppt.backend.sdk.ws.util;
 
-package com.webank.wedatasphere.schedulis.jobtype.javautils;
-
-import java.util.Arrays;
-import java.util.Objects;
-
-import org.apache.commons.lang.StringUtils;
-
-import azkaban.utils.Props;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Base64;
 
 public class ValidationUtils {
+	private final int KEY_LENGTH_BYTES;
+	private final Duration retentionPeriod;
+	private final Long batchLength;
 
-  public static void validateNotEmpty(String s, String name) {
-    if(StringUtils.isEmpty(s)) {
-      throw new IllegalArgumentException(name + " cannot be empty.");
-    }
-  }
+	public ValidationUtils(int keyLengthBytes, Duration retentionPeriod, Long batchLength) {
+		this.KEY_LENGTH_BYTES = keyLengthBytes;
+		this.retentionPeriod = retentionPeriod;
+		this.batchLength = batchLength;
+	}
 
-  /**
-   * Validates if all of the keys exist of none of them exist
-   * @param props
-   * @param keys
-   * @throws IllegalArgumentException only if some of the keys exist
-   */
-  public static void validateAllOrNone(Props props, String... keys) {
-    Objects.requireNonNull(keys);
+	public boolean isValidBase64Key(String value) {
+		try {
+			byte[] key = Base64.getDecoder().decode(value);
+			if (key.length != KEY_LENGTH_BYTES) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-    boolean allExist = true;
-    boolean someExist = false;
-    for(String key : keys) {
-      Object val = props.get(key);
-      allExist &= val != null;
-      someExist |= val != null;
-    }
+	public boolean isDateInRange(OffsetDateTime timestamp) {
+		if (timestamp.isAfter(Instant.now().atOffset(ZoneOffset.UTC))) {
+			return false;
+		}
+		if (timestamp.isBefore(Instant.now().atOffset(ZoneOffset.UTC).minus(retentionPeriod))) {
+			return false;
+		}
+		return true;
+	}
 
-    if(someExist && !allExist) {
-      throw new IllegalArgumentException("Either all of properties exist or none of them should exist for " + Arrays.toString(keys));
-    }
-  }
+	public boolean isValidBatchReleaseTime(Long batchReleaseTime) throws BadBatchReleaseTimeException {
+		if (batchReleaseTime % batchLength != 0) {
+			throw new BadBatchReleaseTimeException();
+		}
+		if (batchReleaseTime > OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).toInstant().toEpochMilli()) {
+			return false;
+		}
+		if (batchReleaseTime < OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).minus(retentionPeriod)
+				.toInstant().toEpochMilli()) {
+			return false;
+		}
+		return true;
+	}
 
-  /**
-   * Validates all keys present in props
-   * @param props
-   * @param keys
-   * @throws UndefinedPropertyException if key does not exist in properties
-   */
-  public static void validateAllNotEmpty(Props props, String... keys) {
-    for(String key : keys) {
-      props.getString(key);
-    }
-  }
+	public class BadBatchReleaseTimeException extends Exception {
 
-  public static void validateAtleastOneNotEmpty(Props props, String... keys) {
-    boolean exist = false;
-    for(String key : keys) {
-      Object val = props.get(key);
-      exist |= val != null;
-    }
-    if(!exist) {
-      throw new IllegalArgumentException("At least one of these keys should exist " + Arrays.toString(keys));
-    }
-  }
+		private static final long serialVersionUID = 618376703047108588L;
 
-  public static void validateSomeValuesNotEmpty(int notEmptyVals, String... vals) {
-    int count = 0;
-    for(String val : vals) {
-      if(!StringUtils.isEmpty(val)) {
-        count++;
-      }
-    }
-    if (count != notEmptyVals) {
-      throw new IllegalArgumentException("Number of not empty vals " + count + " is not desired number " + notEmptyVals);
-    }
-  }
+	}
 }

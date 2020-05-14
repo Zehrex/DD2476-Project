@@ -1,24 +1,20 @@
-1
-https://raw.githubusercontent.com/wanzicong/mybatis-study/master/src/main/java/com/mybatis/mapper/AccountMapper.java
-package com.mybatis.mapper;
+11
+https://raw.githubusercontent.com/yfelvis/mtcc/master/mtcc-demo/mtcc-demo-account/src/main/java/com/hyf/mtcc/demo/account/dao/AccountMapper.java
+package com.hyf.mtcc.demo.account.dao;
 
-import com.mybatis.model.single.Account;
-import org.apache.ibatis.annotations.Mapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hyf.mtcc.demo.account.bean.Account;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Date;
 
-@Repository
-@Mapper
-public interface AccountMapper {
-    /*查询全部*/
-    public List<Account> findAll();
+public interface AccountMapper extends BaseMapper<Account> {
 
-    /*根据大于money条件查询*/
-    List<Account> findSomeBigThanMoney(@Param("small_money") Float small_money,
-                                       @Param("big_money") Float big_money);
+    int freezeAmount(@Param("id") String id, @Param("freezeAmount") BigDecimal freezeAmount, @Param("time") Date time);
 
-    /*批量的添加数据*/
-    void insertSome(List<Account> list);
+    int freezeAmountConfirm(@Param("username") String username, @Param("freezeAmount") BigDecimal amount, @Param("time") Date time);
+
+    int freezeAmountCancel(@Param("username") String username, @Param("freezeAmount") BigDecimal amount, @Param("time") Date time);
+
 }

@@ -1,95 +1,683 @@
-4
-https://raw.githubusercontent.com/justneon33/Sketchcode/master/app/src/main/java/com/sketch/code/two/fragment/ProfileFragment.java
-package com.sketch.code.two.fragment;
+10
+https://raw.githubusercontent.com/NearbyShops/Nearby-Shops-Android-app/master/app/src/main/java/org/nearbyshops/enduserappnew/ProfileFragment.java
+package org.nearbyshops.enduserappnew;
 
-import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-import com.google.android.material.button.MaterialButton;
-import com.sketch.code.two.R;
-import com.sketch.code.two.activity.MainActivity;
-import com.sketch.code.two.activity.ProfileEditActivity;
-import com.sketch.code.two.api.item.UserResponse;
-import com.sketch.code.two.api.manager.UserManager;
-import com.sketch.code.two.util.GlideUtil;
-import com.sketch.code.two.util.SketchcodeUtil;
+import com.squareup.picasso.Picasso;
 
-import java.util.Objects;
+import org.nearbyshops.enduserappnew.API.UserService;
+import org.nearbyshops.enduserappnew.EditDataScreens.EditShop.EditShop;
+import org.nearbyshops.enduserappnew.EditDataScreens.EditShop.EditShopFragment;
+import org.nearbyshops.enduserappnew.Model.ModelRoles.User;
+import org.nearbyshops.enduserappnew.EditDataScreens.EditProfile.EditProfile;
+import org.nearbyshops.enduserappnew.EditDataScreens.EditProfile.FragmentEditProfile;
+import org.nearbyshops.enduserappnew.Interfaces.NotifyAboutLogin;
+import org.nearbyshops.enduserappnew.Model.Shop;
+import org.nearbyshops.enduserappnew.Preferences.PrefGeneral;
+import org.nearbyshops.enduserappnew.Preferences.PrefLogin;
+import org.nearbyshops.enduserappnew.Preferences.PrefServiceConfig;
+import org.nearbyshops.enduserappnew.Preferences.PrefShopAdminHome;
+import org.nearbyshops.enduserappnew.Utility.UtilityFunctions;
+import org.nearbyshops.enduserappnew.ViewModels.ViewModelShop;
+import org.nearbyshops.enduserappnew.aSellerModule.DashboardDeliveryGuy.DeliveryHome;
+import org.nearbyshops.enduserappnew.aSellerModule.DashboardShopAdmin.ShopAdminHome;
+import org.nearbyshops.enduserappnew.aSellerModule.DashboardShopStaff.ShopDashboardForStaff;
+import org.nearbyshops.enduserappnew.aSellerModule.InventoryDeliveryPerson.DeliveryGuyDashboard;
+import org.nearbyshops.enduserappnew.adminModule.DashboardAdmin.AdminDashboard;
+import org.nearbyshops.enduserappnew.adminModule.DashboardStaff.StaffDashboard;
 
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 
-public class ProfileFragment extends Fragment {
+import javax.inject.Inject;
 
-    public View view;
+//import org.taxireferral.enduserapp.MapzenSDK.MapzenMap;
 
-    public TextView userFullName;
-    public TextView userBio;
+/**
+ * Created by sumeet on 2/4/17.
+ */
 
-    public MaterialButton editProfile;
+public class ProfileFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
-    public ImageView userAvatar;
 
-    private UserManager userManager;
 
-    @SuppressLint("InflateParams")
+    private boolean isDestroyed = false;
+
+
+    @BindView(R.id.label_login)TextView labelLogin;
+    @BindView(R.id.swipe_container) SwipeRefreshLayout swipeContainer;
+
+    @BindView(R.id.user_profile) LinearLayout profileBlock;
+    @BindView(R.id.profile_image) ImageView profileImage;
+
+    @BindView(R.id.user_name) TextView userName;
+    @BindView(R.id.phone) TextView phone;
+    @BindView(R.id.user_id) TextView userID;
+
+    @BindView(R.id.current_dues) TextView currentDues;
+    @BindView(R.id.credit_limit) TextView creditLimit;
+
+    @BindView(R.id.dashboard_name) TextView dashboardName;
+    @BindView(R.id.dashboard_description) TextView dashboardDescription;
+    @BindView(R.id.dashboard_by_role) LinearLayout dashboardByRole;
+
+
+
+
+
+    @Inject
+    UserService userService;
+
+
+
+    private ViewModelShop viewModelShop;
+
+
+    private ProgressDialog progressDialog;
+
+
+
+    @BindView(R.id.service_name) TextView serviceName;
+
+
+
+
+
+
+    public ProfileFragment() {
+        DaggerComponentBuilder.getInstance()
+                .getNetComponent().Inject(this);
+    }
+
+
+
+
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        view = inflater.inflate(R.layout.fragment_profile, null);
-        findViews();
-        initLogic();
-        return view;
-    }
 
-    private void findViews () {
-        userFullName = view.findViewById(R.id.itemUserName);
-        userBio = view.findViewById(R.id.itemUserBio);
-        editProfile = view.findViewById(R.id.itemProfileButtonEdit);
-        userAvatar = view.findViewById(R.id.itemUserAvatar);
-    }
+        setRetainInstance(true);
+        View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
+        ButterKnife.bind(this,rootView);
 
-    private void initLogic () {
-        MainActivity.progressBar.setVisibility(View.VISIBLE);
-        MainActivity.frameLayout.setVisibility(View.GONE);
-        userManager = UserManager.getInstance();
-        userManager.getUserManagerApi()
-                .get(new SketchcodeUtil.User(Objects.requireNonNull(getContext())).getToken())
-                .enqueue(new Callback<UserResponse>() {
-                    @Override
-                    public void onResponse(Call<UserResponse> call, retrofit2.Response<UserResponse> response) {
-                        UserResponse output = response.body();
-                        if(response.isSuccessful() && output != null && output.getData() != null && output.isSuccess()) {
-                            userFullName.setText(output.getData().getFirstName().concat(" ").concat(output.getData().getSurname()));
-                            userBio.setText(output.getData().getBio());
-                            GlideUtil.set(output.getData().getAvatar(), userAvatar, getContext());
-                        } else if(output != null) {
-                            Toast.makeText(getContext(), output.getErrorsString(), Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getContext(), "Auth failed", Toast.LENGTH_SHORT).show();
-                        }
-                        MainActivity.progressBar.setVisibility(View.GONE);
-                        MainActivity.frameLayout.setVisibility(View.VISIBLE);
+
+        Toolbar toolbar = rootView.findViewById(R.id.toolbar);
+//        toolbar.setTitleTextColor(ContextCompat.getColor(getActivity(),R.color.white));
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+
+
+
+
+
+//        viewModelShop = ViewModelProviders.of(this).get(ViewModelShop.class);
+
+        viewModelShop = new ViewModelShop(MyApplication.application);
+
+
+        viewModelShop.getShopLive().observe(getViewLifecycleOwner(), new Observer<Shop>() {
+            @Override
+            public void onChanged(Shop shop) {
+
+                if(progressDialog!=null)
+                {
+                    progressDialog.dismiss();
+                }
+
+
+
+                PrefShopAdminHome.saveShop(shop,getActivity());
+
+                Intent intent = new Intent(getActivity(), ShopDashboardForStaff.class);
+                startActivity(intent);
+            }
+        });
+
+
+
+
+
+        viewModelShop.getEvent().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+
+                if(integer == ViewModelShop.EVENT_BECOME_A_SELLER_SUCCESSFUL)
+                {
+                    if(progressDialog!=null)
+                    {
+                        progressDialog.dismiss();
                     }
 
+
+                    onRefresh();
+                }
+
+            }
+        });
+
+
+
+
+
+        viewModelShop.getMessage().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                showToastMessage(s);
+            }
+        });
+
+
+
+
+        if(PrefServiceConfig.getServiceName(getActivity())!=null) {
+
+            serviceName.setVisibility(View.VISIBLE);
+            serviceName.setText(PrefServiceConfig.getServiceName(getActivity()));
+        }
+
+
+
+
+        setupSwipeContainer();
+
+
+        if(savedInstanceState==null)
+        {
+
+            swipeContainer.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    swipeContainer.setRefreshing(true);
+                    onRefresh();
+                }
+            });
+
+            bindUserProfile();
+
+        }
+
+
+        bindDashboard();
+
+
+        return rootView;
+    }
+
+
+
+
+
+
+
+
+    private void setupSwipeContainer()
+    {
+
+        if(swipeContainer!=null) {
+
+            swipeContainer.setOnRefreshListener(this);
+            swipeContainer.setColorSchemeResources(
+                    android.R.color.holo_blue_bright,
+                    android.R.color.holo_green_light,
+                    android.R.color.holo_orange_light,
+                    android.R.color.holo_red_light);
+        }
+
+    }
+
+
+
+
+
+
+
+    private void bindDashboard()
+    {
+        User user = PrefLogin.getUser(getActivity());
+
+
+        if(user.getRole()==User.ROLE_ADMIN_CODE)
+        {
+            dashboardName.setText("Admin Dashboard");
+            dashboardDescription.setText("Press here to access the admin dashboard !");
+        }
+        else if(user.getRole()==User.ROLE_STAFF_CODE)
+        {
+            dashboardName.setText("Staff Dashboard");
+            dashboardDescription.setText("Press here to access the staff dashboard !");
+        }
+        else if(user.getRole()==User.ROLE_SHOP_ADMIN_CODE)
+        {
+            dashboardName.setText("Shop Dashboard");
+            dashboardDescription.setText("Press here to access the shop dashboard !");
+        }
+        else if(user.getRole()==User.ROLE_SHOP_STAFF_CODE)
+        {
+            dashboardName.setText("Shop Staff Dashboard");
+            dashboardDescription.setText("Press here to access the staff dashboard !");
+        }
+        else if(user.getRole()==User.ROLE_DELIVERY_GUY_SELF_CODE)
+        {
+            dashboardName.setText("Delivery Dashboard");
+            dashboardDescription.setText("Press here to access the Delivery dashboard !");
+        }
+        else if(user.getRole()==User.ROLE_END_USER_CODE)
+        {
+            if(getResources().getBoolean(R.bool.single_vendor_mode_enabled))
+            {
+                dashboardByRole.setVisibility(View.GONE);
+            }
+            else
+            {
+                dashboardByRole.setVisibility(View.VISIBLE);
+                dashboardName.setText("Become a Seller");
+                dashboardDescription.setText("Press here to create a shop and become a seller !");
+            }
+
+        }
+
+    }
+
+
+
+    @OnClick(R.id.dashboard_by_role)
+    void dashboardClick()
+    {
+        User user = PrefLogin.getUser(getActivity());
+
+        if(user.getRole()==User.ROLE_ADMIN_CODE)
+        {
+            Intent intent = new Intent(getActivity(), AdminDashboard.class);
+            startActivity(intent);
+        }
+        else if(user.getRole()==User.ROLE_STAFF_CODE)
+        {
+            Intent intent = new Intent(getActivity(), StaffDashboard.class);
+            startActivity(intent);
+        }
+        else if(user.getRole()==User.ROLE_SHOP_ADMIN_CODE)
+        {
+            Intent intent = new Intent(getActivity(), ShopAdminHome.class);
+            startActivity(intent);
+        }
+        else if(user.getRole()==User.ROLE_SHOP_STAFF_CODE)
+        {
+
+            viewModelShop.getShopForShopStaff();
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage("Please wait ... getting shop details !");
+            progressDialog.show();
+
+        }
+        else if(user.getRole()==User.ROLE_DELIVERY_GUY_SELF_CODE)
+        {
+            Intent intent = new Intent(getActivity(), DeliveryGuyDashboard.class);
+            startActivity(intent);
+
+        }
+        else if(user.getRole()==User.ROLE_END_USER_CODE)
+        {
+
+//            viewModelShop.becomeASeller();
+//
+//            progressDialog = new ProgressDialog(getActivity());
+//            progressDialog.setMessage("Please wait ... converting you to a seller !");
+//            progressDialog.show();
+
+
+
+            //     open edit shop in edit mode
+            Intent intent = new Intent(getActivity(), EditShop.class);
+            intent.putExtra(EditShopFragment.EDIT_MODE_INTENT_KEY, EditShopFragment.MODE_ADD);
+            startActivity(intent);
+
+        }
+
+    }
+
+
+
+
+
+    @OnClick({R.id.profile_image, R.id.user_profile})
+    void editProfileClick()
+    {
+        Intent intent = new Intent(getActivity(), EditProfile.class);
+        intent.putExtra(FragmentEditProfile.EDIT_MODE_INTENT_KEY, FragmentEditProfile.MODE_UPDATE);
+        startActivity(intent);
+
+    }
+
+
+
+
+
+    @OnClick(R.id.billing_info)
+    void billingInfoClick()
+    {
+//        Intent intent = new Intent(getActivity(), Transactions.class);
+//        startActivity(intent);
+    }
+
+
+
+
+
+    @OnClick(R.id.faqs_block)
+    void faqsBlock()
+    {
+
+        String url = getString(R.string.faqs_link);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+
+
+
+    @OnClick(R.id.privacy_policy_block)
+    void privacyPolicyClick()
+    {
+        String url = getString(R.string.tos_link);
+
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+
+
+
+    @OnClick(R.id.tos_block)
+    void termsOfServiceClick()
+    {
+        String url = getString(R.string.privacy_policy_link);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+
+
+
+
+
+
+
+    private void showToastMessage(String message)
+    {
+        Toast.makeText(getActivity(),message, Toast.LENGTH_SHORT).show();
+    }
+
+
+
+
+
+
+
+    @OnClick({R.id.login_block})
+    void loginClick()
+    {
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        dialog.setTitle("Confirm Logout !")
+                .setMessage("Do you want to log out !")
+                .setPositiveButton("Yes",new DialogInterface.OnClickListener(){
+
                     @Override
-                    public void onFailure(Call<UserResponse> call, Throwable t) {
-                        initLogic();
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        logout();
+
                     }
-                });
-        editProfile.setOnClickListener(v -> startActivity(new Intent(getActivity(), ProfileEditActivity.class)));
+                })
+                .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        showToastMessage("Cancelled !");
+                    }
+                })
+                .show();
+    }
+
+
+
+
+
+
+
+    private void logout()
+    {
+
+
+        UtilityFunctions.logout(getActivity());
+
+        if(getActivity() instanceof NotifyAboutLogin)
+        {
+            ((NotifyAboutLogin) getActivity()).loggedOut();
+        }
+
+    }
+
+
+
+
+    @Override
+    public void onRefresh() {
+//        countDownTimer.start();
+        getUserProfile();
+    }
+
+
+
+
+
+
+
+    private void getUserProfile()
+    {
+
+        if(getActivity()==null)
+        {
+            return;
+        }
+
+
+        User endUser = PrefLogin.getUser(getActivity());
+
+        if(endUser==null)
+        {
+            return;
+        }
+
+
+
+
+
+        Call<User> call = userService.getProfile(
+                PrefLogin.getAuthorizationHeaders(getActivity())
+        );
+
+
+
+
+
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+
+
+                if(isDestroyed)
+                {
+                    return;
+                }
+
+
+                if(response.code()==200)
+                {
+
+                    PrefLogin.saveUserProfile(response.body(),getActivity());
+
+                }
+                else if(response.code()==204)
+                {
+                    // Vehicle not registered so remove the saved vehicle
+//                    PrefVehicle.saveVehicle(null,getContext());
+
+                }
+                else
+                {
+                    showToastMessage("Server error code : " + response.code());
+                }
+
+
+                bindUserProfile();
+                bindDashboard();
+
+                swipeContainer.setRefreshing(false);
+
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+
+
+                if(isDestroyed)
+                {
+                    return;
+                }
+
+
+                bindUserProfile();
+                bindDashboard();
+
+                swipeContainer.setRefreshing(false);
+
+            }
+        });
+
+    }
+
+
+
+
+    private void bindUserProfile()
+    {
+
+        User user = PrefLogin.getUser(getActivity());
+
+        if(user==null)
+        {
+            profileBlock.setVisibility(View.GONE);
+            profileImage.setVisibility(View.GONE);
+            return;
+        }
+
+
+
+
+        userID.setText("User ID : " + user.getUserID());
+
+        profileBlock.setVisibility(View.VISIBLE);
+        profileImage.setVisibility(View.VISIBLE);
+
+
+
+        Drawable placeholder = ContextCompat.getDrawable(getActivity(), R.drawable.ic_nature_people_white_48px);
+        String imagePath = PrefGeneral.getServiceURL(getActivity()) + "/api/v1/User/Image/" + "five_hundred_"+ user.getProfileImagePath() + ".jpg";
+
+
+
+
+        showLogMessage("Profile Screen : User Image Path : " + imagePath);
+
+
+
+        Picasso.get()
+                .load(imagePath)
+                .placeholder(placeholder)
+                .into(profileImage);
+
+
+        phone.setText(user.getPhone());
+        userName.setText(user.getName());
+
+
+//        if(user.getCurrentDues()>=0)
+//        {
+//            currentDues.setText("You Owe : "
+//                    + getString(R.string.rupee_symbol)
+//                    + " " + String.format("%.2f",user.getCurrentDues())
+//            );
+//        }
+//        else
+//        {
+//            currentDues.setText("You have a surplus of "
+//                    + getString(R.string.rupee_symbol)
+//                    + " " + String.format("%.2f",-user.getCurrentDues())
+//                    + " in your account."
+//            );
+//        }
+
+        creditLimit.setText("Your Credit Limit : "
+                + getString(R.string.rupee_symbol) + " "
+                + String.format("%.2f",user.getExtendedCreditLimit() + 1000)
+        );
+
+    }
+
+
+
+
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        isDestroyed = false; // reset flag
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        isDestroyed = true;
+    }
+
+
+    private void showLogMessage(String message)
+    {
+        Log.d("location_service",message);
     }
 
 }

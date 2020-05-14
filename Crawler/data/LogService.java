@@ -1,27 +1,18 @@
-2
-https://raw.githubusercontent.com/chenval/my-site/master/src/main/java/cn/blog/service/LogService.java
-package cn.blog.service;
+137
+https://raw.githubusercontent.com/201206030/novel-plus/master/novel-admin/src/main/java/com/java2nb/common/service/LogService.java
+package com.java2nb.common.service;
 
-import cn.blog.Domin.LogDomain;
-import com.github.pagehelper.PageInfo;
+import java.util.List;
 
-/**
- * 用户请求日志
- */
+import org.springframework.stereotype.Service;
+
+import com.java2nb.common.domain.LogDO;
+import com.java2nb.common.domain.PageDO;
+import com.java2nb.common.utils.Query;
+@Service
 public interface LogService {
-
-    /**
-     * 添加
-     */
-    void addLog(String action, String data, String ip, Integer authorId);
-
-    /**
-     * 删除日志
-     */
-    void deleteLogById(Integer id);
-
-    /**
-     * 获取日志
-     */
-    PageInfo<LogDomain> getLogs(int pageNum, int pageSize);
+	void save(LogDO logDO);
+	PageDO<LogDO> queryList(Query query);
+	int remove(Long id);
+	int batchRemove(Long[] ids);
 }

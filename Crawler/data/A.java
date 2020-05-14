@@ -1,16 +1,10 @@
-2
-https://raw.githubusercontent.com/wangIQD/GoF23/master/GOF23/DesignPattern/src/com/wz/creational/prototype/abstractprototype/A.java
-package com.wz.creational.prototype.abstractprototype;
-
-/**
- * @author 隔壁老王
- * @create 2020-04-29 17:10
- * @bilibili https://space.bilibili.com/320299990
- * @description
- */
-public abstract class A implements Cloneable {
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
+9
+https://raw.githubusercontent.com/jerryygit/zrDSL-flink/master/src/test/java/A.java
+public class A {
+    public void save(){
+        System.out.println("保存商品");
+    }
+    public void del(){
+        System.out.println("删除商品");
     }
 }

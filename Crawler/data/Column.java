@@ -1,77 +1,82 @@
-7
-https://raw.githubusercontent.com/zeoio/fabric-toolkit/master/bcp-install-biz/src/main/java/com/cgb/bcpinstall/db/util/object/Column.java
-/*
- *  Copyright CGB Corp All Rights Reserved.
- * 
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-package com.cgb.bcpinstall.db.util.object;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_article/src/main/java/com/tensquare/article/pojo/Column.java
+package com.tensquare.article.pojo;
 
-import lombok.Getter;
-import lombok.Setter;
-
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
+/**
+ * column实体类
+ * @author Administrator
+ *
+ */
+@Entity
+@Table(name="tb_column")
+public class Column implements Serializable{
 
-@Getter
-@Setter
-public class Column implements Serializable {
+	@Id
+	private String id;//ID
 
-    private static final long serialVersionUID = 4765664012786336010L;
-    private String            columnName;
-    private String            type;
-    private String            fieldName;
-    private String            dbType;
-    private int               length;
-    private boolean           isNull;
-    private boolean           isUnique;
-    private boolean           isMaster;
-    private boolean           isLike;
 
-    public Column(String columnName, String type, String fieldName, String dbType){
-        super();
-        this.columnName = columnName;
-        this.type = type;
-        this.fieldName = fieldName;
-        this.dbType = dbType;
-    }
-    public Column(String columnName, String type, String fieldName, String dbType,boolean isLike){
-        super();
-        this.columnName = columnName;
-        this.type = type;
-        this.fieldName = fieldName;
-        this.dbType = dbType;
-        this.isLike = isLike;
-    }
+	
+	private String name;//专栏名称
+	private String summary;//专栏简介
+	private String userid;//用户ID
+	private java.util.Date createtime;//申请日期
+	private java.util.Date checktime;//审核日期
+	private String state;//状态
 
-    public Column(String columnName, String type, String fieldName, String dbType, int length, boolean isNull,
-                  boolean isUnique,boolean isMaster){
-        super();
-        this.columnName = columnName;
-        this.type = type;
-        this.fieldName = fieldName;
-        this.dbType = dbType;
-        this.length = length;
-        this.isNull = isNull;
-        this.isUnique = isUnique;
-        this.isMaster = isMaster;
-    }
+	
+	public String getId() {		
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public Column(){
-        super();
-    }
+	public String getName() {		
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    @Override
-    public String toString() {
-        return "Column [columnName=" + columnName + ", type=" + type + ", fieldName=" + fieldName + ", dbType="
-                + dbType + ", length=" + length + ", isNull=" + isNull + "]";
-    }
+	public String getSummary() {		
+		return summary;
+	}
+	public void setSummary(String summary) {
+		this.summary = summary;
+	}
 
+	public String getUserid() {		
+		return userid;
+	}
+	public void setUserid(String userid) {
+		this.userid = userid;
+	}
+
+	public java.util.Date getCreatetime() {		
+		return createtime;
+	}
+	public void setCreatetime(java.util.Date createtime) {
+		this.createtime = createtime;
+	}
+
+	public java.util.Date getChecktime() {		
+		return checktime;
+	}
+	public void setChecktime(java.util.Date checktime) {
+		this.checktime = checktime;
+	}
+
+	public String getState() {		
+		return state;
+	}
+	public void setState(String state) {
+		this.state = state;
+	}
+
+
+	
 }

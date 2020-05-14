@@ -1,98 +1,39 @@
-7
-https://raw.githubusercontent.com/zeoio/fabric-toolkit/master/bcp-install-common/src/main/java/com/cgb/bcpinstall/common/util/ProcessUtil.java
+139
+https://raw.githubusercontent.com/DP-3T/dp3t-sdk-android/master-alpha/dp3t-sdk/sdk/src/main/java/org/dpppt/android/sdk/internal/util/ProcessUtil.java
 /*
- *  Copyright CGB Corp All Rights Reserved.
- * 
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *    http://www.apache.org/licenses/LICENSE-2.0
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
  */
-package com.cgb.bcpinstall.common.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+package org.dpppt.android.sdk.internal.util;
 
-import java.io.*;
-import java.util.ArrayList;
+import android.app.ActivityManager;
+import android.content.Context;
+
 import java.util.List;
 
-@Slf4j
 public class ProcessUtil {
 
-    public static Result execCmd(String cmd, String[] envp, String workingDir) throws Exception {
-        Process process = null;
-        try {
-            process = Runtime.getRuntime().exec(cmd, envp, new File(workingDir));
-            CmdStreamReader err = new CmdStreamReader(process.getErrorStream());
-            CmdStreamReader out = new CmdStreamReader(process.getInputStream());
-            err.start();
-            out.start();
-            int exitCode = process.waitFor();
-            String errMessage = err.getMessage();
-            String outMessage = out.getMessage();
-            if (exitCode == 0) {
-                return new Result(exitCode, outMessage);
-            } else {
-                return new Result(exitCode, StringUtils.isEmpty(errMessage) ? outMessage : errMessage);
-            }
-        } finally {
-            if (process != null) {
-                process.destroy();
-            }
-        }
-    }
+	public static boolean isMainProcess(Context context) {
+		return context.getPackageName().equals(getProcessName(context));
+	}
 
-    @Data
-    @AllArgsConstructor
-    public static class Result {
-        /**
-         * 返回码，0：正常，其他：异常
-         */
-        public int code;
-        /**
-         * 返回结果
-         */
-        public String data;
-    }
+	private static String getProcessName(Context context) {
+		int mypid = android.os.Process.myPid();
+		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+		List<ActivityManager.RunningAppProcessInfo> infos = manager.getRunningAppProcesses();
+		for (ActivityManager.RunningAppProcessInfo info : infos) {
+			if (info.pid == mypid) {
+				return info.processName;
+			}
+		}
+		// may never return null
+		return null;
+	}
 
-    public static class CmdStreamReader extends Thread {
-        private InputStream input;
-        private List<String> lines = new ArrayList<String>();
-        public CmdStreamReader(InputStream input) {
-            this.input = input;
-            setDaemon(true);
-            setName("process stream reader");
-        }
-
-        @Override
-        public void run() {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            try {
-                do {
-                    String line = reader.readLine();
-                    if (line != null) {
-                        log.info(line);
-                        this.lines.add(line);
-                    } else {
-                        return;
-                    }
-                } while (true);
-            } catch (IOException e) {
-            	log.warn(e.getMessage());
-                //e.printStackTrace();
-            }
-        }
-
-        public String getMessage() {
-            return StringUtils.join(this.lines, "\r\n");
-        }
-    }
 }

@@ -1,42 +1,37 @@
-1
-https://raw.githubusercontent.com/rubywooJ/beyond/master/src/main/java/cn/tsxygfy/beyond/model/po/Article.java
-package cn.tsxygfy.beyond.model.po;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_search/src/main/java/com/tensquare/search/pojo/Article.java
+package com.tensquare.search.pojo;
 
-public class Article {
-    private Long id;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 
+import java.io.Serializable;
+
+/**
+ * @author 李聪
+ * @date 2020/2/17 21:29
+ */
+@Document(indexName = "tensquare_article",type = "article")
+public class Article implements Serializable {
+    @Id
+    private String id;
+    //是否索引，就是看该域是否能被搜索
+    //是否分词，就表示搜索的时候是整体匹配还是单词匹配
+    //是否存储，就是是否在页面上显示
+    @Field(index = true,analyzer = "ik_max_word",searchAnalyzer = "ik_max_word")
     private String title;
 
-    private String cover;
-
-    private String author;
-
-    private String origin;
-
-    private String state;
-
-    private Long views;
-
-    private Long editTime;
-
-    private Long createTime;
-
-    /**
-     * 类型 0原创 1转载
-     */
-    private Integer type;
-
-    private String summary;
-
+    @Field(index = true,analyzer = "ik_max_word",searchAnalyzer = "ik_max_word")
     private String content;
 
-    private String contentMd;
+    private String state;  //审核状态
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -48,78 +43,6 @@ public class Article {
         this.title = title;
     }
 
-    public String getCover() {
-        return cover;
-    }
-
-    public void setCover(String cover) {
-        this.cover = cover;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public Long getViews() {
-        return views;
-    }
-
-    public void setViews(Long views) {
-        this.views = views;
-    }
-
-    public Long getEditTime() {
-        return editTime;
-    }
-
-    public void setEditTime(Long editTime) {
-        this.editTime = editTime;
-    }
-
-    public Long getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Long createTime) {
-        this.createTime = createTime;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-
     public String getContent() {
         return content;
     }
@@ -128,11 +51,11 @@ public class Article {
         this.content = content;
     }
 
-    public String getContentMd() {
-        return contentMd;
+    public String getState() {
+        return state;
     }
 
-    public void setContentMd(String contentMd) {
-        this.contentMd = contentMd;
+    public void setState(String state) {
+        this.state = state;
     }
 }

@@ -1,18 +1,25 @@
-2
-https://raw.githubusercontent.com/aayush-grover/SoundCloud-Rest-Api/master/musichoster-service/src/main/java/com/upgrad/musichoster/service/dao/UserDao.java
-package com.upgrad.musichoster.service.dao;
+34
+https://raw.githubusercontent.com/1127140426/tensquare/master/tensquare_user/src/main/java/com/tensquare/user/dao/UserDao.java
+package com.tensquare.user.dao;
 
-import com.upgrad.musichoster.service.entity.UserAuthTokenEntity;
-import com.upgrad.musichoster.service.entity.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import com.tensquare.user.pojo.User;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
-public interface UserDao {
-
-	 UserEntity createUser(UserEntity userEntity);
-
-	 UserEntity getUserByEmail(final String email);
-
-	 UserAuthTokenEntity createAuthToken(final UserAuthTokenEntity userAuthTokenEntity);
-
-	 void updateUser(final UserEntity updatedUserEntity);
+/**
+ * user数据访问接口
+ * @author Administrator
+ *
+ */
+public interface UserDao extends JpaRepository<User,String>,JpaSpecificationExecutor<User>{
+	public User findByMobile(String mobile);
+    @Modifying
+	@Query(value = "update tb_user set fanscount = fanscount +? where id = ?",nativeQuery = true)
+    public void updatefanscount(int x, String friendid);
+    @Modifying
+    @Query(value = "update tb_user set followcount = followcount +? where id = ?",nativeQuery = true)
+    public void updatefollowcount(int x, String userid);
 }
