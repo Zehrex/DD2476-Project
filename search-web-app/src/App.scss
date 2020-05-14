@@ -207,3 +207,14 @@ nav form .form-control {
 .sui-search-box__submit {
   background: $primary-color !important
 }
+
+.sui-result__details li:nth-child(2) .sui-result__value {
+  background: #24292E;
+  color: #eee;
+  border-radius: 5px;
+  font-family: monospace;
+  -webkit-border-radius: 5px;
+  display: block;
+  padding: 10px;
+  white-space: pre-wrap;
+}

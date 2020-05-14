@@ -71,6 +71,7 @@ class Indexer:
                         return snippet
 
                 index += 1
+                snippet += "\n"
 
             return snippet
 
@@ -93,8 +94,7 @@ class Indexer:
                 except javalang.tokenizer.LexerError:
                     continue
                 for path, node in tree.filter(javalang.tree.ClassDeclaration):
-                    metadata['class'] = {
-                        'name': node.name,
+                    metadata['class_props'] = {
                         'extends': None if node.extends is None else node.extends.name,
                         'implements': None if not node.implements else [node.implements[i].name for i in
                                                                         range(len(node.implements))],
@@ -108,7 +108,9 @@ class Indexer:
                                     json.dump(self.index, json_file)
                                 self.index = []
                             self.index.append({
+                                'id': self.count,
                                 'method_name': child.name,
+                                'class_name': node.name,
                                 'params': get_params_type(child.parameters),
                                 'throws': child.throws,
                                 'modifiers': list(child.modifiers),
