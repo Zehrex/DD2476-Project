@@ -94,6 +94,7 @@ const configurationOptions = {
       return_type: { type: "value", size: 20 },
       modifiers: { type: "value", size: 20 },
       throws: { type: "value", size: 20 },
+      params: { type: "value", size: 20 },
       stars: {
         type: "range",
         ranges: [
@@ -140,6 +141,7 @@ export default function Search() {
               <Facet field="return_type" label="Return Type" filterType="any" isFilterable={true}/>
               <Facet field="modifiers" label="Modifiers" filterType="any" isFilterable={true}/>
               <Facet field="throws" label="Throws" filterType="any" isFilterable={true}/>
+              <Facet field="params" label="Parameters" filterType="any" isFilterable={true}/>
               <Facet field="stars" label="Number of Repo Stars" view={SingleLinksFacet} />
             </div>
           }

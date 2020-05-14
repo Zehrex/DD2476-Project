@@ -15,7 +15,7 @@ class Home extends React.Component {
               <div className="splash-title">
                 <h1><span>Java Github Search</span></h1>
                 <p>Search through a multitude of Java Github Repositories in an instant!</p>
-                <Link to="/search/"><button className="button button-primary">Start Searching Now!</button></Link>
+                <Link to="/search/?q=example&size=n_20_n"><button className="button button-primary">Start Searching!</button></Link>
               </div>
             </div>
           </div>
