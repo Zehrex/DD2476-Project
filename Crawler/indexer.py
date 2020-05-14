@@ -51,8 +51,6 @@ class Indexer:
         def get_code_snippet (lines, index):
             openingBrackets = 0;
             closingBrackets = 0;
-            # Number of characters we show in a snippet
-            snippet_limit = 250;
 
             # Resulting snippet
             snippet = ""
@@ -66,18 +64,14 @@ class Indexer:
                     elif letter == '{':
                         openingBrackets += 1
 
-                    # Ignore tabs and newlines
-                    if letter != '\t' and letter != '\n':
-                        snippet += letter
+                    snippet += letter
 
-                    # Early break if we reach char limit
-                    if len(snippet) > snippet_limit:
-                        return snippet + "..."
                     # Early end if we have reached last bracket
-                    elif closingBrackets == openingBrackets and openingBrackets != 0:
+                    if closingBrackets == openingBrackets and openingBrackets != 0:
                         return snippet
 
                 index += 1
+                snippet += "\n"
 
             return snippet
 
@@ -100,8 +94,7 @@ class Indexer:
                 except javalang.tokenizer.LexerError:
                     continue
                 for path, node in tree.filter(javalang.tree.ClassDeclaration):
-                    metadata['class'] = {
-                        'name': node.name,
+                    metadata['class_props'] = {
                         'extends': None if node.extends is None else node.extends.name,
                         'implements': None if not node.implements else [node.implements[i].name for i in
                                                                         range(len(node.implements))],
@@ -115,7 +108,9 @@ class Indexer:
                                     json.dump(self.index, json_file)
                                 self.index = []
                             self.index.append({
+                                'id': self.count,
                                 'method_name': child.name,
+                                'class_name': node.name,
                                 'params': get_params_type(child.parameters),
                                 'throws': child.throws,
                                 'modifiers': list(child.modifiers),

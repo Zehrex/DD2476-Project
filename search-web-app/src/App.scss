@@ -35,7 +35,7 @@ button.button {
   font-family: 'Unica One', serif;
   font-size: 20px;
   height: 40px;
-  margin: 3px 10px;
+  margin: 3px 0px;
   padding: 2px 20px;
   position: relative;
   text-transform: uppercase;
@@ -163,8 +163,12 @@ nav form .form-control {
   display: flex;
   height: 100%;
   justify-content: center;
-  padding: 50px;
+  padding: 100px;
   width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 35px;
+  }
 
   .splash-image {
     height: 100%;
@@ -204,6 +208,30 @@ nav form .form-control {
 /* =================
   Search Page styles
    ================= */
+
+.sui-paging-info, .sui-single-option-facet, .sui-multi-checkbox-facet__option-count, .sui-multi-checkbox-facet__input-text, .sui-facet__count {
+  font-size: 15px !important;
+}
+
+.sui-layout-main-header {
+  padding-bottom: 10px;
+}
+
+.sui-result__title-link {
+  color: $primary-color !important;
+}
+
 .sui-search-box__submit {
-  background: $primary-color !important
+  background: $primary-color !important;
+}
+
+.sui-result__details li:nth-child(2) .sui-result__value {
+  background: $third-color;
+  color: $secondary-color;
+  border-radius: 5px;
+  font-family: monospace;
+  -webkit-border-radius: 5px;
+  display: block;
+  padding: 10px;
+  white-space: pre-wrap;
 }
