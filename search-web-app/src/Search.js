@@ -16,9 +16,9 @@ import "@elastic/react-search-ui-views/lib/styles/styles.css";
 
 // Step #2, The connector
 const connector = new AppSearchAPIConnector({
-  searchKey: "search-4conaz61yap31er9nmza2f9z",
+  searchKey: "search-se19itwcs6g3uduqu355h5to",
   engineName: "github-search",
-  endpointBase: "http://localhost:3002"
+  endpointBase: "https://58c1c61a563a4706b431752249a88b66.app-search.us-central1.gcp.cloud.es.io"
 });
 
 // Step #3: Configuration options
@@ -88,6 +88,7 @@ const configurationOptions = {
       },
       snippet: {
         snippet: {
+          size: 500,
           fallback: true
         }
       }

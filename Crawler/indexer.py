@@ -64,8 +64,10 @@ class Indexer:
                     elif letter == '{':
                         openingBrackets += 1
 
+                    snippet += letter
+
                     # Early end if we have reached last bracket
-                    elif closingBrackets == openingBrackets and openingBrackets != 0:
+                    if closingBrackets == openingBrackets and openingBrackets != 0:
                         return snippet
 
                 index += 1

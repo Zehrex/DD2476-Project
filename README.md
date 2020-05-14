@@ -34,6 +34,7 @@ Add these lines to the end of the file
 action.auto_create_index: ".app-search-*-logs-*,-.app-search-*,+*"
 http.cors.enabled : true
 http.cors.allow-origin : "*"
+xpack.security.enabled: true
 ```
 
 Get elastic search running
