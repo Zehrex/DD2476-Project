@@ -2,21 +2,22 @@
 **Project: GitHub search**
 Contact: Johan Boye, jboye@kth.se
 
+[Link to online project](https://github-search-f1cfc.web.app/)
+
+[Video Demo](https://youtu.be/-T0MdBh0-PY)
+
 Have you ever written methods/functions where you realize that it must have been written
 before? On GitHub, millions of people are publishing their code for anyone to use, but there
 is no obvious way of finding the code snippet that you are looking for. The goal of this
 project is to solve just that!
 The assignment:
-  • Crawl (a part of) the publicly available GitHub code.
-  • Filter out one programming language that you feel comfortable with.
-  • Process the files and separate class names, method names, modifiers (for example
-  public, private, static, final etc.), variable names – things that you may want to search
-  and filter!
-  • Index it into elasticsearch (https://github.com/elastic/elasticsearch), or another
-  search engine of your choice.
-  • Create an interface where you can search and filter methods or classes based on the
-  metadata you have created.
-  • A sample query could be methodName:quicksort AND returnType:List
+
+* Crawl (a part of) the publicly available GitHub code.
+* Filter out one programming language that you feel comfortable with.
+* Process the files and separate class names, method names, modifiers (for example public, private, static, final etc.), variable names – things that you may want to search and filter!
+* Index it into elasticsearch (https://github.com/elastic/elasticsearch), or another search engine of your choice.
+* Create an interface where you can search and filter methods or classes based on the metadata you have created.
+* A sample query could be methodName:quicksort AND returnType:List
 
 i.e. search for quicksort, and filter by methods with returnType List. What would you
 want to search for?
@@ -28,14 +29,6 @@ Install elastic search https://www.elastic.co/downloads/elasticsearch (I used ho
 
 Install app-search https://www.elastic.co/downloads/app-search
 The config file you need to edit (`elasticsearch.yml`) is located at `/usr/local/etc/elasticsearch` if you installed using homebrew
-
-Add these lines to the end of the file
-```
-action.auto_create_index: ".app-search-*-logs-*,-.app-search-*,+*"
-http.cors.enabled : true
-http.cors.allow-origin : "*"
-xpack.security.enabled: true
-```
 
 Get elastic search running
 ```
@@ -64,7 +57,7 @@ An example result would be something like
 }
 ```
 
-Now run app-search
+Now run app-search in the directory you downloaded.
 ```
 cd app-search
 bin/app-search
@@ -79,7 +72,7 @@ If you want to perform the migration, please remove the read-only flag and start
 If you did not set the application to read-only mode, your Elasticsearch cluster may be unhealthy.
 ```
 
-It was because I did not have enough free space on my computer, so Elasticsearch could not index properly
+It was because there is not enough free space on my computer, so Elasticsearch could not index properly
 
 Then open up http://localhost:3002/
 You should have access to the app-search console
